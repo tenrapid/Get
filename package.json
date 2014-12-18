@@ -1,0 +1,16 @@
+{
+  "name": "GET",
+  "main": "index.html",
+  "window": {
+    "toolbar": true,
+    "width": 1024,
+    "height": 800
+  },
+  "dependencies": {
+    "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
+    "nodewebkit": "0.11.2"
+  },
+  "scripts": {
+    "start": "nodewebkit"
+  }
+}
