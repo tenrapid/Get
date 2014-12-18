@@ -39,4 +39,8 @@
             <target name="-after-build"/>
     -->
 
+	<target name="-after-build">
+		<copy file="${app.dir}/package.json" toDir="${app.output}" />
+	</target>
+
 </project>
