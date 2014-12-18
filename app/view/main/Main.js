@@ -9,7 +9,8 @@ Ext.define('cmdtest.view.main.Main', {
     extend: 'Ext.container.Container',
     requires: [
         'cmdtest.view.main.MainController',
-        'cmdtest.view.main.MainModel'
+        'cmdtest.view.main.MainModel',
+        'GeoExt.panel.Map'
     ],
 
     xtype: 'app-main',
@@ -40,8 +41,25 @@ Ext.define('cmdtest.view.main.Main', {
         region: 'center',
         xtype: 'tabpanel',
         items:[{
-            title: 'Tab 1',
-            html: '<h2>Content appropriate for the current navigation.</h2>'
+            title: 'Map',
+            layout: 'fit',
+            items: [
+            	{
+	            	xtype: 'gx_mappanel',
+					center: (new OpenLayers.LonLat(13.7414258, 51.0504017)).transform(
+						new OpenLayers.Projection('EPSG:4326'),
+						new OpenLayers.Projection('EPSG:900913')),
+					zoom: 14,
+					layers: [
+						new OpenLayers.Layer.OSM("Terrain", [
+							"http://a.tiles.mapbox.com/v3/examples.map-9d0r2yso/${z}/${x}/${y}.png",
+							"http://b.tiles.mapbox.com/v3/examples.map-9d0r2yso/${z}/${x}/${y}.png",
+							"http://c.tiles.mapbox.com/v3/examples.map-9d0r2yso/${z}/${x}/${y}.png",
+						]),
+					]
+	            }
+            ]
+//             html: '<h2>Content appropriate for the current navigation.</h2>'
         }]
     }]
 });

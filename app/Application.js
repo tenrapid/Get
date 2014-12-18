@@ -7,6 +7,10 @@ Ext.define('cmdtest.Application', {
     extend: 'Ext.app.Application',
     
     name: 'cmdtest',
+    
+    paths: {
+    	'GeoExt': './geoext2/src/GeoExt',
+    },
 
     stores: [
         // TODO: add global / shared stores here

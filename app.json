@@ -15,7 +15,7 @@
      * to "Ext.require". The "app.dir" variable below is expanded to the path where the
      * application resides (the same folder in which this file is located).
      */
-    "classpath": "${app.dir}/app",
+    "classpath": "${app.dir}/app,${app.dir}/geoext2/src/GeoExt",
 
     "overrides": "${app.dir}/overrides",
 
@@ -100,6 +100,9 @@
      */
     "js": [
         {
+            "path": "resources/js/openlayers/OpenLayers.js"
+        },
+        {
             "path": "${framework.dir}/build/ext-all-debug.js"
         },
         {
@@ -134,6 +137,9 @@
      *      }
      */
     "css": [
+        {
+            "path": "resources/js/openlayers/theme/default/style.css"
+        },
         {
             "path": "bootstrap.css",
             "bootstrap": true
