@@ -4,11 +4,11 @@
  * Sencha Cmd when upgrading.
  */
 Ext.application({
-    name: 'cmdtest',
+    name: 'Get',
 
-    extend: 'cmdtest.Application',
+    extend: 'Get.Application',
     
-    autoCreateViewport: 'cmdtest.view.main.Main'
+    autoCreateViewport: 'Get.view.main.Main'
 	
     //-------------------------------------------------------------------------
     // Most customizations should be made to cmdtest.Application. If you need to

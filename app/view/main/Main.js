@@ -5,11 +5,11 @@
  *
  * TODO - Replace this content of this view to suite the needs of your application.
  */
-Ext.define('cmdtest.view.main.Main', {
+Ext.define('Get.view.main.Main', {
     extend: 'Ext.container.Container',
     requires: [
-        'cmdtest.view.main.MainController',
-        'cmdtest.view.main.MainModel',
+        'Get.view.main.MainController',
+        'Get.view.main.MainModel',
         'GeoExt.panel.Map'
     ],
 

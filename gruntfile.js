@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 				cmd: 'npm start'
 			},
 			'run': {
-				cmd: 'node_modules/.bin/nodewebkit build/production/cmdtest/'
+				cmd: 'node_modules/.bin/nodewebkit build/production/Get/'
 			},
 		}
 	});

@@ -2,7 +2,7 @@
     /**
      * The application's namespace.
      */
-    "name": "cmdtest",
+    "name": "Get",
 
     /**
      * The relative path to the appliaction's markup file (html, jsp, asp, etc.)
@@ -48,13 +48,13 @@
     "sass": {
         /**
          * The root namespace to use when mapping *.scss files to classes in the
-         * sass/src and sass/var directories. For example, "cmdtest.view.Foo" would
-         * map to "sass/src/view/Foo.scss". If we changed this to "cmdtest.view" then
+         * sass/src and sass/var directories. For example, "Get.view.Foo" would
+         * map to "sass/src/view/Foo.scss". If we changed this to "Get.view" then
          * it would map to "sass/src/Foo.scss". To style classes outside the app's
          * root namespace, change this to "". Doing so would change the mapping of
-         * "cmdtest.view.Foo" to "sass/src/cmdtest/view/Foo.scss".
+         * "Get.view.Foo" to "sass/src/Get/view/Foo.scss".
          */
-        "namespace": "cmdtest"
+        "namespace": "Get"
     },
 
     /**

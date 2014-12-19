@@ -5,7 +5,7 @@
  *
  * TODO - Replace this content of this view to suite the needs of your application.
  */
-Ext.define('cmdtest.view.main.MainController', {
+Ext.define('Get.view.main.MainController', {
     extend: 'Ext.app.ViewController',
 
     requires: [

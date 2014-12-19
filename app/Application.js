@@ -3,10 +3,10 @@
  * Ext.application(). This is the ideal place to handle application launch and initialization
  * details.
  */
-Ext.define('cmdtest.Application', {
+Ext.define('Get.Application', {
     extend: 'Ext.app.Application',
     
-    name: 'cmdtest',
+    name: 'Get',
     
     paths: {
     	'GeoExt': './geoext2/src/GeoExt',
