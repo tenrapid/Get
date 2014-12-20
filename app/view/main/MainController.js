@@ -1,26 +1,82 @@
-/**
- * This class is the main view for the application. It is specified in app.js as the
- * "autoCreateViewport" property. That setting automatically applies the "viewport"
- * plugin to promote that instance of this class to the body element.
- *
- * TODO - Replace this content of this view to suite the needs of your application.
- */
 Ext.define('Get.view.main.MainController', {
     extend: 'Ext.app.ViewController',
 
     requires: [
-        'Ext.window.MessageBox'
+        'Ext.data.Request',
+        'Ext.data.operation.Operation',
+        'Get.Project',
     ],
 
     alias: 'controller.main',
 
-    onClickButton: function () {
-        Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
-    },
+	init: function() {
+		var project = Ext.create('Get.Project', {
+			name: 'Dresden'
+		})
+		this.load(project);
 
-    onConfirm: function (choice) {
-        if (choice === 'yes') {
-            //
-        }
-    }
+		var me = this;
+// 		setTimeout(function() {
+// 			project = Ext.create('Get.Project', {
+// 				name: 'Berlin'
+// 			})
+// 			me.load(project);
+// 		}, 4000);
+	},
+	
+	load: function(project) {
+		var me = this,
+			viewModel = me.getViewModel(),
+			currentProject = viewModel.get('project');
+			
+		if (currentProject) {
+			me.unload(currentProject);
+		}
+		project.load(me.onLoad, me);
+	},
+	
+	save: function() {
+		var me = this,
+			viewModel = me.getViewModel(),
+			currentProject = viewModel.get('project');
+		
+		var jsonString = currentProject.save();
+		Ext.create('Ext.window.Window', {
+			autoScroll: true,
+			autoShow: true,
+// 			html: '<pre>abc</pre>',
+			html: '<pre>' + jsonString + '</pre>',
+			height: 600,
+			width: 800,
+			title: 'json',
+		});
+	},
+	
+	onLoad: function(project) {
+		var me = this,
+			view = me.getView(),
+			viewModel = me.getViewModel();
+			
+		project.waypointStore.setStoreId('waypoints');
+		Ext.data.StoreManager.register(project.waypointStore);
+		
+		view.setSession(project.session);
+		viewModel.setSession(project.session);
+		viewModel.set('project', project);
+		viewModel.notify();
+		
+ 		me.fireEvent('projectLoad');
+	},
+	
+	unload: function(project) {
+		var me = this,
+			viewModel = me.getViewModel();
+			
+		me.fireEvent('projectUnload');
+		viewModel.set('project', null);
+		viewModel.notify();
+		project.destroy();
+		project = null;
+	},
+
 });
