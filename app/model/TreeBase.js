@@ -7,9 +7,7 @@ Ext.define('Get.model.TreeBase', {
         'Ext.mixin.Queryable'
     ],
     
-    identifier: {
-    	id: 'treeNodes'
-    },
+    identifier: 'uuid',
 	
 	fields: [
 	],

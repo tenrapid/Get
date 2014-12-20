@@ -40,16 +40,16 @@ Ext.define('Get.view.main.MainController', {
 			viewModel = me.getViewModel(),
 			currentProject = viewModel.get('project');
 		
-		var jsonString = currentProject.save();
-		Ext.create('Ext.window.Window', {
-			autoScroll: true,
-			autoShow: true,
-// 			html: '<pre>abc</pre>',
-			html: '<pre>' + jsonString + '</pre>',
-			height: 600,
-			width: 800,
-			title: 'json',
-		});
+		currentProject.save();
+// 		var jsonString = currentProject.save();
+// 		Ext.create('Ext.window.Window', {
+// 			autoScroll: true,
+// 			autoShow: true,
+// 			html: '<pre>' + jsonString + '</pre>',
+// 			height: 600,
+// 			width: 800,
+// 			title: 'json',
+// 		});
 	},
 	
 	onLoad: function(project) {

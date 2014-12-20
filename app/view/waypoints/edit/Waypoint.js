@@ -41,7 +41,7 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 					var controller = form.lookupController();
 					Ext.create('Ext.util.KeyNav', form.el, {
 						enter: function(e) {
-							if (e.parentEvent.target.nodeName == 'TEXTAREA') {
+							if (e.target.nodeName == 'TEXTAREA') {
 								return true;
 							}
 							if (form.isValid()) {

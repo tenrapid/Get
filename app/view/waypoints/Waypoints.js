@@ -33,7 +33,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 				markDirty: false,
 			},
 			root: {
-				expanded: true,
+				expanded: false,
 				expandable: false,
 				name: 'All Waypoints',
 			},
@@ -103,6 +103,15 @@ Ext.define('Get.view.waypoints.Waypoints', {
 					text: 'Save',
 					handler: function() {
 						Get.app.getMainView().controller.save();
+					}
+				},
+				{
+					text: 'Clear',
+					handler: function() {
+						var models = ['Waypoint', 'TourWaypoint', 'Tour', 'Area'];
+						Ext.each(models, function(model) {
+							Get.app.getModel(model).getProxy().clear();
+						});
 					}
 				}
 			],

@@ -3,6 +3,11 @@ Ext.define('Get.store.Tours', {
     
 	model: 'Get.model.LayerTreeRoot',
 	rootVisible: true,
-// 	parentIdProperty: 'parentId'
+	root: {
+		expanded: false,
+		expandable: false,
+		name: 'All Waypoints',
+	}
+
 });
 
