@@ -78,7 +78,7 @@ Ext.define('Get.view.map.MapController', {
 		var layer = waypointStore && waypointStore.layer;
 			
 		if (!layer && waypointStore) {
-			layer = this.addLayerToWaypointStore(store);
+			layer = this.addLayerToWaypointStore(waypointStore);
 		}
 		this.visibleVectorLayer && this.visibleVectorLayer.setVisibility(false);
 		layer && layer.setVisibility(true);
