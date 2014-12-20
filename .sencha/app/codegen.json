@@ -35,23 +35,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/development.properties": {
@@ -60,23 +60,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/native.properties": {
@@ -85,23 +85,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/package.properties": {
@@ -110,23 +110,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/production.properties": {
@@ -135,23 +135,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/sencha.cfg": {
@@ -160,23 +160,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     ".sencha/app/testing.properties": {
@@ -185,23 +185,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     "index.html": {
@@ -210,23 +210,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     },
     "sass/config.rb": {
@@ -235,23 +235,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "cmdtest",
+        "appName": "Get",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "cmdtest.controller",
+        "controllerNamespace": "Get.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "cmdtest.model",
-        "name": "cmdtest",
+        "modelNamespace": "Get.model",
+        "name": "Get",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "0af326fa-5338-4ee5-862e-cdd1bec0d451",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "cmdtest.view"
+        "viewNamespace": "Get.view"
       }
     }
   }
