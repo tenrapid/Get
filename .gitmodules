@@ -4,3 +4,6 @@
 [submodule "geoext2"]
 	path = geoext2
 	url = https://github.com/geoext/geoext2
+[submodule "packages/sqlite-proxy"]
+	path = packages/sqlite-proxy
+	url = git@github.com:tenrapid/ExtJS5-SQLite-Proxy.git
