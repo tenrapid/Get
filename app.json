@@ -141,11 +141,11 @@
             "path": "resources/js/openlayers/theme/default/style.css"
         },
         {
-            "path": "bootstrap.css",
-            "bootstrap": true
+            "path": "resources/css/app.css"
         },
         {
-            "path": "resources/css/app.css"
+            "path": "bootstrap.css",
+            "bootstrap": true
         }
     ],
 
@@ -177,6 +177,11 @@
      * settings.
      */
     "production": {
+    	"output": {
+    		"manifest": {
+    			"embed": true
+    		}
+    	}
     },
     
     "testing": {
