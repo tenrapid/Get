@@ -4,6 +4,10 @@
 /* 	padding-top: 3px; */
 }
 
+.x-form-trigger-wrap {
+	background: white;
+}
+
 .x-form-text-default.x-form-textarea {
 	padding-top: 3px;
 }
