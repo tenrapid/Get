@@ -105,6 +105,14 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		});
 	},
 	
+	onWaypointGridReconfigure: function(grid, store) {
+		if (store) {
+			var storeId = store.getStoreId(),
+				waypointColumn = grid.columns[2];
+			waypointColumn.setHidden(storeId === 'waypoints');
+		}
+	},
+	
     onClickButton: function () {
         Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
     },

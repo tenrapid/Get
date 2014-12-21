@@ -31,6 +31,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			viewConfig: {
 				overItemCls: null,
 				markDirty: false,
+				loadMask: false,
 			},
 			root: {
 				expanded: false,
@@ -134,12 +135,13 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			},
 			viewConfig: {
 				overItemCls: null,
+				markDirty: false,
 			},
 			columns: [
 				{
-					text: 'Id',
+					text: '',
 					dataIndex: 'id',
-					width: 40,
+					width: 35,
 					align: 'right',
 					menuDisabled: true,
 				},
@@ -155,16 +157,19 @@ Ext.define('Get.view.waypoints.Waypoints', {
 // 							},
 // 							flex: 1
 // 						},
-// 						{
-// 							text: 'Waypoint',
-// 							renderer: function(value, meta, record) {
-// 								return record.getWaypoint().get('name');
-// 							},
-// 							flex: 1
-// 						},
+				{
+					text: 'Waypoint',
+					hidden: true,
+					renderer: function(value, meta, record) {
+						return record.getWaypoint && record.getWaypoint().get('name');
+					},
+					flex: 8,
+					itemId: 'waypointColumn'
+				},
 			],
 			listeners: {
 				rowdblclick: 'onWaypointDoubleClick',
+				reconfigure: 'onWaypointGridReconfigure',
 				scope: 'controller',
 			},
 			tbar: [
