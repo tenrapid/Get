@@ -19,6 +19,12 @@ Ext.define('Get.data.Geometry', {
 			}
 			geoJson1 = o1.toGeoJson(projection);
 			geoJson2 = o2.toGeoJson(projection);
+			if (!geoJson1 && geoJson2 || geoJson1 && !geoJson2) {
+				return false;
+			}
+			if (!geoJson1 && !geoJson2) {
+				return true;
+			}
 			return geoJson1.type === geoJson2.type && Ext.Object.equals(geoJson1.coordinates, geoJson2.coordinates);
 		},
 	},

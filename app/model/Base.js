@@ -2,6 +2,7 @@ Ext.define('Get.model.Base', {
     extend: 'Ext.data.Model',
     requires: [
     	'Get.data.field.Geometry',
+    	'tenrapid.data.proxy.WebSql'
     ],
     
     identifier: {
@@ -9,10 +10,6 @@ Ext.define('Get.model.Base', {
     },
 	
 	fields: [
-		{
-			name: 'id',
-			type: 'int'
-		},
 		{
 			name: 'name', 
 			type: 'string'
@@ -23,17 +20,11 @@ Ext.define('Get.model.Base', {
         namespace: 'Get.model',
 
         proxy: {
-            type: 'memory',
-            reader: {
-                type: 'json',
-                rootProperty: '{entityName:uncapitalize}'
-            },
+            type: 'websql',
+            database: 'get',
             writer: {
             	type: 'json',
             	allowSingle: false,
-            	expandData: true,
-            	writeAllFields: true,
-                rootProperty: '{entityName:uncapitalize}'
             }
         }
     }

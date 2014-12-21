@@ -4,7 +4,6 @@ Ext.define('Get.model.TourWaypoint', {
     fields: [
 		{
 			name: 'tourId', 
-			type: 'int', 
 			reference: {
 				parent: 'Tour',
 				inverse: {
@@ -17,7 +16,6 @@ Ext.define('Get.model.TourWaypoint', {
 		},
 		{
 			name: 'areaId', 
-			type: 'int', 
 			reference: {
 				parent: 'Area',
 				inverse: {

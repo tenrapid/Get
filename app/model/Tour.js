@@ -8,19 +8,7 @@ Ext.define('Get.model.Tour', {
     		name: 'area',
     		persist: false,
     	},
-    	{
-    		name: 'layer',
-    		persist: false,
-    	},
     ],
     
-    proxy: {
-		reader: {
-			rootProperty: 'area'
-		},
-		writer: {
-			rootProperty: 'area'
-		}
-	},
 });
 

@@ -18,9 +18,6 @@ Ext.define('Get.data.field.Geometry', {
     convert: function(value) {
     	var config;
     	
-    	if (!Ext.isObject(value)) {
-    		return;
-    	}
     	if (value instanceof Get.data.Geometry) {
     		if (value.isFromFormField) {
 	    		// convert called from form field binding
@@ -52,7 +49,7 @@ Ext.define('Get.data.field.Geometry', {
     			option: value
     		});
     	}
-    	return value.toGeoJson(this.projectionObject);
+    	return JSON.stringify(value.toGeoJson(this.projectionObject));
     },
     
     isEqual: function (lhs, rhs) {

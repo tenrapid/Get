@@ -1,15 +1,14 @@
 Ext.define('Get.model.TreeBase', {
     extend: 'Get.model.Base',
     requires: [
-        'Ext.data.NodeInterface'
+        'Ext.data.NodeInterface',
+        'Ext.data.identifier.Uuid'
     ],
     mixins: [
         'Ext.mixin.Queryable'
     ],
     
-    identifier: {
-    	id: 'treeNodes'
-    },
+    identifier: 'uuid',
 	
 	fields: [
 	],

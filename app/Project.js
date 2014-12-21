@@ -9,7 +9,6 @@ Ext.define('Get.Project', {
 	],
 
 	name: null,
-	data: null,
 	
 	session: null,
 	
@@ -28,6 +27,7 @@ Ext.define('Get.Project', {
 		this.tourStore = Ext.create('Get.store.Tours', {
 			session: this.session,
 		});
+		this.tourStore.getRoot().phantom = false;
 		this.waypointStore = Ext.create('Get.store.Waypoints', {
 			session: this.session,
 		});
@@ -45,238 +45,93 @@ Ext.define('Get.Project', {
 		this.tourWaypointStore = null;
 		this.session.destroy();
 		this.session = null;
-		delete this.data;
-		this.data = null;
 	},
 	
 	load: function(callback, scope) {
-		var me = this;
+		var me = this,
+			onLoad = Ext.Function.createBarrier(3, function() {
+				me.adjustIdentifierSeed(me.waypointStore);
+				me.adjustIdentifierSeed(me.tourWaypointStore);
+				Ext.callback(callback, scope, [me]);
+			});
 		
-		this.data = this.getTestData();
 
-		this.tourStore.setRoot({
-			expanded: true,
-			expandable: false,
-			name: 'All Waypoints',
-			children: this.data.tour
-		});
-// 		this.tourStore.setRoot({
-// 			expanded: true,
-// 			expandable: false,
-// 			name: 'All Waypoints',
-// 		});
-// 		this.tourStore.getProxy().setData(this.data.tour);
-// 		this.tourStore.load();
-		this.adjustIdentifierSeed(this.tourStore);
-		
-		this.waypointStore.getProxy().setData(this.data);
-		this.waypointStore.load();
-		this.adjustIdentifierSeed(this.waypointStore);
-		
-		this.tourWaypointStore.getProxy().setData(this.data);
-		this.tourWaypointStore.load();
-		this.adjustIdentifierSeed(this.tourWaypointStore);
+// 		this.createTestData(); this.tourStore.getRoot().expand(); setTimeout(function() {onLoad(); onLoad(); onLoad();}, 1000);
 
-		setTimeout(function() {
-			callback.call(scope, me);
-		}, 1000);
+		this.tourStore.getRoot().expand(false, onLoad);
+		this.waypointStore.load(onLoad);
+		this.tourWaypointStore.load(onLoad);
 	},
 	
 	save: function() {
-		var json = {};
-		Ext.apply(json, this.storeToJson(this.waypointStore));
-		Ext.apply(json, this.storeToJson(this.tourWaypointStore));
-		Ext.apply(json, this.storeToJson(this.tourStore));
-		var jsonString = JSON.stringify(json, undefined, '\t');
-		return jsonString;
+		var saveBatch = this.session.getSaveBatch();
+		saveBatch && saveBatch.start();
 	},
 	
     adjustIdentifierSeed: function(store) {
-		var maxId = 0;
-    	if (store instanceof Ext.data.TreeStore) {
-			var	root = store.getRoot();
-			function walk(node) {
-				var id = node.getId();
-				if (id > maxId) {
-					maxId = id;
-				}
-				// damit Touren ohne Gebiete bereits ohne Aufklapppfeil angezeigt werden
-				if (!node.isExpanded()) {
-					node.expand();
-					node.collapse();
-				}
-				node.eachChild(walk);
-			}
-			root.eachChild(walk);
-    	}
-    	else {
-    		maxId = store.max('id');
-		}
+   		var maxId = store.max('id');
 		store.getModel().identifier.setSeed(maxId + 1);
 // 		console.log('maxId', store.id, maxId);
     },
     
-    storeToJson: function(store) {
-    	var records,
-    		jsonData;
-    	if (store.isTreeStore) {
-			records = [];
-			var root = store.getRoot();
-			function walk(node) {
-				records.push(node);
-				node.eachChild(walk);
-			}
-			root.eachChild(walk);
-    	}
-    	else {
-    		records = store.getRange();
-    	}
-		var request = Ext.create('Ext.data.Request',{
-			operation: Ext.create('Ext.data.operation.Operation', {
-				records: records
-			})
-		});
-		store.getProxy().getWriter().write(request);
-		// commit all records?
-		jsonData = request.getJsonData();
-		
-		if (store.isTreeStore && jsonData) {
-			var nodes = jsonData.tour,
-				node,
-				nodeMap = {},
-				tour = [],
-				len = nodes.length,
-				parentNode;
-
-			for (var i = 0; i < len; i++) {
-				node = nodes[i];
-				nodeMap[node.id] = node;
-			}
-
-			for (var i = 0; i < len; i++) {
-				node = nodes[i];
-				if (node.parentId == 'root') {
-					tour.push(node);
-				}
-				else {
-					parentNode = nodeMap[node.parentId];
-					if (!parentNode.area) {
-						parentNode.area = [];
-					}
-					parentNode.area.push(node);
-				}
-				delete node.parentId;
-			}
-			jsonData.tour = tour;
-		}
-		return jsonData;
-    },
-
-    getTestData: function() {
-		return {
-			waypoint: (function() {
-				var waypoints = [],
-					waypoint;
-				for (var i = 1; i <= 20; i++) {
-					waypoint = {
-						id: i,
-						name: 'WP' + i,
-						geometry: {
-							type: 'Point',
-							coordinates: [
-								13.71 + 0.06 * Math.random(),
-								51.03 + 0.04 * Math.random(),
-							]
-						}
-					};
-					waypoints.push(waypoint);
-				}
-				return waypoints;
-			})(),
-			tourWaypoint: [
-				{
-					id: 1,
-					name: 'TWP1',
-					tourId: 1,
-					waypointId: 1
-				},
-				{
-					id: 2,
-					name: 'TWP2',
-					tourId: 1,
-					waypointId: 2
-				},
-				{
-					id: 5,
-					name: 'TWP5',
-					tourId: 1,
-					areaId: 3,
-					waypointId: 5
-				},
-				{
-					id: 3,
-					name: 'TWP3',
-					tourId: 2,
-					waypointId: 2
-				},
-				{
-					id: 4,
-					name: 'TWP4',
-					tourId: 2,
-					waypointId: 3
-				},
-			],
-// 			"tour": [
-// 				{
-// 					"id": 1,
-// 					"name": "Tour 1",
-// 					"parentId": "root",
-// 					"leaf": false
-// 				},
-// 				{
-// 					"id": 3,
-// 					"name": "Area 1",
-// 					"parentId": 1,
-// 					"leaf": true
-// 				},
-// 				{
-// 					"id": 4,
-// 					"name": "Area 2",
-// 					"parentId": 1,
-// 					"leaf": true
-// 				},
-// 				{
-// 					"id": 2,
-// 					"name": "T2",
-// 					"parentId": "root",
-// 					"leaf": false
-// 				}
-// 			]
-			tour: [
-				{
-					"id": 1,
-					"name": "Tour 1",
-					"leaf": false,
-					"area": [
-						{
-							"id": 3,
-							"name": "Area 1",
-							"leaf": true
-						},
-						{
-							"id": 4,
-							"name": "Area 2",
-							"leaf": true
-						}
+	createTestData: function() {
+		var waypoints = [],
+			waypoint;
+		for (var i = 1; i <= 20; i++) {
+			waypoint = {
+				name: 'WP' + i,
+				geometry: {
+					type: 'Point',
+					coordinates: [
+						13.71 + 0.06 * Math.random(),
+						51.03 + 0.04 * Math.random(),
 					]
-				},
-				{
-					"id": 2,
-					"name": "T2",
-					"leaf": false
 				}
-			]
-		};
+			};
+			waypoints.push(waypoint);
+		}
+		this.waypointStore.add(waypoints);
+
+		var root = this.tourStore.getRoot();
+		var tour1 = root.appendChild({
+			"name": "Tour 1",
+			"leaf": false,
+		});
+		var tour2 = root.appendChild({
+			"name": "Tour 2",
+			"leaf": false,
+		});
+		var area1 = tour1.appendChild({
+			"name": "Area 1",
+			"leaf": true,
+		});
+		var area2 = tour1.appendChild({
+			"name": "Area 2",
+			"leaf": true,
+		});
+		
+		tour1.tourWaypoints().add({
+			name: 'TWP1',
+			waypointId: this.waypointStore.getAt(0).getId(),
+		});
+		tour1.tourWaypoints().add({
+			name: 'TWP2',
+			waypointId: this.waypointStore.getAt(1).getId(),
+		});
+		tour1.tourWaypoints().add({
+			name: 'TWP3',
+			waypointId: this.waypointStore.getAt(2).getId(),
+		});
+		tour2.tourWaypoints().add({
+			name: 'TWP4',
+			waypointId: this.waypointStore.getAt(2).getId(),
+		});
+		tour2.tourWaypoints().add({
+			name: 'TWP5',
+			waypointId: this.waypointStore.getAt(3).getId(),
+		});
+		tour1.tourWaypoints().getAt(2).setArea(area1);
 	},
+
 });
 
