@@ -87,7 +87,7 @@ Ext.define('Get.data.FeatureStore', {
 		geometry = record.get('geometry');
 		if (geometry) {
 			geometry.transform(this.layer.map.getProjectionObject());
-			var feature = new OpenLayers.Feature.Vector(geometry.geometry.clone(), Ext.apply({}, record.getData()));
+			feature = new OpenLayers.Feature.Vector(geometry.geometry.clone(), Ext.apply({}, record.getData()));
 			this.featureMap[record.getId()] = feature;
 			return feature;
 		}
@@ -282,7 +282,7 @@ Ext.define('Get.data.FeatureStore', {
             Ext.each(records, function(record){
             	var id = record.getId();
                 var feature = me.featureMap[id];
-                if (layer.getFeatureById(feature.id) != null) {
+                if (layer.getFeatureById(feature.id) !== null) {
                     removeFeatures.push(feature);
                 }
                 delete me.featureMap[id];

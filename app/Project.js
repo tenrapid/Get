@@ -65,7 +65,9 @@ Ext.define('Get.Project', {
 	
 	save: function() {
 		var saveBatch = this.session.getSaveBatch();
-		saveBatch && saveBatch.start();
+		if (saveBatch) {
+			saveBatch.start();
+		}
 	},
 	
     adjustIdentifierSeed: function(store) {

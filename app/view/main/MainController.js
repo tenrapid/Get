@@ -12,7 +12,7 @@ Ext.define('Get.view.main.MainController', {
 	init: function() {
 		var project = Ext.create('Get.Project', {
 			name: 'Dresden'
-		})
+		});
 		this.load(project);
 
 		var me = this;
