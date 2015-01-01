@@ -1,6 +1,6 @@
 Ext.define('Get.view.waypoints.Waypoints', {
 	extend: 'Ext.grid.Panel',
-	alias: 'widget.get-waypoints',
+	xtype: 'get-waypoints',
 
 	requires: [
 		'Get.view.waypoints.WaypointsController',
@@ -40,13 +40,6 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			dataIndex: 'name',
 			flex: 3
 		},
-// 						{
-// 							text: 'Tour',
-// 							renderer: function(value, meta, record) {
-// 								return record.getTour().get('name');
-// 							},
-// 							flex: 1
-// 						},
 		{
 			text: 'Waypoint',
 			hidden: true,

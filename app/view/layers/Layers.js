@@ -1,6 +1,6 @@
 Ext.define('Get.view.layers.Layers', {
 	extend: 'Ext.tree.Panel',
-	alias: 'widget.get-layers',
+	xtype: 'get-layers',
 
 	requires: [
 		'Get.view.layers.LayersController',
