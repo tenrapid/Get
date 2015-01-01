@@ -13,8 +13,7 @@ Ext.define('Get.view.layers.Layers', {
 
 	title: 'Layers',
 	border: false,
-// 			reserveScrollbar: true,
-	rootVisible: true,
+	// reserveScrollbar: true,
 	useArrows: true,
 	hideHeaders: true,
 	viewConfig: {
@@ -22,6 +21,7 @@ Ext.define('Get.view.layers.Layers', {
 		markDirty: false,
 		loadMask: false,
 	},
+	rootVisible: true,
 	root: {
 		expanded: false,
 		expandable: false,
@@ -31,13 +31,14 @@ Ext.define('Get.view.layers.Layers', {
 		store: '{tours}',
 		disabled: '{uiDisabled}',
 	},
+	listeners: {
+		selectionchange: 'onLayerSelectionChange',
+		beforeedit: 'onBeforeLayerItemEdit'
+	},
 	plugins: [
 		{
 			ptype: 'cellediting',
 			clicksToEdit: 2,
-			listeners: {
-				beforeedit: 'onBeforeLayerItemEdit'
-			},
 		},
 	],
 	columns: [
@@ -64,10 +65,6 @@ Ext.define('Get.view.layers.Layers', {
 			width: 30
 		}
 	],
-	listeners: {
-		selectionchange: 'onLayerSelectionChange',
-		scope: 'controller'
-	},
 	tbar: [
 		{
 			html: '<b>+</b>',
