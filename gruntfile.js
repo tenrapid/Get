@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 			},
 		},
 		concurrent: {
-			install: [/*'download-extjs', 'build-openlayers', */'build-node-sqlite3']
+			install: ['download-extjs', 'build-openlayers', 'build-node-sqlite3']
 		}
 	});
 
