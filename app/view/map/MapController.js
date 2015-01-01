@@ -1,11 +1,11 @@
 Ext.define('Get.view.map.MapController', {
-    extend: 'Ext.app.ViewController',
+	extend: 'Ext.app.ViewController',
 
-    requires: [
-    ],
+	requires: [
+	],
 
-    alias: 'controller.map',
-    id: 'map', // IMPORTANT if using 'listen', ansonsten wird der Listener von anderem Controller bei destroy gelöscht
+	alias: 'controller.map',
+	id: 'map', // IMPORTANT if using 'listen', ansonsten wird der Listener von anderem Controller bei destroy gelöscht
 
 	config: {
 		listen: {
@@ -94,7 +94,7 @@ Ext.define('Get.view.map.MapController', {
 			rendererOptions: {yOrdering: true},
 		});
 		map.addLayer(layer);
- 		waypointStore.bindLayer(layer);
+		waypointStore.bindLayer(layer);
 		this.waypointStores[layer.id] = waypointStore;
 		
 		return layer;
@@ -135,13 +135,13 @@ Ext.define('Get.view.map.MapController', {
 // 			backgroundYOffset: 2,
 // 			backgroundWidth: 26,
 // 			backgroundHeight: 15,
-            label: '${id}', //●⬤
-            labelYOffset: 17,
-            fontColor: 'white',
-            fontWeight: 'bold',
-            fontFamily: 'Tahoma',
-            fontSize: 11,
-            labelOutlineWidth: 0,
+			label: '${id}', //●⬤
+			labelYOffset: 17,
+			fontColor: 'white',
+			fontWeight: 'bold',
+			fontFamily: 'Tahoma',
+			fontSize: 11,
+			labelOutlineWidth: 0,
 		}, OpenLayers.Feature.Vector.style['default'])),
 		'select': new OpenLayers.Style(Ext.applyIf({
 			cursor: "inherit",

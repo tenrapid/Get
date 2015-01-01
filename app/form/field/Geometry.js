@@ -57,7 +57,7 @@ Ext.define('Get.form.field.Geometry', {
 	},
 	
 	isEqual: function(newVal, oldVal) {
-        return Get.data.Geometry.isEqual(newVal, oldVal);
+		return Get.data.Geometry.isEqual(newVal, oldVal);
 	},
 	
 	latLonToString: function(lat, lon) {

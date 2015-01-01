@@ -1,15 +1,15 @@
 Ext.define('Get.view.waypoints.WaypointsController', {
-    extend: 'Ext.app.ViewController',
+	extend: 'Ext.app.ViewController',
 
-    requires: [
-    	'Ext.data.TreeStore',
-    	'Ext.data.Session',
-    	'Ext.tree.Panel',
-    	'Get.view.waypoints.edit.Waypoint',
-    ],
+	requires: [
+		'Ext.data.TreeStore',
+		'Ext.data.Session',
+		'Ext.tree.Panel',
+		'Get.view.waypoints.edit.Waypoint',
+	],
 
-    alias: 'controller.waypoints',
-    id: 'waypoints', 
+	alias: 'controller.waypoints',
+	id: 'waypoints', 
 
 	config: {
 		listen: {
@@ -62,7 +62,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 				waypointStore = item.tourWaypoints();
 			}
 			this.fireEvent('layerItemSelect', item, waypointStore);
-	 		this.waypointGrid.setStore(waypointStore);
+			this.waypointGrid.setStore(waypointStore);
 		}
 		else {
 			if (this.isLayerSelectionForced) {
@@ -73,21 +73,21 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		viewModel.getParent().set('selectedLayerItem', item);
 	},
 
-    onRemoveLayer: function () {
-    	var layerItem = this.selectedLayerItem,
-    		layerItems = [];
-    	this.layerTree.getSelectionModel().select(layerItem.parentNode);
+	onRemoveLayer: function () {
+		var layerItem = this.selectedLayerItem,
+			layerItems = [];
+		this.layerTree.getSelectionModel().select(layerItem.parentNode);
 
-    	function walk(node) {
-    		layerItems.push(node);
-    		node.eachChild(walk);
-    	}
-    	walk(layerItem);
-    	layerItem.erase();
-    	Ext.each(layerItems, function(item) {
+		function walk(node) {
+			layerItems.push(node);
+			node.eachChild(walk);
+		}
+		walk(layerItem);
+		layerItem.erase();
+		Ext.each(layerItems, function(item) {
 			this.fireEvent('layerItemRemove', item, item.tourWaypoints());
-    	}, this);
-    },
+		}, this);
+	},
 		
 	onBeforeLayerItemEdit: function(editor, context) {
 		if (context.record.isRoot()) {
@@ -113,14 +113,14 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		}
 	},
 	
-    onClickButton: function () {
-        Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
-    },
+	onClickButton: function () {
+		Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
+	},
 
-    onConfirm: function (choice) {
-        if (choice === 'yes') {
-            //
-        }
-    },
+	onConfirm: function (choice) {
+		if (choice === 'yes') {
+			//
+		}
+	},
 	
 });

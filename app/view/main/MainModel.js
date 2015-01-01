@@ -1,6 +1,6 @@
 Ext.define('Get.view.main.MainModel', {
-    extend: 'Ext.app.ViewModel',
-    alias: 'viewmodel.main',
+	extend: 'Ext.app.ViewModel',
+	alias: 'viewmodel.main',
 	requires: [
 		'Get.store.Waypoints',
 		'Get.store.TourWaypoints',
@@ -10,12 +10,12 @@ Ext.define('Get.view.main.MainModel', {
 		'Ext.data.Store'
 	],
 	
-    data: {
-        name: 'Get',
-        project: null,
-        isProjectLoading: false,
-    }, 
-    
+	data: {
+		name: 'Get',
+		project: null,
+		isProjectLoading: false,
+	}, 
+	
 	formulas: {
 		projectName: function (get) {
 			var project = get('project');
@@ -35,7 +35,7 @@ Ext.define('Get.view.main.MainModel', {
 		},
 	},
 	
-    stores: {
+	stores: {
 // 		tours: {
 // 			xclass: 'Ext.data.TreeStore',
 // 			model: new Ext.Class({
@@ -71,6 +71,6 @@ Ext.define('Get.view.main.MainModel', {
 //     			load: 'adjustIdentifierSeed'
 //     		}
 //     	},
-    },    
+	},    
 
 });

@@ -1,7 +1,7 @@
 Ext.define('Get.model.TourWaypoint', {
-    extend: 'Get.model.Base',
-    
-    fields: [
+	extend: 'Get.model.Base',
+	
+	fields: [
 		{
 			name: 'tourId', 
 			reference: {
@@ -33,10 +33,10 @@ Ext.define('Get.model.TourWaypoint', {
 				parent: 'Waypoint',
 			}
 		},
-    	{
-    		name: 'geometry',
-    		type: 'geometry',
-    		persist: false,
-    	},
-    ]
+		{
+			name: 'geometry',
+			type: 'geometry',
+			persist: false,
+		},
+	]
 });

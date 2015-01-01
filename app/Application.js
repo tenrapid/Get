@@ -1,30 +1,30 @@
 Ext.define('Get.Application', {
-    extend: 'Ext.app.Application',
-    
-    name: 'Get',
+	extend: 'Ext.app.Application',
+	
+	name: 'Get',
 
 	models: [ 
 		'Tour', 'Area', 'Waypoint', 'TourWaypoint', 'Feature'
 	],
 
-    requires: [
-    	'Get.data.FeatureStore',
-    	'GeoExt.panel.Map',
-    	'Ext.data.TreeStore',
-    	'Ext.data.TreeModel',
-    ],
+	requires: [
+		'Get.data.FeatureStore',
+		'GeoExt.panel.Map',
+		'Ext.data.TreeStore',
+		'Ext.data.TreeModel',
+	],
 
 	init: function() {
 	},
 
-    launch: function () {
+	launch: function () {
 //     	this.featureStoreTest();
 //     	this.treeStoreTest();
-    },
-    
-    treeStoreTest: function() {
-    	var me = this,
-    		store;
+	},
+	
+	treeStoreTest: function() {
+		var me = this,
+			store;
 
 		store = Ext.create('Ext.data.TreeStore', {
 			model: new Ext.Class({
@@ -47,7 +47,7 @@ Ext.define('Get.Application', {
 		
 		this.storeToJson(store);
 		root = store.getRoot();
-	    
+		
 // 		Ext.define('myApp.TerritoryRoot', {
 // 			extend: 'Ext.data.TreeModel',
 // 			childType: 'myApp.Territory',
@@ -122,22 +122,22 @@ Ext.define('Get.Application', {
 // 		}));
 		
 		console.log('treeStore', store);    	
-    },
-    
-    featureStoreTest: function() {
-    	var me = this,
-    		store = Ext.create('Get.data.FeatureStore', {
-	    		model: 'Get.model.Feature'
-	    	});
-	    	
-    	store.add({
-    		geometry: {
-    			type: 'Point',
-    			coordinates: [13.73, 51.05]
-    		}
-    	});
-    	console.log('Feature', store.first());
-    	
+	},
+	
+	featureStoreTest: function() {
+		var me = this,
+			store = Ext.create('Get.data.FeatureStore', {
+				model: 'Get.model.Feature'
+			});
+			
+		store.add({
+			geometry: {
+				type: 'Point',
+				coordinates: [13.73, 51.05]
+			}
+		});
+		console.log('Feature', store.first());
+		
 
 		setTimeout(function() {
 			store.add({
@@ -154,5 +154,5 @@ Ext.define('Get.Application', {
 			});
 			me.storeToJson(store);
 		}, 2000);
-    }
+	}
 });

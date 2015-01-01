@@ -1,13 +1,13 @@
 Ext.define('Get.view.main.MainController', {
-    extend: 'Ext.app.ViewController',
+	extend: 'Ext.app.ViewController',
 
-    requires: [
-        'Ext.data.Request',
-        'Ext.data.operation.Operation',
-        'Get.Project',
-    ],
+	requires: [
+		'Ext.data.Request',
+		'Ext.data.operation.Operation',
+		'Get.Project',
+	],
 
-    alias: 'controller.main',
+	alias: 'controller.main',
 
 	init: function() {
 		var project = Ext.create('Get.Project', {
@@ -65,7 +65,7 @@ Ext.define('Get.view.main.MainController', {
 		viewModel.set('project', project);
 		viewModel.notify();
 		
- 		me.fireEvent('projectLoad');
+		me.fireEvent('projectLoad');
 	},
 	
 	unload: function(project) {

@@ -1,7 +1,7 @@
 Ext.define('Get.view.waypoints.edit.WaypointFields', {
-    extend: 'Ext.form.FieldContainer',
+	extend: 'Ext.form.FieldContainer',
 
-    alias: 'widget.edit.waypoint.waypoint-fields',
+	alias: 'widget.edit.waypoint.waypoint-fields',
 
 	layout: {
 		type: 'vbox',

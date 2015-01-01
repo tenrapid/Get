@@ -1,13 +1,13 @@
 Ext.define('Get.view.waypoints.Waypoints', {
-    extend: 'Ext.container.Container',
-    alias: 'widget.get-waypoints',
+	extend: 'Ext.container.Container',
+	alias: 'widget.get-waypoints',
 
-    requires: [
-        'Get.view.waypoints.WaypointsController',
-        'Get.view.waypoints.WaypointsModel',
-        'Ext.tree.*'
-    ],
-    controller: 'waypoints',
+	requires: [
+		'Get.view.waypoints.WaypointsController',
+		'Get.view.waypoints.WaypointsModel',
+		'Ext.tree.*'
+	],
+	controller: 'waypoints',
 	viewModel: 'waypoints',
 
 	layout: {
@@ -68,14 +68,14 @@ Ext.define('Get.view.waypoints.Waypoints', {
 					align: 'right',
 					renderer: function(value, metadata, record) {
 						metadata.style = 'font-size: 11px; color: #bbb;';
-						var store = record.isRoot() ? Ext.getStore('waypoints') : record.tourWaypoints()
+						var store = record.isRoot() ? Ext.getStore('waypoints') : record.tourWaypoints();
 						return store && store.count() || '';
 					},
 					sortable: false,
 					width: 30
 				}
 			],
-    		listeners: {
+			listeners: {
 				selectionchange: 'onLayerSelectionChange',
 				scope: 'controller'
 			},

@@ -1,7 +1,7 @@
 Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
-    extend: 'Ext.form.FieldContainer',
+	extend: 'Ext.form.FieldContainer',
 
-    alias: 'widget.edit.waypoint.tour-waypoint-fields',
+	alias: 'widget.edit.waypoint.tour-waypoint-fields',
 
 	layout: {
 		type: 'vbox',

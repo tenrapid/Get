@@ -1,23 +1,23 @@
 Ext.define('Get.view.main.Main', {
-    extend: 'Ext.container.Container',
-    requires: [
-        'Get.view.main.MainController',
-        'Get.view.main.MainModel',
-        'Get.view.map.Map',
-        'Get.view.waypoints.Waypoints',
-        'Get.selection.FeatureModel',
-    ],
+	extend: 'Ext.container.Container',
+	requires: [
+		'Get.view.main.MainController',
+		'Get.view.main.MainModel',
+		'Get.view.map.Map',
+		'Get.view.waypoints.Waypoints',
+		'Get.selection.FeatureModel',
+	],
 
-    xtype: 'app-main',
-    
-    controller: 'main',
+	xtype: 'app-main',
+	
+	controller: 'main',
 	viewModel: 'main',
-    
-    layout: {
-        type: 'border'
-    },
-    
-    items: [
+	
+	layout: {
+		type: 'border'
+	},
+	
+	items: [
 //     	{
 // 			region: 'north',
 //     		xtype: 'box',

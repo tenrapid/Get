@@ -1,6 +1,6 @@
 Ext.define('Get.view.map.MapModel', {
-    extend: 'Ext.app.ViewModel',
-    alias: 'viewmodel.map',
+	extend: 'Ext.app.ViewModel',
+	alias: 'viewmodel.map',
 	
 	formulas: {
 		panelTitle: function (get) {

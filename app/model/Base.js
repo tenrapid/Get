@@ -1,13 +1,13 @@
 Ext.define('Get.model.Base', {
-    extend: 'Ext.data.Model',
-    requires: [
-    	'Get.data.field.Geometry',
-    	'tenrapid.data.proxy.WebSql'
-    ],
-    
-    identifier: {
-    	type: 'sequential',
-    },
+	extend: 'Ext.data.Model',
+	requires: [
+		'Get.data.field.Geometry',
+		'tenrapid.data.proxy.WebSql'
+	],
+	
+	identifier: {
+		type: 'sequential',
+	},
 	
 	fields: [
 		{
@@ -16,16 +16,16 @@ Ext.define('Get.model.Base', {
 		},
 	],
 	
-    schema: {
-        namespace: 'Get.model',
+	schema: {
+		namespace: 'Get.model',
 
-        proxy: {
-            type: 'websql',
-            database: 'get',
-            writer: {
-            	type: 'json',
-            	allowSingle: false,
-            }
-        }
-    }
+		proxy: {
+			type: 'websql',
+			database: 'get',
+			writer: {
+				type: 'json',
+				allowSingle: false,
+			}
+		}
+	}
 });

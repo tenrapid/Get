@@ -1,15 +1,15 @@
 Ext.define('Get.view.waypoints.edit.Waypoint', {
-    extend: 'Ext.window.Window',
-    requires: [
-        'Get.view.waypoints.edit.WaypointController',
-        'Get.form.field.Geometry',
-    ],
+	extend: 'Ext.window.Window',
+	requires: [
+		'Get.view.waypoints.edit.WaypointController',
+		'Get.form.field.Geometry',
+	],
 
-    alias: 'widget.edit.waypoint',
+	alias: 'widget.edit.waypoint',
 
-    controller: 'edit.waypoint',
-    
-    session: true,
+	controller: 'edit.waypoint',
+	
+	session: true,
 
 	autoShow: true,
 	width: 500,

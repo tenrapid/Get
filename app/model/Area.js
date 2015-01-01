@@ -1,7 +1,7 @@
 Ext.define('Get.model.Area', {
-    extend: 'Get.model.TreeBase',
+	extend: 'Get.model.TreeBase',
 
-    fields: [
-    ],
-    
+	fields: [
+	],
+	
 });

@@ -1,6 +1,6 @@
 Ext.define('Get.store.Tours', {
-    extend: 'Ext.data.TreeStore',
-    
+	extend: 'Ext.data.TreeStore',
+	
 	model: 'Get.model.LayerTreeRoot',
 	rootVisible: true,
 	root: {

@@ -1,12 +1,12 @@
 Ext.define('Get.view.map.Map', {
-    extend: 'GeoExt.panel.Map',
-    alias: 'widget.get-mappanel',
+	extend: 'GeoExt.panel.Map',
+	alias: 'widget.get-mappanel',
 
-    requires: [
-        'Get.view.map.MapController',
-        'Get.view.map.MapModel',
-    ],
-    controller: 'map',
+	requires: [
+		'Get.view.map.MapController',
+		'Get.view.map.MapModel',
+	],
+	controller: 'map',
 	viewModel: 'map',
 
 	title: 'Map',
@@ -76,11 +76,11 @@ Ext.define('Get.view.map.Map', {
 // 		},
 		{
 			text: 'Map type',
-            menu: {
-            	xtype: 'menu',
-            	reference: 'baseLayerMenu'
-            },
-        }
+			menu: {
+				xtype: 'menu',
+				reference: 'baseLayerMenu'
+			},
+		}
 	],
 	
 });

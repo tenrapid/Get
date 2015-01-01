@@ -70,12 +70,12 @@ Ext.define('Get.Project', {
 		}
 	},
 	
-    adjustIdentifierSeed: function(store) {
-   		var maxId = store.max('id');
+	adjustIdentifierSeed: function(store) {
+		var maxId = store.max('id');
 		store.getModel().identifier.setSeed(maxId + 1);
 // 		console.log('maxId', store.id, maxId);
-    },
-    
+	},
+	
 	createTestData: function() {
 		var waypoints = [],
 			waypoint;

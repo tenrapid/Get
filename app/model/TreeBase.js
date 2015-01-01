@@ -1,14 +1,14 @@
 Ext.define('Get.model.TreeBase', {
-    extend: 'Get.model.Base',
-    requires: [
-        'Ext.data.NodeInterface',
-        'Ext.data.identifier.Uuid'
-    ],
-    mixins: [
-        'Ext.mixin.Queryable'
-    ],
-    
-    identifier: 'uuid',
+	extend: 'Get.model.Base',
+	requires: [
+		'Ext.data.NodeInterface',
+		'Ext.data.identifier.Uuid'
+	],
+	mixins: [
+		'Ext.mixin.Queryable'
+	],
+	
+	identifier: 'uuid',
 	
 	fields: [
 	],
@@ -22,5 +22,5 @@ Ext.define('Get.model.TreeBase', {
 	}
 },
 function () {
-    Ext.data.NodeInterface.decorate(this);
+	Ext.data.NodeInterface.decorate(this);
 });

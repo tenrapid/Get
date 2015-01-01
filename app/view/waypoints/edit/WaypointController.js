@@ -1,12 +1,12 @@
 Ext.define('Get.view.waypoints.edit.WaypointController', {
-    extend: 'Ext.app.ViewController',
-    requires: [
-        'Get.view.waypoints.edit.WaypointFields',
-        'Get.view.waypoints.edit.TourWaypointFields',
-    ],
+	extend: 'Ext.app.ViewController',
+	requires: [
+		'Get.view.waypoints.edit.WaypointFields',
+		'Get.view.waypoints.edit.TourWaypointFields',
+	],
 
-    alias: 'controller.edit.waypoint',
-    id: 'edit-waypoint',
+	alias: 'controller.edit.waypoint',
+	id: 'edit-waypoint',
 
 	init: function() {
 		/*
