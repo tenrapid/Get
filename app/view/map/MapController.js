@@ -1,16 +1,17 @@
 Ext.define('Get.view.map.MapController', {
 	extend: 'Ext.app.ViewController',
+	alias: 'controller.map',
 
 	requires: [
 	],
 
-	alias: 'controller.map',
 	id: 'map', // IMPORTANT if using 'listen', ansonsten wird der Listener von anderem Controller bei destroy gelöscht
 
 	config: {
 		listen: {
 			controller: {
-				'#waypoints': {
+				'#layers': {
+					beforeLayerItemSelect: 'onBeforeLayerItemSelect',
 					layerItemSelect: 'onLayerItemSelect',
 					layerItemRemove: 'onLayerItemRemove',
 				},
@@ -74,14 +75,21 @@ Ext.define('Get.view.map.MapController', {
 		button.setText(visibleLayer.name);
 	},
 	
-	onLayerItemSelect: function(item, waypointStore) {
+	onBeforeLayerItemSelect: function(item, waypointStore) {
 		var layer = waypointStore && waypointStore.layer;
-			
 		if (!layer && waypointStore) {
 			layer = this.addLayerToWaypointStore(waypointStore);
 		}
-		this.visibleVectorLayer && this.visibleVectorLayer.setVisibility(false);
-		layer && layer.setVisibility(true);
+	},
+
+	onLayerItemSelect: function(item, waypointStore) {
+		var layer = waypointStore && waypointStore.layer;
+		if (this.visibleVectorLayer) {
+			this.visibleVectorLayer.setVisibility(false);
+		}
+		if (layer) {
+			layer.setVisibility(true);
+		}
 		this.visibleVectorLayer = layer;
 	},
 	

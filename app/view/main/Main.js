@@ -3,9 +3,9 @@ Ext.define('Get.view.main.Main', {
 	requires: [
 		'Get.view.main.MainController',
 		'Get.view.main.MainModel',
-		'Get.view.map.Map',
+		'Get.view.layers.Layers',
 		'Get.view.waypoints.Waypoints',
-		'Get.selection.FeatureModel',
+		'Get.view.map.Map',
 	],
 
 	xtype: 'app-main',
@@ -30,7 +30,24 @@ Ext.define('Get.view.main.Main', {
 // 		},
 		{
 			region: 'west',
-			xtype: 'get-waypoints',
+			layout: {
+				type: 'border',
+			},
+			width: 300,
+			split: true,
+			border: false,
+			items: [
+				{
+					region: 'north',
+					xtype: 'get-layers',
+					height: 200,
+					split: true
+				},
+				{
+					region: 'center',
+					xtype: 'get-waypoints'
+				}
+			]
 		},
 		{
 			region: 'center',

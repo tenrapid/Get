@@ -33,6 +33,9 @@ Ext.define('Get.view.main.MainModel', {
 			var project = get('project');
 			return project && project.tourWaypointStore;
 		},
+		uiDisabled: function (get) {
+			return get('project') ? false : true;
+		}
 	},
 	
 	stores: {
