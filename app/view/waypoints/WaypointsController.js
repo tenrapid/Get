@@ -14,7 +14,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 				'#layers': {
 					layerItemSelect: 'onLayerItemSelect',
 				},
-				'*': {
+				'#main': {
 					projectLoad: 'onProjectLoad',
 					projectUnload: 'onProjectUnload',
 				},

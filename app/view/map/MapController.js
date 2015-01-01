@@ -15,7 +15,7 @@ Ext.define('Get.view.map.MapController', {
 					layerItemSelect: 'onLayerItemSelect',
 					layerItemRemove: 'onLayerItemRemove',
 				},
-				'*': {
+				'#main': {
 // 					projectLoad: Ext.emptyFn,
 					projectUnload: 'onProjectUnload',
 				}

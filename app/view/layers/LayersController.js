@@ -13,7 +13,7 @@ Ext.define('Get.view.layers.LayersController', {
 	config: {
 		listen: {
 			controller: {
-				'*': {
+				'#main': {
 					projectLoad: 'onProjectLoad',
 					projectUnload: 'onProjectUnload',
 				},
