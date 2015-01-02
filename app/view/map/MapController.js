@@ -78,7 +78,7 @@ Ext.define('Get.view.map.MapController', {
 	onBeforeLayerItemSelect: function(item, waypointStore) {
 		var layer = waypointStore && waypointStore.layer;
 		if (!layer && waypointStore) {
-			layer = this.addLayerToWaypointStore(waypointStore);
+			this.addLayerToWaypointStore(waypointStore);
 		}
 	},
 

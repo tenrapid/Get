@@ -62,19 +62,14 @@ Ext.define('Get.view.layers.LayersController', {
 	},
 
 	onRemoveLayer: function () {
-		var layerItem = this.selectedLayerItem,
-			layerItems = [];
-		this.getView().getSelectionModel().select(layerItem.parentNode);
+		var me = this,
+			layerItem = me.selectedLayerItem;
+		me.getView().getSelectionModel().select(layerItem.parentNode);
 
-		function walk(node) {
-			layerItems.push(node);
-			node.eachChild(walk);
-		}
-		walk(layerItem);
-		layerItem.erase();
-		Ext.each(layerItems, function(item) {
-			this.fireEvent('layerItemRemove', item, item.tourWaypoints());
-		}, this);
+		layerItem.cascadeBy(function(item) {
+			me.fireEvent('layerItemRemove', item, item.tourWaypoints());
+		});
+		layerItem.drop();
 	},
 		
 	onBeforeLayerItemEdit: function(editor, context) {
