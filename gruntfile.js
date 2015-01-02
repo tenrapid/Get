@@ -27,7 +27,7 @@ module.exports = function(grunt) {
 
 	grunt.registerTask('git-submodule-init', function() {
 		var shell = require('shelljs');
-		
+
 		if (!shell.which('git')) {
 			grunt.fatal('git required.');
 		}
@@ -87,7 +87,7 @@ module.exports = function(grunt) {
 	grunt.registerTask('build-node-sqlite3', function() {
 		var shell = require('shelljs'),
 			done = this.async(),
-			cmd = 'node_modules/node-pre-gyp/bin/node-pre-gyp build --runtime=node-webkit --target_arch=x64 --target=0.11.2';
+			cmd = 'node_modules/node-pre-gyp/bin/node-pre-gyp build --runtime=node-webkit --target_arch=x64 --target=0.11.5';
 
 		shell.pushd('node_modules/sqlite3');
 		shell.exec(cmd, {silent: true}, function(code, output) {
