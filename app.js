@@ -23,10 +23,25 @@ Ext.application({
 // Catch uncaught node.js exceptions
 // Prevent node-webkit exception page on uncaught exeptions
 if (window.process) {
-	function onUncaughtException(err) {}
-	process.on('uncaughtException', onUncaughtException);
-	window.addEventListener('unload', function() {
-		process.removeListener('uncaughtException', onUncaughtException);
-	});
-}
+	(function() {
+		var production = true,
+			uncaughtExceptionHandler = function(err) {
+				if (production && Ext && Ext.Msg) {
+					Ext.Msg.show({
+						title: 'Error',
+						icon: Ext.Msg.ERROR,
+						buttons: Ext.Msg.OK,
+						message: err.stack.replace(/\n/g, '<br>')
+					});
+				}
+			};
+		//<debug>
+		production = false;
+		//</debug>
 
+		process.on('uncaughtException', uncaughtExceptionHandler);
+		window.addEventListener('unload', function() {
+			process.removeListener('uncaughtException', uncaughtExceptionHandler);
+		});
+	})();
+}
