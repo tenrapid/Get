@@ -7,6 +7,10 @@ Ext.define('Get.Application', {
 		'Tour', 'Area', 'Waypoint', 'TourWaypoint', 'Feature'
 	],
 
+	controllers: [
+		'NodeWebkitGui'
+	],
+
 	requires: [
 	],
 
@@ -14,6 +18,11 @@ Ext.define('Get.Application', {
 	},
 
 	launch: function () {
+		var mainController = this.getMainView().getController(),
+			project = Ext.create('Get.model.Project', {
+				// filename: 'Dresden.db'
+			});
+		mainController.load(project);
 	},
 	
 });

@@ -1,0 +1,24 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "."
+		}
+	],
+	"settings": {
+		"todoreview": {
+			"exclude_folders": [
+				"*.git*",
+				".sencha*",
+				"ext*",
+				"node_modules*",
+				"openlayers*",
+				"build*",
+			],
+			"exclude_files": [
+				"*sass/example/render.js*",
+			]
+		}
+	}
+}

@@ -5,7 +5,8 @@ Ext.define('Get.view.layers.Layers', {
 	requires: [
 		'Get.view.layers.LayersController',
 		'Get.view.layers.LayersModel',
-		'Ext.tree.*'
+		'Get.model.Project',
+		'Ext.tree.*',
 	],
 
 	controller: 'layers',
@@ -28,7 +29,7 @@ Ext.define('Get.view.layers.Layers', {
 		name: 'All Waypoints',
 	},
 	bind: {
-		store: '{tours}',
+		store: '{project.tours}',
 		disabled: '{uiDisabled}',
 	},
 	listeners: {
@@ -81,8 +82,8 @@ Ext.define('Get.view.layers.Layers', {
 		{
 			text: 'Load',
 			handler: function() {
-				Get.app.getMainView().controller.load(Ext.create('Get.Project', {
-					name: 'Dresden'
+				Get.app.getMainView().controller.load(Ext.create('Get.model.Project', {
+					filename: 'Dresden.db'
 				}));
 			}
 		},

@@ -4,3 +4,5 @@ node_modules
 resources/js
 bootstrap.*
 .sublime-grunt.cache
+*.sublime-workspace
+*.get
