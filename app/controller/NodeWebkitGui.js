@@ -90,7 +90,7 @@ Ext.define('Get.controller.NodeWebkitGui', function() {
 						}
 					},
 					close: function() {
-						if (win != me.focused) {
+						if (win != fwm.focused) {
 							win.focus();
 						}
 						win.window.Get.app.getController('NodeWebkitGui', true).fireEvent('closeMenuItem');

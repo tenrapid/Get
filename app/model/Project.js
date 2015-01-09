@@ -8,6 +8,8 @@ Ext.define('Get.model.Project', {
 		'Get.store.Waypoints',
 		'Get.store.TourWaypoints',
 		'Get.store.Tours',
+		'Get.model.Tour',
+		'Get.model.Area',
 	],
 
 	fields: [
@@ -17,7 +19,16 @@ Ext.define('Get.model.Project', {
 		},
 		{
 			name: 'filename',
-			persist: false
+			persist: false,
+			convert: function(filename, project) {
+				project.getProxy().setFilename(filename);
+				project.tourStore.getProxy().setFilename(filename);
+				project.waypointStore.getProxy().setFilename(filename);
+				project.tourWaypointStore.getProxy().setFilename(filename);
+				Get.model.Tour.getProxy().setFilename(filename);
+				Get.model.Area.getProxy().setFilename(filename);
+				return filename;
+			}
 		},
 		{
 			name: 'waypoints',
@@ -37,27 +48,10 @@ Ext.define('Get.model.Project', {
 	waypointStore: null,
 	tourWaypointStore: null,
 
-	destroy: function() {
-		this.tourStore.destroy();
-		this.tourStore = null;
-		this.waypointStore.destroy();
-		this.waypointStore = null;
-		this.tourWaypointStore.destroy();
-		this.tourWaypointStore = null;
-		this.session.destroy();
-		this.session = null;
-		this.callParent();
-	},
-	
-	load: function(callback, scope) {
-		var me = this,
-			path = require('path'),
-			filename = this.get('filename'),
-			name = filename ? path.basename(filename, '.get') : 'Unbenannt',
-			session = Ext.create('Ext.data.Session');
+	constructor: function(data) {
+		var session = Ext.create('Ext.data.Session');
 
-		this.setId(1);
-		this.setSession(session);
+		data = Ext.apply(data, {id: 1});
 
 		// Create stores.
 		this.tourStore = Ext.create('Get.store.Tours', {
@@ -90,17 +84,25 @@ Ext.define('Get.model.Project', {
 				scope: this
 			}
 		});
+		this.callParent([data, session]);
+	},
 
- 		// Set "filename" config of sqlite proxy.
-		this.getProxy().setFilename(filename);
-		this.tourStore.getProxy().setFilename(filename);
-		this.waypointStore.getProxy().setFilename(filename);
-		this.tourWaypointStore.getProxy().setFilename(filename);
-
-
-		// Load stores
-		var onLoad = Ext.Function.createBarrier(filename ? 4 : 1, function() {
-				// me.set('name', name);
+	destroy: function() {
+		this.tourStore.destroy();
+		this.tourStore = null;
+		this.waypointStore.destroy();
+		this.waypointStore = null;
+		this.tourWaypointStore.destroy();
+		this.tourWaypointStore = null;
+		this.session.destroy();
+		this.session = null;
+		this.callParent();
+	},
+	
+	load: function(callback, scope) {
+		var me = this,
+			filename = this.get('filename'),
+			onLoad = Ext.Function.createBarrier(filename ? 4 : 1, function() {
 				me.set('tours', me.tourStore);
 				me.set('waypoints', me.waypointStore);
 				me.adjustIdentifierSeed(me.waypointStore);
@@ -122,7 +124,6 @@ Ext.define('Get.model.Project', {
 			var root = this.tourStore.getRoot();
 			root.set('loaded', true);
 			root.expand(false, onLoad);
-			// onLoad();
 		}
 	},
 	
@@ -132,7 +133,7 @@ Ext.define('Get.model.Project', {
 			saveBatch.start();
 		}
 	},
-	
+
 	adjustIdentifierSeed: function(store) {
 		var maxId = store.max('id');
 		store.getModel().identifier.setSeed(maxId + 1);

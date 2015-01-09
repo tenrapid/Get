@@ -126,14 +126,23 @@ Ext.define('Get.view.main.MainController', {
 		var me = this,
 			fs = require('fs'),
 			path = require('path'),
+			filename = file.path,
 			save = function() {
+				var save = function() {
+					me.project.set('filename', filename);
+					me.save();
+				};
 				if (me.project.get('filename')) {
-					// TODO: close Database, copy and open again?
+					me.project.getProxy().closeDatabase(function() {
+						var shell = require('shelljs');
+						shell.cp(me.project.get('filename'), filename);
+						save();
+					});
 				}
-				// me.project.set('filename', filename);
-				// me.save();
-			},
-			filename = file.path;
+				else {
+					save();
+				}
+			};
 
 		// Reset so that the change event can fire if the same file is selected again.
 		Ext.get('saveFileDialog').dom.value = '';
