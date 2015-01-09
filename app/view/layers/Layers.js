@@ -83,7 +83,7 @@ Ext.define('Get.view.layers.Layers', {
 			text: 'Load',
 			handler: function() {
 				Get.app.getMainView().controller.load(Ext.create('Get.model.Project', {
-					filename: 'Dresden.db'
+					filename: 'Dresden.get'
 				}));
 			}
 		},

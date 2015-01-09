@@ -12,6 +12,7 @@ Ext.define('Get.view.main.MainController', {
 		listen: {
 			controller: {
 				'#nodewebkitgui': {
+					newMenuItem: 'onNewMenuItem',
 					openMenuItem: 'onOpenMenuItem',
 					saveMenuItem: 'onSaveMenuItem',
 					saveAsMenuItem: 'onSaveAsMenuItem',
@@ -22,15 +23,23 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	project: null,
+	nodeWebkitGuiController: null,
 
 	init: function() {
 		var me = this;
 		Ext.get('openFileDialog').dom.addEventListener('change', function(e) {
-			me.onOpenFileDialog(e.target.files[0]);
+			var files = e.target.files;
+			if (files.length) {
+				me.onOpenFileDialog(files[0]);
+			}
 		});
 		Ext.get('saveFileDialog').dom.addEventListener('change', function(e) {
-			me.onSaveFileDialog(e.target.files[0]);
+			var files = e.target.files;
+			if (files.length) {
+				me.onSaveFileDialog(files[0]);
+			}
 		});
+		this.nodeWebkitGuiController = Get.app.getNodeWebkitGuiController();
 	},
 	
 	load: function(project) {
@@ -66,12 +75,24 @@ Ext.define('Get.view.main.MainController', {
 	},
 	
 	onNewMenuItem: function() {
-		// TODO: onNewMenuItem
+		this.nodeWebkitGuiController.openWindow();
 	},
 
 	onOpenMenuItem: function() {
-		// TODO: warn if there are unsaved changes
-		Ext.get('openFileDialog').dom.click();
+		var me = this;
+		if (this.project.get('isModified')) {
+			this.unsavedChangesDialog({
+				save: function() {
+					me.onSaveMenuItem();
+				}, 
+				discard: function() {
+					Ext.get('openFileDialog').dom.click();
+				}
+			});
+		}
+		else {
+			Ext.get('openFileDialog').dom.click();
+		}
 	},
 	onOpenFileDialog: function(file) {
 		project = Ext.create('Get.model.Project', {
@@ -125,18 +146,20 @@ Ext.define('Get.view.main.MainController', {
 			// TODO: Übernimmt Chrome in Windows auch die Überprüfung auf existierende Datei?
 			Ext.Msg.show({
 				message: '"' + path.basename(filename) + '" existiert bereits. Soll die Datei ersetzt werden?',
-				buttons: Ext.MessageBox.OKCANCEL,
+				buttons: Ext.Msg.OKCANCEL,
 				buttonText: {
 					ok: 'Ersetzen',
 					cancel: 'Abbrechen'
 				},
-				icon: Ext.MessageBox.WARNING,
+				icon: Ext.Msg.WARNING,
 				fn: function(choice) {
 					if (choice == 'ok') {
 						save();
 					}
 				}
 			});
+			Ext.Msg.down('button#ok').addCls('btn-ok');
+			Ext.Msg.down('toolbar').setLayout({pack: 'end'});
 		}
 		else {
 			save();
@@ -144,7 +167,44 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onCloseMenuItem: function() {
-		// TODO: warn if there are unsaved changes
+		var me = this;
+		if (this.project.get('isModified')) {
+			this.unsavedChangesDialog({
+				save: function() {
+					me.onSaveMenuItem();
+				}, 
+				discard: function() {
+					me.nodeWebkitGuiController.closeWindow();
+				}
+			});
+		}
+		else {
+			me.nodeWebkitGuiController.closeWindow();
+		}
+	},
+
+	unsavedChangesDialog: function(handler) {
+		Ext.Msg.show({
+			message: 'Änderungen in "' + this.project.get('name') + '" speichern?',
+			buttons: Ext.Msg.YESNOCANCEL,
+			buttonText: {
+				yes: 'Speichern',
+				no: 'Verwerfen',
+				cancel: 'Abbrechen'
+			},
+			icon: Ext.Msg.WARNING,
+			minWidth: 350,
+			fn: function(choice) {
+				if (choice == 'yes') {
+					handler.save();
+				}
+				else if (choice == 'no') {
+					handler.discard();
+				}
+			}
+		});
+		Ext.Msg.down('button#yes').addCls('btn-ok');
+		Ext.Msg.down('toolbar').setLayout({pack: 'end'});
 	}
 
 });
