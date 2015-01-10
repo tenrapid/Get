@@ -63,7 +63,9 @@ Ext.define('Get.controller.NodeWebkitGui', function() {
 		}
 	}));
 
-	menuBar.createMacBuiltin("Get");
+	if (process.platform === 'darwin') {
+		menuBar.createMacBuiltin("Get");
+	}
 	menuBar.insert(fileMenuItem, 1);
 
 	// focusedWindowManager
@@ -119,7 +121,7 @@ Ext.define('Get.controller.NodeWebkitGui', function() {
 				if (process.platform === 'darwin') {
 					win.menu = menuBar;
 				}
-				console.log('setFocused', fwm.focused.id, fwm.lastFocused.map(function(win) {return win.id;}));
+				// console.log('setFocused', fwm.focused.id, fwm.lastFocused.map(function(win) {return win.id;}));
 			}
 		},
 		close: function(win) {

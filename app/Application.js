@@ -19,9 +19,7 @@ Ext.define('Get.Application', {
 
 	launch: function () {
 		var mainController = this.getMainView().getController(),
-			project = Ext.create('Get.model.Project', {
-				// filename: 'Dresden.db'
-			});
+			project = Ext.create('Get.model.Project');
 		mainController.load(project);
 	},
 	
