@@ -126,16 +126,19 @@ Ext.define('Get.view.main.MainController', {
 		var me = this,
 			fs = require('fs'),
 			path = require('path'),
+			shell = require('shelljs'),
+			currentFilename = me.get('filename'),
 			filename = file.path,
 			save = function() {
-				var save = function() {
-					me.project.set('filename', filename);
-					me.save();
-				};
-				if (me.project.get('filename')) {
+				me.project.set('filename', filename);
+				me.save();
+			},
+			duplicate = function() {
+				if (currentFilename) {
 					me.project.getProxy().closeDatabase(function() {
-						var shell = require('shelljs');
-						shell.cp(me.project.get('filename'), filename);
+						if (filename !== currentFilename) {
+							shell.cp(currentFilename, filename);
+						}
 						save();
 					});
 				}
@@ -163,7 +166,10 @@ Ext.define('Get.view.main.MainController', {
 				icon: Ext.Msg.WARNING,
 				fn: function(choice) {
 					if (choice == 'ok') {
-						save();
+						if (filename !== currentFilename) {
+							shell.rm(filename);
+						}
+						duplicate();
 					}
 				}
 			});
@@ -171,7 +177,7 @@ Ext.define('Get.view.main.MainController', {
 			Ext.Msg.down('toolbar').setLayout({pack: 'end'});
 		}
 		else {
-			save();
+			duplicate();
 		}
 	},
 
