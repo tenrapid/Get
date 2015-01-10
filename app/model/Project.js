@@ -13,9 +13,11 @@ Ext.define('Get.model.Project', {
 	],
 
 	fields: [
+		// TODO: allow insertion of empty records in sqlite proxy
 		{
 			name: 'name',
-			defaultValue: 'Unbenannt'
+			defaultValue: 'Unbenannt',
+			persist: false
 		},
 		{
 			name: 'filename',
@@ -29,6 +31,10 @@ Ext.define('Get.model.Project', {
 				Get.model.Area.getProxy().setFilename(filename);
 				return filename;
 			}
+		},
+		{
+			name: 'state',
+			// TODO: field "state"
 		},
 		{
 			name: 'waypoints',
@@ -48,42 +54,27 @@ Ext.define('Get.model.Project', {
 	waypointStore: null,
 	tourWaypointStore: null,
 
+	dirtyRecordsMap: null,
+
 	constructor: function(data) {
 		var session = Ext.create('Ext.data.Session');
 
 		data = Ext.apply(data, {id: 1});
 
+		this.dirtyRecordsMap = new Map();
+
 		// Create stores.
 		this.tourStore = Ext.create('Get.store.Tours', {
-			session: session,
-			listeners: {
-				update: this.onStoreRecordUpdate,
-				// TODO: datachanged
-				// nodeappend: this.onStoreRecordUpdate,
-				// nodeinsert: this.onStoreRecordUpdate,
-				// noderemove: this.onStoreRecordUpdate,
-				scope: this
-			}
+			session: session
 		});
 		this.tourStore.getRoot().phantom = false;
 		this.waypointStore = Ext.create('Get.store.Waypoints', {
-			session: session,
-			listeners: {
-				update: this.onStoreRecordUpdate,
-				// TODO: datachanged
-				// datachanged: this.onStoreDataChanged,
-				scope: this
-			}
+			session: session
 		});
 		this.tourWaypointStore = Ext.create('Get.store.TourWaypoints', {
-			session: session,
-			listeners: {
-				update: this.onStoreRecordUpdate,
-				// TODO: datachanged
-				// datachanged: this.onStoreDataChanged,
-				scope: this
-			}
+			session: session
 		});
+
 		this.callParent([data, session]);
 	},
 
@@ -103,6 +94,22 @@ Ext.define('Get.model.Project', {
 		var me = this,
 			filename = this.get('filename'),
 			onLoad = Ext.Function.createBarrier(filename ? 4 : 1, function() {
+				me.updateName();
+				me.tourStore.on({
+					update: me.onStoreRecordUpdate,
+					nodeappend: me.onStoreNodeOperation,
+					nodeinsert: me.onStoreNodeOperation,
+					noderemove: me.onStoreNodeOperation,
+					scope: me
+				});
+				me.waypointStore.on({
+					update: me.onStoreRecordUpdate,
+					scope: me
+				});
+				me.tourWaypointStore.on({
+					update: me.onStoreRecordUpdate,
+					scope: me
+				});
 				me.set('tours', me.tourStore);
 				me.set('waypoints', me.waypointStore);
 				me.adjustIdentifierSeed(me.waypointStore);
@@ -127,10 +134,35 @@ Ext.define('Get.model.Project', {
 		}
 	},
 	
-	save: function() {
-		var saveBatch = this.session.getSaveBatch();
+	save: function(callback, scope) {
+		var me = this,
+			saveBatch = this.session.getSaveBatch();
 		if (saveBatch) {
+			saveBatch.on('complete', function() {
+				console.log('saveBatch complete');
+				if (!saveBatch.hasException()) {
+					me.updateName();
+				}
+				Ext.callback(callback, scope, [me, saveBatch.getExceptions()]);
+			});
 			saveBatch.start();
+		}
+		else {
+			// no changes but filename may be changed due to save as
+			me.updateName();
+			Ext.callback(callback, scope, [me, null]);
+		}
+		// TODO: set isModified = false and clear dirtyRecordsMap after successful save
+	},
+
+	updateName: function() {
+		var filename = this.get('filename'),
+			path = require('path'),
+			name;
+		if (filename) {
+			name = path.basename(filename, '.get');
+			console.log('updateName', filename, name);
+			this.set('name', name);
 		}
 	},
 
@@ -139,14 +171,15 @@ Ext.define('Get.model.Project', {
 		store.getModel().identifier.setSeed(maxId + 1);
 	},
 
-	onStoreDataChanged: function() {
-		this.set('isModified', !!this.session.getChanges());
-		console.log('onStoreUpdate', this.get('isModified'), arguments);
+	onStoreNodeOperation: function(store, record) {
+		// console.log('onStoreNodeOperation', record);
+		this.onStoreModification(record);
 	},
 
 	onStoreRecordUpdate: function(store, record, operation, modifiedFieldNames, details) {
 		if (operation === Ext.data.Model.COMMIT) {
-			return;
+			// TODO: ignore commit operations
+			// return;
 		}
 		if (store == this.tourStore) {
 			if (operation === Ext.data.Model.EDIT && modifiedFieldNames && modifiedFieldNames.length === 1) {
@@ -162,16 +195,36 @@ Ext.define('Get.model.Project', {
 			}
 		}
 		// console.log('onStoreRecordUpdate', store, operation, modifiedFieldNames, details);
-		this.onStoreModification();
+		// console.log('onStoreRecordUpdate', arguments);
+		this.onStoreModification(record);
 	},
 
-	onStoreModification: function() {
-		console.log('tourStore', this.tourStore.needsSync);
-		console.log('waypointStore', this.waypointStore.needsSync);
-		console.log('tourWaypointStore', this.tourWaypointStore.needsSync);
-		var isModified = !!this.session.getChanges();
+	onStoreModification: function(record) {
+		var dirty = record.phantom && !record.dropped || !record.phantom && (record.dirty || record.dropped),
+			id = record.getId(),
+			entity = record.entityName,
+			map = this.dirtyRecordsMap,
+			entityMap = map.get(entity) || (map.set(entity, new Map()) && map.get(entity)),
+			isModified = false;
+
+		if (dirty) {
+			entityMap.set(id, record);
+		}
+		else {
+			if (entityMap.has(id)) {
+				entityMap.delete(id);
+			}
+		}
+
+		for (entityMap of map.values()) {
+			if (entityMap.size) {
+				isModified = true;
+				break;
+			}
+		}
+
 		this.set('isModified', isModified);
-		console.log('onModification', isModified);
+		// console.log('onModification', isModified);
 	},
 	
 	set: function(fieldName) {
