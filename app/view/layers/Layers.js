@@ -69,7 +69,7 @@ Ext.define('Get.view.layers.Layers', {
 	tbar: [
 		{
 			html: '<b>+</b>',
-			handler: 'onClickButton'
+			handler: 'onAddLayer'
 		},
 		{
 			html: '<b>–</b>',

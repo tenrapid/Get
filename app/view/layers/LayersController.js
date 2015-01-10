@@ -61,6 +61,23 @@ Ext.define('Get.view.layers.LayersController', {
 		viewModel.getParent().set('selectedLayerItem', item);
 	},
 
+	onAddLayer: function () {
+		var me = this,
+			layerItem = me.selectedLayerItem;
+		
+		if (layerItem.isRoot()) {
+			layerItem.appendChild({
+				name: "Tour"
+			});
+		}
+		else if (layerItem.entityName === 'Tour') {
+			layerItem.appendChild({
+				name: "Gebiet",
+				leaf: true
+			});
+		}
+	},
+		
 	onRemoveLayer: function () {
 		var me = this,
 			layerItem = me.selectedLayerItem;
@@ -76,16 +93,6 @@ Ext.define('Get.view.layers.LayersController', {
 		if (context.record.isRoot()) {
 			return false;
 		}
-	},
-	
-	onClickButton: function () {
-		Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
-	},
-
-	onConfirm: function (choice) {
-		if (choice === 'yes') {
-			//
-		}
-	},
-	
+	}
+		
 });
