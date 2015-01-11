@@ -13,7 +13,6 @@ Ext.define('Get.model.Project', {
 	],
 
 	fields: [
-		// TODO: allow insertion of empty records in sqlite proxy
 		{
 			name: 'name',
 			defaultValue: 'Unbenannt',
@@ -104,10 +103,14 @@ Ext.define('Get.model.Project', {
 				});
 				me.waypointStore.on({
 					update: me.onStoreRecordUpdate,
+					add: me.onStoreRecordOperation,
+					remove: me.onStoreRecordOperation,
 					scope: me
 				});
 				me.tourWaypointStore.on({
 					update: me.onStoreRecordUpdate,
+					add: me.onStoreRecordOperation,
+					remove: me.onStoreRecordOperation,
 					scope: me
 				});
 				me.set('tours', me.tourStore);
@@ -161,7 +164,6 @@ Ext.define('Get.model.Project', {
 			name;
 		if (filename) {
 			name = path.basename(filename, '.get');
-			console.log('updateName', filename, name);
 			this.set('name', name);
 		}
 	},
@@ -174,6 +176,14 @@ Ext.define('Get.model.Project', {
 	onStoreNodeOperation: function(store, record) {
 		// console.log('onStoreNodeOperation', record);
 		this.onStoreModification(record);
+	},
+
+	onStoreRecordOperation: function(store, records) {
+		var me = this;
+		// console.log('onStoreRecordOperation', records);
+		records.forEach(function(record) {
+			me.onStoreModification(record);
+		});
 	},
 
 	onStoreRecordUpdate: function(store, record, operation, modifiedFieldNames, details) {
