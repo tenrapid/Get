@@ -69,7 +69,10 @@ Ext.define('Get.view.layers.Layers', {
 	tbar: [
 		{
 			html: '<b>+</b>',
-			handler: 'onAddLayer'
+			handler: 'onAddLayer',
+			bind: {
+				disabled: '{addLayerButtonDisabled}',
+			}
 		},
 		{
 			html: '<b>–</b>',

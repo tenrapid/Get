@@ -6,6 +6,10 @@ Ext.define('Get.view.layers.LayersModel', {
 		removeLayerButtonDisabled: function(get) {
 			var selectedLayerItem = get('selectedLayerItem');
 			return selectedLayerItem && selectedLayerItem.isRoot();
+		},
+		addLayerButtonDisabled: function(get) {
+			var selectedLayerItem = get('selectedLayerItem');
+			return selectedLayerItem && selectedLayerItem.entityName === 'Area';
 		}
 	}
 
