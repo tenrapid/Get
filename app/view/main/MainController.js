@@ -127,7 +127,7 @@ Ext.define('Get.view.main.MainController', {
 			fs = require('fs'),
 			path = require('path'),
 			shell = require('shelljs'),
-			currentFilename = me.get('filename'),
+			currentFilename = me.project.get('filename'),
 			filename = file.path,
 			save = function() {
 				me.project.set('filename', filename);
