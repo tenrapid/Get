@@ -28,26 +28,35 @@ Ext.define('Get.view.main.MainController', {
 	init: function() {
 		var me = this;
 		Ext.get('openFileDialog').dom.addEventListener('change', function(e) {
-			var files = e.target.files;
+			var input = e.target,
+				files = input.files;
 			if (files.length) {
 				me.onOpenFileDialog(files[0]);
 			}
+			// Reset so that the change event can fire if the same file is selected again.
+			input.value = '';
 		});
 		Ext.get('saveFileDialog').dom.addEventListener('change', function(e) {
-			var files = e.target.files;
+			var input = e.target,
+				files = input.files;
 			if (files.length) {
 				me.onSaveFileDialog(files[0]);
 			}
+			// Reset so that the change event can fire if the same file is selected again.
+			input.value = '';
 		});
 		this.nodeWebkitGuiController = Get.app.getNodeWebkitGuiController();
 	},
 	
+	// TODO: project load/save error handling
+
 	load: function(project) {
 		if (this.project) {
 			var viewModel = this.getViewModel();
 			this.fireEvent('projectUnload');
 			viewModel.set('project', null);
 			viewModel.notify();
+			this.project.getProxy().closeDatabase();
 			this.project.destroy();
 			this.project = null;
 		}
@@ -79,20 +88,9 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onOpenMenuItem: function() {
-		var me = this;
-		if (this.project.get('isModified')) {
-			this.unsavedChangesDialog({
-				save: function() {
-					me.onSaveMenuItem();
-				}, 
-				discard: function() {
-					Ext.get('openFileDialog').dom.click();
-				}
-			});
-		}
-		else {
+		this.checkForUnsavedChanges(function() {
 			Ext.get('openFileDialog').dom.click();
-		}
+		});
 	},
 	onOpenFileDialog: function(file) {
 		project = Ext.create('Get.model.Project', {
@@ -147,9 +145,6 @@ Ext.define('Get.view.main.MainController', {
 				}
 			};
 
-		// Reset so that the change event can fire if the same file is selected again.
-		Ext.get('saveFileDialog').dom.value = '';
-
 		if (!Ext.String.endsWith(filename, '.get', true)) {
 			filename += '.get';
 		}
@@ -182,20 +177,9 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onCloseMenuItem: function() {
-		var me = this;
-		if (this.project.get('isModified')) {
-			this.unsavedChangesDialog({
-				save: function() {
-					me.onSaveMenuItem();
-				}, 
-				discard: function() {
-					me.nodeWebkitGuiController.closeWindow();
-				}
-			});
-		}
-		else {
-			me.nodeWebkitGuiController.closeWindow();
-		}
+		this.checkForUnsavedChanges(function() {
+			this.nodeWebkitGuiController.closeWindow();
+		}, this);
 	},
 
 	unsavedChangesDialog: function(handler) {
@@ -220,6 +204,36 @@ Ext.define('Get.view.main.MainController', {
 		});
 		Ext.Msg.down('button#yes').addCls('btn-ok');
 		Ext.Msg.down('toolbar').setLayout({pack: 'end'});
+	},
+
+	checkForUnsavedChanges: function(callback, scope) {
+		var me = this;
+		if (this.project.get('isModified')) {
+			Ext.Msg.show({
+				message: 'Änderungen in "' + this.project.get('name') + '" speichern?',
+				buttons: Ext.Msg.YESNOCANCEL,
+				buttonText: {
+					yes: 'Speichern',
+					no: 'Verwerfen',
+					cancel: 'Abbrechen'
+				},
+				icon: Ext.Msg.WARNING,
+				minWidth: 350,
+				fn: function(choice) {
+					if (choice == 'yes') {
+						me.onSaveMenuItem();
+					}
+					else if (choice == 'no') {
+						Ext.callback(callback, scope);
+					}
+				}
+			});
+			Ext.Msg.down('button#yes').addCls('btn-ok');
+			Ext.Msg.down('toolbar').setLayout({pack: 'end'});
+		}
+		else {
+			Ext.callback(callback, scope);
+		}
 	}
 
 });
