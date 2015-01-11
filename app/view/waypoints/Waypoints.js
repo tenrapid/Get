@@ -11,6 +11,8 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	controller: 'waypoints',
 	viewModel: 'waypoints',
 
+	reference: 'waypointGrid',
+
 	title: 'Waypoints',
 	border: false,
 	reserveScrollbar: true,
@@ -62,7 +64,10 @@ Ext.define('Get.view.waypoints.Waypoints', {
 		},
 		{
 			html: '<b>–</b>',
-			handler: 'onClickButton'
+			handler: 'onRemoveWaypoint',
+			bind: {
+				disabled: '{removeWaypointButtonDisabled}'
+			}
 		}
 	],
 

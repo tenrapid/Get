@@ -53,6 +53,13 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			waypointColumn.setHidden(storeId === 'waypoints');
 		}
 	},
+
+	onRemoveWaypoint: function() {
+		var waypoints = this.getView().getSelection();
+		waypoints.forEach(function(waypoint) {
+			waypoint.drop();
+		});
+	},
 	
 	onClickButton: function () {
 		Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
