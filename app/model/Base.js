@@ -18,14 +18,5 @@ Ext.define('Get.model.Base', {
 	
 	schema: {
 		namespace: 'Get.model',
-
-		proxy: {
-			type: 'sqlite',
-			debug: false,
-			writer: {
-				type: 'json',
-				allowSingle: false,
-			}
-		}
 	}
 });

@@ -7,9 +7,7 @@ Ext.define('Get.model.Project', {
 		'Ext.data.TreeModel',
 		'Get.store.Waypoints',
 		'Get.store.TourWaypoints',
-		'Get.store.Tours',
-		'Get.model.Tour',
-		'Get.model.Area',
+		'Get.store.Tours'
 	],
 
 	fields: [
@@ -26,8 +24,6 @@ Ext.define('Get.model.Project', {
 				project.tourStore.getProxy().setFilename(filename);
 				project.waypointStore.getProxy().setFilename(filename);
 				project.tourWaypointStore.getProxy().setFilename(filename);
-				Get.model.Tour.getProxy().setFilename(filename);
-				Get.model.Area.getProxy().setFilename(filename);
 				return filename;
 			}
 		},
@@ -56,22 +52,37 @@ Ext.define('Get.model.Project', {
 	dirtyRecordsMap: null,
 
 	constructor: function(data) {
-		var session = Ext.create('Ext.data.Session');
+		var session = Ext.create('Ext.data.Session'),
+			proxyConfig = {
+				type: 'sqlite',
+				debug: false,
+				writer: {
+					type: 'json',
+					allowSingle: false,
+				}
+			};
 
 		data = Ext.apply(data, {id: 1});
 
 		this.dirtyRecordsMap = new Map();
 
+		// Don't use this model's default proxy instance.
+		this.proxy = Ext.Factory.proxy(proxyConfig);
+		this.proxy.setModel(this.self);
+
 		// Create stores.
 		this.tourStore = Ext.create('Get.store.Tours', {
-			session: session
+			session: session,
+			proxy: proxyConfig
 		});
 		this.tourStore.getRoot().phantom = false;
 		this.waypointStore = Ext.create('Get.store.Waypoints', {
-			session: session
+			session: session,
+			proxy: proxyConfig
 		});
 		this.tourWaypointStore = Ext.create('Get.store.TourWaypoints', {
-			session: session
+			session: session,
+			proxy: proxyConfig
 		});
 
 		this.callParent([data, session]);
@@ -86,6 +97,7 @@ Ext.define('Get.model.Project', {
 		this.tourWaypointStore = null;
 		this.session.destroy();
 		this.session = null;
+		this.getProxy().destroy();
 		this.callParent();
 	},
 	
@@ -147,6 +159,19 @@ Ext.define('Get.model.Project', {
 					me.updateName();
 				}
 				Ext.callback(callback, scope, [me, saveBatch.getExceptions()]);
+			});
+			// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
+			// We need the proxies of this project's stores.
+			saveBatch.operations.forEach(function(operation) {
+				var model = operation.getProxy().getModel(),
+					entityName = model.schema.getEntityName(model);
+				switch (entityName) {
+					case 'Area':
+						operation.setProxy(me.tourStore.getProxy());
+						break;
+					default:
+						operation.setProxy(me[Ext.String.uncapitalize(entityName) + 'Store'].getProxy());
+				}
 			});
 			saveBatch.start();
 		}
@@ -242,6 +267,10 @@ Ext.define('Get.model.Project', {
 		if (fieldName != 'isModified') {
 			this.set('isModified', this.dirty);
 		}
+	},
+
+	getProxy: function() {
+		return this.proxy;
 	},
 
 	createTestData: function() {

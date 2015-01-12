@@ -56,7 +56,6 @@ Ext.define('Get.view.main.MainController', {
 			this.fireEvent('projectUnload');
 			viewModel.set('project', null);
 			viewModel.notify();
-			this.project.getProxy().closeDatabase();
 			this.project.destroy();
 			this.project = null;
 		}
