@@ -169,6 +169,9 @@ Ext.define('Get.model.Project', {
 					case 'Area':
 						operation.setProxy(me.tourStore.getProxy());
 						break;
+					case 'Project':
+						operation.setProxy(me.getProxy());
+						break;
 					default:
 						operation.setProxy(me[Ext.String.uncapitalize(entityName) + 'Store'].getProxy());
 				}
