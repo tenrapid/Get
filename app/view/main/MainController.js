@@ -24,32 +24,31 @@ Ext.define('Get.view.main.MainController', {
 
 	project: null,
 	nodeWebkitGuiController: null,
+	isDialogVisible: false,
+	openFileDialogInputEl: null,
+	saveFileDialogInputEl: null,
 
 	init: function() {
 		var me = this;
-		Ext.get('openFileDialog').dom.addEventListener('change', function(e) {
-			var input = e.target,
-				files = input.files;
-			if (files.length) {
-				me.onOpenFileDialog(files[0]);
-			}
-			// Reset so that the change event can fire if the same file is selected again.
-			input.value = '';
+		['openFileDialog', 'saveFileDialog'].forEach(function(elementId) {
+			var input = Ext.get(elementId).dom;
+			input.files.append(new File('', ''));
+			input.addEventListener('change', me.onFileInputElChange.bind(me));
+			input.addEventListener('click', me.onDialogShow.bind(me));
+			me[elementId + 'InputEl'] = input;
 		});
-		Ext.get('saveFileDialog').dom.addEventListener('change', function(e) {
-			var input = e.target,
-				files = input.files;
-			if (files.length) {
-				me.onSaveFileDialog(files[0]);
-			}
-			// Reset so that the change event can fire if the same file is selected again.
-			input.value = '';
+
+		Ext.Msg.on({
+			show: this.onDialogShow,
+			hide: this.onDialogHide,
+			scope: this
 		});
+
 		this.nodeWebkitGuiController = Get.app.getNodeWebkitGuiController();
 	},
 	
 	// TODO: project load/save error handling
-	// TODO: disable event handling while file dialog or message box is visible
+	// TODO: don't allow overwriting of files that are open in another window
 	// TODO: investigate store listeners of sqlite proxy
 
 	load: function(project) {
@@ -83,14 +82,43 @@ Ext.define('Get.view.main.MainController', {
 	save: function() {
 		this.project.save();
 	},
+
+	onFileInputElChange: function(e) {
+		var input = e.target,
+			files = input.files;
+
+		this.onDialogHide();
+
+		if (files.length) {
+			// onOpenFileDialog or onSaveFileDialog
+			this['on' + Ext.String.capitalize(input.id)](files[0]);
+		}
+
+		// Reset so that the change event can fire if the same file is selected again.
+		input.files.clear();
+		input.files.append(new File('', ''));
+	},
+
+	onDialogShow: function() {
+		this.isDialogVisible = true;
+	},
+	
+	onDialogHide: function() {
+		this.isDialogVisible = false;
+	},
 	
 	onNewMenuItem: function() {
 		this.nodeWebkitGuiController.openWindow();
 	},
 
 	onOpenMenuItem: function() {
+		var me = this;
+
+		if (this.isDialogVisible) {
+			return;
+		}
 		this.checkForUnsavedChanges(function() {
-			Ext.get('openFileDialog').dom.click();
+			me.openFileDialogInputEl.click();
 		});
 	},
 	onOpenFileDialog: function(file) {
@@ -103,23 +131,27 @@ Ext.define('Get.view.main.MainController', {
 	onSaveMenuItem: function() {
 		var filename = this.project.get('filename');
 
+		if (this.isDialogVisible) {
+			return;
+		}
 		if (filename) {
 			this.save();
 		}
 		else {
-			Ext.get('saveFileDialog').dom.click();
+			this.saveFileDialogInputEl.click();
 		}
 	},
 	onSaveAsMenuItem: function() {
-		var input = Ext.get('saveFileDialog'),
+		var input = this.saveFileDialogInputEl,
 			path = require('path'),
 			filename = this.project.get('filename'),
 			name = filename ? path.basename(filename) : (this.project.get('name') + '.get');
 
-		input.set({
-			nwsaveas: name
-		});
-		input.dom.click();
+		if (this.isDialogVisible) {
+			return;
+		}
+		input.setAttribute('nwsaveas', name);
+		input.click();
 	},
 	onSaveFileDialog: function(file) {
 		var me = this,
@@ -178,6 +210,9 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onCloseMenuItem: function() {
+		if (this.isDialogVisible) {
+			return;
+		}
 		this.checkForUnsavedChanges(function() {
 			this.nodeWebkitGuiController.closeWindow();
 		}, this);
