@@ -216,17 +216,19 @@ Ext.define('Get.model.Project', {
 			// TODO: ignore commit operations
 			// return;
 		}
-		if (store == this.tourStore) {
-			if (operation === Ext.data.Model.EDIT && modifiedFieldNames && modifiedFieldNames.length === 1) {
-				var field = modifiedFieldNames[0];
-				if (field == 'loading' || field == 'loaded' || field == 'expanded') {
+		if (operation === Ext.data.Model.EDIT) {
+			if (store == this.tourStore) {
+				if (modifiedFieldNames && modifiedFieldNames.length === 1) {
+					var field = modifiedFieldNames[0];
+					if (field == 'loading' || field == 'loaded' || field == 'expanded') {
+						return;
+					}
+				}
+			} 
+			else if (store == this.tourWaypointStore) {
+				if (modifiedFieldNames && modifiedFieldNames.length === 1 && modifiedFieldNames[0] === 'geometry')  {
 					return;
 				}
-			}
-		} 
-		else if (store == this.tourWaypointStore) {
-			if (modifiedFieldNames.length === 1 && modifiedFieldNames[0] == 'geometry')  {
-				return;
 			}
 		}
 		// console.log('onStoreRecordUpdate', store, operation, modifiedFieldNames, details);
