@@ -64,7 +64,7 @@ Ext.define('Get.model.Project', {
 
 		data = Ext.apply(data, {id: 1});
 
-		this.dirtyRecordsMap = new Map();
+		this.dirtyRecordsMap = {};
 
 		// Don't use this model's default proxy instance.
 		this.proxy = Ext.Factory.proxy(proxyConfig);
@@ -241,20 +241,20 @@ Ext.define('Get.model.Project', {
 			id = record.getId(),
 			entity = record.entityName,
 			map = this.dirtyRecordsMap,
-			entityMap = map.get(entity) || (map.set(entity, new Map()) && map.get(entity)),
+			recordMap = map[entity] || (map[entity] = {}),
 			isModified = false;
 
 		if (dirty) {
-			entityMap.set(id, record);
+			recordMap[id] = record;
 		}
 		else {
-			if (entityMap.has(id)) {
-				entityMap.delete(id);
+			if (id in recordMap) {
+				delete recordMap[id];
 			}
 		}
 
-		for (entityMap of map.values()) {
-			if (entityMap.size) {
+		for (entity in map) {
+			if (Object.keys(map[entity]).length) {
 				isModified = true;
 				break;
 			}
