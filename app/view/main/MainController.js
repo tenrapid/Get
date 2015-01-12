@@ -49,6 +49,8 @@ Ext.define('Get.view.main.MainController', {
 	},
 	
 	// TODO: project load/save error handling
+	// TODO: disable event handling while file dialog or message box is visible
+	// TODO: investigate store listeners of sqlite proxy
 
 	load: function(project) {
 		if (this.project) {
@@ -92,7 +94,7 @@ Ext.define('Get.view.main.MainController', {
 		});
 	},
 	onOpenFileDialog: function(file) {
-		project = Ext.create('Get.model.Project', {
+		var project = Ext.create('Get.model.Project', {
 			filename: file.path
 		});
 		this.load(project);
@@ -179,30 +181,6 @@ Ext.define('Get.view.main.MainController', {
 		this.checkForUnsavedChanges(function() {
 			this.nodeWebkitGuiController.closeWindow();
 		}, this);
-	},
-
-	unsavedChangesDialog: function(handler) {
-		Ext.Msg.show({
-			message: 'Änderungen in "' + this.project.get('name') + '" speichern?',
-			buttons: Ext.Msg.YESNOCANCEL,
-			buttonText: {
-				yes: 'Speichern',
-				no: 'Verwerfen',
-				cancel: 'Abbrechen'
-			},
-			icon: Ext.Msg.WARNING,
-			minWidth: 350,
-			fn: function(choice) {
-				if (choice == 'yes') {
-					handler.save();
-				}
-				else if (choice == 'no') {
-					handler.discard();
-				}
-			}
-		});
-		Ext.Msg.down('button#yes').addCls('btn-ok');
-		Ext.Msg.down('toolbar').setLayout({pack: 'end'});
 	},
 
 	checkForUnsavedChanges: function(callback, scope) {
