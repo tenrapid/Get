@@ -35,6 +35,7 @@ Ext.define('Get.view.main.MainController', {
 			input.files.append(new File('', ''));
 			input.addEventListener('change', me.onFileInputElChange.bind(me));
 			input.addEventListener('click', me.onDialogShow.bind(me));
+			// openFileDialogInputEl, saveFileDialogInputEl, ...
 			me[elementId + 'InputEl'] = input;
 		});
 
@@ -96,6 +97,7 @@ Ext.define('Get.view.main.MainController', {
 
 		// Reset so that the change event can fire if the same file is selected again.
 		input.files.clear();
+		// Append unnamed file so that the change event fires if the file dialog is canceled.
 		input.files.append(new File('', ''));
 	},
 
@@ -138,7 +140,7 @@ Ext.define('Get.view.main.MainController', {
 			this.save();
 		}
 		else {
-			this.saveFileDialogInputEl.click();
+			this.onSaveAsMenuItem()
 		}
 	},
 	onSaveAsMenuItem: function() {
@@ -150,7 +152,11 @@ Ext.define('Get.view.main.MainController', {
 		if (this.isDialogVisible) {
 			return;
 		}
-		input.setAttribute('nwsaveas', name);
+		input.files.clear();
+		input.files.append(new File(name, ''));
+		if (filename) {
+			input.setAttribute('nwworkingdir', path.dirname(filename));
+		}
 		input.click();
 	},
 	onSaveFileDialog: function(file) {
