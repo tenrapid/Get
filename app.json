@@ -103,9 +103,9 @@
         {
             "path": "resources/js/openlayers/OpenLayers.js"
         },
-        {
-            "path": "${framework.dir}/build/ext-all-debug.js"
-        },
+        // {
+        //     "path": "${framework.dir}/build/ext-all-debug.js"
+        // },
         {
             "path": "app.js",
             "bundle": true
