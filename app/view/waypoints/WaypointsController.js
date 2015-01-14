@@ -56,9 +56,11 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 
 	onRemoveWaypoint: function() {
 		var waypoints = this.getView().getSelection();
+		Ext.suspendLayouts();
 		waypoints.forEach(function(waypoint) {
 			waypoint.drop();
 		});
+		Ext.resumeLayouts(true);
 	},
 	
 	onClickButton: function () {
