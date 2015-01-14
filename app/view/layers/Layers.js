@@ -91,9 +91,10 @@ Ext.define('Get.view.layers.Layers', {
 			}
 		},
 		{
-			text: 'Save',
+			text: 'TestData',
 			handler: function() {
-				Get.app.getMainView().controller.save();
+				var project = this.lookupViewModel(true).get('project');
+				project.createTestData();
 			}
 		},
 		{
