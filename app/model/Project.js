@@ -199,7 +199,8 @@ Ext.define('Get.model.Project', {
 
 	adjustIdentifierSeeds: function() {
 		var me = this, 
-			stores = Ext.Array.clone(this.stores);
+			stores = Ext.Array.clone(this.stores),
+			seed;
 
 		// areaStore is sharing an identifier with tourStore
 		Ext.Array.remove(stores, 'area');
@@ -215,7 +216,13 @@ Ext.define('Get.model.Project', {
 			else {
 				maxId = store.max('id');
 			}
-			model.identifier.setSeed((maxId || 0) + 1);
+			seed = (maxId || 0) + 1;
+			model.identifier.setSeed(seed);
+			if (!model.prototype.isNode) {
+				// Session uses an identifier cache which holds cloned model identifiers. Models that are 
+				// not nodes are created in Model.constructor which uses the session to generate an id.
+				me.session.getIdentifier(model).setSeed(seed);
+			}
 		});
 	},
 	
