@@ -11,6 +11,10 @@ Ext.define('Get.model.TreeBase', {
 	identifier: 'uuid',
 	
 	fields: [
+		{
+			name: 'id',
+			type: 'string'
+		},
 	],
 	
 	getRefItems: function() {

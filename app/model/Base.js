@@ -1,8 +1,7 @@
 Ext.define('Get.model.Base', {
 	extend: 'Ext.data.Model',
 	requires: [
-		'Get.data.field.Geometry',
-		'tenrapid.data.proxy.Sqlite'
+		'Get.data.field.Geometry'
 	],
 	
 	identifier: {
@@ -10,6 +9,10 @@ Ext.define('Get.model.Base', {
 	},
 	
 	fields: [
+		{
+			name: 'id',
+			type: 'int'
+		},
 		{
 			name: 'name', 
 			type: 'string'
