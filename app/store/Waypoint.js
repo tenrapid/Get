@@ -1,7 +1,7 @@
-Ext.define('Get.store.Waypoints', {
+Ext.define('Get.store.Waypoint', {
 	extend: 'Get.data.FeatureStore',
 	model: 'Get.model.Waypoint',
-	alias: 'store.waypoints',
+	alias: 'store.waypoint',
 
 	pageSize: 0,
 	geometryPropertyUsersGetter: 'tourWaypoints',

@@ -31,7 +31,7 @@ Ext.define('Get.controller.ProjectModificationState', {
 		Ext.Array.remove(stores, 'tourWaypoint');
 
 		project.stores.forEach(function(name) {
-			project[name + 'Store'].on({
+			project.getStore(name).on({
 				update: me.onRecordUpdate,
 				add: me.onRecordOperation,
 				remove: me.onRecordOperation,
@@ -56,12 +56,12 @@ Ext.define('Get.controller.ProjectModificationState', {
 
 	onNodeAdd: function(store, record) {
 		// console.log('onNodeAdd', record);
-		this.getProject()[Ext.String.uncapitalize(record.entityName) + 'Store'].add(record);
+		this.getProject().getStore(Ext.String.uncapitalize(record.entityName)).add(record);
 	},
 
 	onNodeRemove: function(store, record) {
 		// console.log('onNodeRemove', record);
-		this.getProject()[Ext.String.uncapitalize(record.entityName) + 'Store'].remove(record);
+		this.getProject().getStore(Ext.String.uncapitalize(record.entityName)).remove(record);
 	},
 
 	onRecordOperation: function(store, records) {

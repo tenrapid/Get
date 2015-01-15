@@ -1,4 +1,4 @@
-Ext.define('Get.store.Layers', {
+Ext.define('Get.store.Layer', {
 	extend: 'Ext.data.TreeStore',
 	
 	model: 'Get.model.LayerTreeRoot',

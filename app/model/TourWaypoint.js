@@ -9,7 +9,7 @@ Ext.define('Get.model.TourWaypoint', {
 				inverse: {
 					storeConfig: {
 						// damit kann der Assoziationsstore als Instanz von FeatureStore erzeugt werden
-						type: 'tourWaypoints',
+						type: 'tourWaypoint',
 					}
 				}
 			}
@@ -21,7 +21,7 @@ Ext.define('Get.model.TourWaypoint', {
 				inverse: {
 					storeConfig: {
 						// damit kann der Assoziationsstore als Instanz von FeatureStore erzeugt werden
-						type: 'tourWaypoints',
+						type: 'tourWaypoint',
 					}
 				}
 			}

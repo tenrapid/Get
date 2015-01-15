@@ -5,12 +5,13 @@ Ext.define('Get.model.Project', {
 		'Ext.data.Session',
 		'Ext.data.TreeStore',
 		'Ext.data.TreeModel',
-		'Get.store.Waypoints',
-		'Get.store.TourWaypoints',
-		'Get.store.Tours',
-		'Get.store.Areas',
-		'Get.store.Layers',
-		'Get.controller.ProjectModificationState'
+		'Get.store.Waypoint',
+		'Get.store.TourWaypoint',
+		'Get.store.Tour',
+		'Get.store.Area',
+		'Get.store.Layer',
+		'Get.controller.ProjectModificationState',
+		'tenrapid.data.proxy.Sqlite'
 	],
 
 	fields: [
@@ -25,7 +26,7 @@ Ext.define('Get.model.Project', {
 			convert: function(filename, project) {
 				project.getProxy().setFilename(filename);
 				project.stores.forEach(function(name) {
-					project[name + 'Store'].getProxy().setFilename(filename);
+					project.getStore(name).getProxy().setFilename(filename);
 				});
 				return filename;
 			}
@@ -78,9 +79,9 @@ Ext.define('Get.model.Project', {
 
 		// Create stores.
 		this.stores.forEach(function(name) {
-			me[name + 'Store'] = Ext.create('Get.store.' + Ext.String.capitalize(name) + 's', storeConfig);
+			me.setStore(name, Ext.Factory.store(Ext.apply({type: name}, storeConfig)));
 		});
-		this.layerStore = Ext.create('Get.store.Layers', storeConfig);
+		this.layerStore = Ext.create('Get.store.Layer', storeConfig);
 		this.layerStore.getRoot().phantom = false;
 
 		data = Ext.apply(data, {id: 1});
@@ -92,8 +93,8 @@ Ext.define('Get.model.Project', {
 		this.layerStore.destroy();
 		this.layerStore = null;
 		this.stores.forEach(function(name) {
-			me[name + 'Store'].destroy();
-			me[name + 'Store'] = null;
+			me.getStore(name).destroy();
+			me.setStore(name, null);
 		});
 		this.session.destroy();
 		this.session = null;
@@ -126,7 +127,7 @@ Ext.define('Get.model.Project', {
 				callback: onLoad
 			}]);
 			this.stores.forEach(function(name) {
-				me[name + 'Store'].load(onLoad);
+				me.getStore(name).load(onLoad);
 			});
 		}
 		else {
@@ -157,7 +158,7 @@ Ext.define('Get.model.Project', {
 					operation.setProxy(me.getProxy());
 				}
 				else {
-					operation.setProxy(me[Ext.String.uncapitalize(entityName) + 'Store'].getProxy());
+					operation.setProxy(me.getStore(Ext.String.uncapitalize(entityName)).getProxy());
 				}
 			});
 			saveBatch.start();
@@ -206,7 +207,7 @@ Ext.define('Get.model.Project', {
 		Ext.Array.remove(stores, 'area');
 
 		stores.forEach(function(name) {
-			var store = me[name + 'Store'],
+			var store = me.getStore(name),
 				model = store.getModel(),
 				maxId;
 
@@ -237,6 +238,14 @@ Ext.define('Get.model.Project', {
 
 	getProxy: function() {
 		return this.proxy;
+	},
+
+	getStore: function(name) {
+		return this[name + 'Store'];
+	},
+
+	setStore: function(name, store) {
+		this[name + 'Store'] = store;
 	},
 
 	createTestData: function() {

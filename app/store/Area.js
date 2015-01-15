@@ -1,7 +1,7 @@
-Ext.define('Get.store.Areas', {
+Ext.define('Get.store.Area', {
 	extend: 'Ext.data.Store',
 	model: 'Get.model.Area',
-	alias: 'store.areas',
+	alias: 'store.area',
 
 	pageSize: 0,
 });

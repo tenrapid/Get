@@ -1,7 +1,7 @@
-Ext.define('Get.store.Tours', {
+Ext.define('Get.store.Tour', {
 	extend: 'Ext.data.Store',
 	model: 'Get.model.Tour',
-	alias: 'store.tours',
+	alias: 'store.tour',
 
 	pageSize: 0,
 });
