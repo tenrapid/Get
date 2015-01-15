@@ -71,6 +71,7 @@ Ext.define('Get.view.layers.LayersController', {
 			});
 		}
 		else if (layerItem.entityName === 'Tour') {
+			layerItem.expand();
 			layerItem.appendChild({
 				name: "Gebiet",
 				leaf: true
@@ -81,7 +82,7 @@ Ext.define('Get.view.layers.LayersController', {
 	onRemoveLayer: function () {
 		var me = this,
 			layerItem = me.selectedLayerItem;
-		me.getView().getSelectionModel().select(layerItem.parentNode);
+		me.getView().getSelectionModel().select(layerItem.previousSibling || layerItem.nextSibling || layerItem.parentNode);
 
 		layerItem.cascadeBy(function(item) {
 			me.fireEvent('layerItemRemove', item, item.tourWaypoints());
