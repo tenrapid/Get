@@ -29,7 +29,7 @@ Ext.define('Get.view.layers.Layers', {
 		name: 'All Waypoints',
 	},
 	bind: {
-		store: '{project.tours}',
+		store: '{project.layers}',
 		disabled: '{uiDisabled}',
 	},
 	listeners: {

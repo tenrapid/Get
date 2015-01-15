@@ -68,7 +68,7 @@ Ext.define('Get.view.layers.LayersController', {
 		if (layerItem.isRoot()) {
 			layerItem.appendChild({
 				name: "Tour"
-			});
+			}).set('loaded', true);
 		}
 		else if (layerItem.entityName === 'Tour') {
 			layerItem.expand();

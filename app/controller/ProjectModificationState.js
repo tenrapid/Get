@@ -5,6 +5,7 @@ Ext.define('Get.controller.ProjectModificationState', {
 
 	config: {
 		project: null,
+		// listen on association stores
 		listen: {
 			store: {
 				tourWaypoints: {
@@ -16,38 +17,32 @@ Ext.define('Get.controller.ProjectModificationState', {
 		}
 	},
 
-	areaStore: null,
 	dirtyRecordsMap: null,
 
 	constructor: function() {
 		this.callParent(arguments);
 
-		var project = this.getProject(),
-			session = project.session;
+		var me = this,
+			project = this.getProject(),
+			session = project.session,
+			stores = Ext.Array.clone(project.stores);
 
-		this.areaStore = Ext.create('Ext.data.Store', {
-			model: 'Get.model.Area',
-			session: session,
-			listeners: {
-				update: this.onRecordUpdate,
-				// add: this.onRecordOperation,
-				// remove: this.onRecordOperation,
-				scope: this
-			}
-		});
-		// TODO: Are area records removed from this store if they are removed from tourStore?
+		// remove association stores from cloned stores list
+		Ext.Array.remove(stores, 'tourWaypoint');
 
-		project.tourStore.on({
-			update: this.onRecordUpdate,
-			nodeappend: this.onNodeOperation,
-			nodeinsert: this.onNodeOperation,
-			noderemove: this.onNodeOperation,
-			scope: this
+		project.stores.forEach(function(name) {
+			project[name + 'Store'].on({
+				update: me.onRecordUpdate,
+				add: me.onRecordOperation,
+				remove: me.onRecordOperation,
+				scope: me
+			});
 		});
-		project.waypointStore.on({
-			update: this.onRecordUpdate,
-			add: this.onRecordOperation,
-			remove: this.onRecordOperation,
+
+		project.layerStore.on({
+			nodeappend: this.onNodeAdd,
+			nodeinsert: this.onNodeAdd,
+			noderemove: this.onNodeRemove,
 			scope: this
 		});
 
@@ -55,23 +50,18 @@ Ext.define('Get.controller.ProjectModificationState', {
 	},
 
 	destroy: function() {
-		this.areaStore.destroy();
 		this.setProject(null);
 		this.callParent();
 	},
 
-	onAssociationStoreAdd: function(store, records) {
-		console.log('onAssociationStoreAdd', records);
+	onNodeAdd: function(store, record) {
+		// console.log('onNodeAdd', record);
+		this.getProject()[Ext.String.uncapitalize(record.entityName) + 'Store'].add(record);
 	},
 
-	onNodeOperation: function(store, record) {
-		// console.log('onNodeOperation', record);
-		if (record.entityName === 'Area' && !this.areaStore.contains(record)) {
-			// A TreeStore only adds visible nodes to its connected session. Therefore nodes are added manually
-			// to this controller's store to ensure that all of them are tracked for modifications.
-			this.areaStore.add(record);
-		}
-		this.onModification(record);
+	onNodeRemove: function(store, record) {
+		// console.log('onNodeRemove', record);
+		this.getProject()[Ext.String.uncapitalize(record.entityName) + 'Store'].remove(record);
 	},
 
 	onRecordOperation: function(store, records) {

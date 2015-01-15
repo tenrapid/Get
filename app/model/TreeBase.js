@@ -8,12 +8,15 @@ Ext.define('Get.model.TreeBase', {
 		'Ext.mixin.Queryable'
 	],
 	
-	identifier: 'uuid',
+	identifier: {
+		type: 'sequential',
+		id: 'tree'
+	},
 	
 	fields: [
 		{
 			name: 'id',
-			type: 'string'
+			type: 'int'
 		},
 	],
 	

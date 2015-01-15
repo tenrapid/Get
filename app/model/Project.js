@@ -8,6 +8,8 @@ Ext.define('Get.model.Project', {
 		'Get.store.Waypoints',
 		'Get.store.TourWaypoints',
 		'Get.store.Tours',
+		'Get.store.Areas',
+		'Get.store.Layers',
 		'Get.controller.ProjectModificationState'
 	],
 
@@ -22,9 +24,9 @@ Ext.define('Get.model.Project', {
 			persist: false,
 			convert: function(filename, project) {
 				project.getProxy().setFilename(filename);
-				project.tourStore.getProxy().setFilename(filename);
-				project.waypointStore.getProxy().setFilename(filename);
-				project.tourWaypointStore.getProxy().setFilename(filename);
+				project.stores.forEach(function(name) {
+					project[name + 'Store'].getProxy().setFilename(filename);
+				});
 				return filename;
 			}
 		},
@@ -37,7 +39,7 @@ Ext.define('Get.model.Project', {
 			persist: false
 		},
 		{
-			name: 'tours',
+			name: 'layers',
 			persist: false
 		},
 		{
@@ -46,13 +48,16 @@ Ext.define('Get.model.Project', {
 		}
 	],
 
-	tourStore: null,
-	waypointStore: null,
-	tourWaypointStore: null,
+	stores: [
+		'tour', 'area', 'waypoint', 'tourWaypoint' 
+	],
+
+	layerStore: null,
 
 	constructor: function(data) {
-		window.p = this;
-		var session = Ext.create('Ext.data.Session'),
+		// window.p = this;
+		var me = this,
+			session = Ext.create('Ext.data.Session'),
 			proxyConfig = {
 				type: 'sqlite',
 				uniqueIdStrategy: true,
@@ -61,39 +66,35 @@ Ext.define('Get.model.Project', {
 					type: 'json',
 					allowSingle: false,
 				}
+			},
+			storeConfig = {
+				session: session,
+				proxy: proxyConfig
 			};
-
-		data = Ext.apply(data, {id: 1});
 
 		// Don't use this model's default proxy instance.
 		this.proxy = Ext.Factory.proxy(proxyConfig);
 		this.proxy.setModel(this.self);
 
 		// Create stores.
-		this.tourStore = Ext.create('Get.store.Tours', {
-			session: session,
-			proxy: proxyConfig
+		this.stores.forEach(function(name) {
+			me[name + 'Store'] = Ext.create('Get.store.' + Ext.String.capitalize(name) + 's', storeConfig);
 		});
-		this.tourStore.getRoot().phantom = false;
-		this.waypointStore = Ext.create('Get.store.Waypoints', {
-			session: session,
-			proxy: proxyConfig
-		});
-		this.tourWaypointStore = Ext.create('Get.store.TourWaypoints', {
-			session: session,
-			proxy: proxyConfig
-		});
+		this.layerStore = Ext.create('Get.store.Layers', storeConfig);
+		this.layerStore.getRoot().phantom = false;
 
+		data = Ext.apply(data, {id: 1});
 		this.callParent([data, session]);
 	},
 
 	destroy: function() {
-		this.tourStore.destroy();
-		this.tourStore = null;
-		this.waypointStore.destroy();
-		this.waypointStore = null;
-		this.tourWaypointStore.destroy();
-		this.tourWaypointStore = null;
+		var me = this;
+		this.layerStore.destroy();
+		this.layerStore = null;
+		this.stores.forEach(function(name) {
+			me[name + 'Store'].destroy();
+			me[name + 'Store'] = null;
+		});
 		this.session.destroy();
 		this.session = null;
 		this.getProxy().destroy();
@@ -104,17 +105,18 @@ Ext.define('Get.model.Project', {
 	load: function(callback, scope) {
 		var me = this,
 			filename = this.get('filename'),
-			onLoad = Ext.Function.createBarrier(filename ? 4 : 1, function() {
+			onLoad = Ext.Function.createBarrier(filename ? this.stores.length + 1 : 1, function() {
 				me.updateName();
+
+				me.buildLayerTree();
+				me.adjustIdentifierSeeds();
 
 				me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
 					project: me
 				});
 
-				me.set('tours', me.tourStore);
+				me.set('layers', me.layerStore);
 				me.set('waypoints', me.waypointStore);
-				me.adjustIdentifierSeed(me.waypointStore);
-				me.adjustIdentifierSeed(me.tourWaypointStore);
 
 				Ext.callback(callback, scope, [me]);
 			});
@@ -123,12 +125,12 @@ Ext.define('Get.model.Project', {
 			this.callParent([{
 				callback: onLoad
 			}]);
-			this.tourStore.getRoot().expand(false, onLoad);
-			this.waypointStore.load(onLoad);
-			this.tourWaypointStore.load(onLoad);
+			this.stores.forEach(function(name) {
+				me[name + 'Store'].load(onLoad);
+			});
 		}
 		else {
-			var root = this.tourStore.getRoot();
+			var root = this.layerStore.getRoot();
 			root.set('loaded', true);
 			root.expand(false, onLoad);
 		}
@@ -149,17 +151,13 @@ Ext.define('Get.model.Project', {
 			// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
 			// We need the proxies of this project's stores.
 			saveBatch.operations.forEach(function(operation) {
-				var model = operation.getProxy().getModel(),
-					entityName = model.schema.getEntityName(model);
-				switch (entityName) {
-					case 'Area':
-						operation.setProxy(me.tourStore.getProxy());
-						break;
-					case 'Project':
-						operation.setProxy(me.getProxy());
-						break;
-					default:
-						operation.setProxy(me[Ext.String.uncapitalize(entityName) + 'Store'].getProxy());
+				var entityName = operation.getProxy().getModel().entityName;
+
+				if (entityName === 'Project') {
+					operation.setProxy(me.getProxy());
+				}
+				else {
+					operation.setProxy(me[Ext.String.uncapitalize(entityName) + 'Store'].getProxy());
 				}
 			});
 			saveBatch.start();
@@ -181,9 +179,44 @@ Ext.define('Get.model.Project', {
 		}
 	},
 
-	adjustIdentifierSeed: function(store) {
-		var maxId = store.max('id');
-		store.getModel().identifier.setSeed(maxId + 1);
+	buildLayerTree: function() {
+		var root = this.layerStore.getRoot(),
+			tourStore = this.tourStore,
+			areaStore = this.areaStore;
+
+		areaStore.each(function(record) {
+			tourStore.getById(record.get('parentId')).appendChild(record);
+		});
+		tourStore.each(function(record) {
+			record.set('loaded', true);
+			root.appendChild(record);
+			// Commit because of loading this node with a regular store the "parentId" field got reset to null.
+			record.commit(true);
+		});
+		root.set('loaded', true);
+		root.expand();
+	},
+
+	adjustIdentifierSeeds: function() {
+		var me = this, 
+			stores = Ext.Array.clone(this.stores);
+
+		// areaStore is sharing an identifier with tourStore
+		Ext.Array.remove(stores, 'area');
+
+		stores.forEach(function(name) {
+			var store = me[name + 'Store'],
+				model = store.getModel(),
+				maxId;
+
+			if (model.entityName === 'Tour') {
+				maxId = Math.max(store.max('id'), me.areaStore.max('id'));
+			}
+			else {
+				maxId = store.max('id');
+			}
+			model.identifier.setSeed((maxId || 0) + 1);
+		});
 	},
 	
 	set: function(fieldName) {
@@ -217,14 +250,16 @@ Ext.define('Get.model.Project', {
 		}
 		this.waypointStore.add(waypoints);
 
-		var root = this.tourStore.getRoot();
+		var root = this.layerStore.getRoot();
 		var tour1 = root.appendChild({
 			"name": "Tour 1",
 			"leaf": false,
+			"loaded": true
 		});
 		var tour2 = root.appendChild({
 			"name": "Tour 2",
 			"leaf": false,
+			"loaded": true
 		});
 		var area1 = tour1.appendChild({
 			"name": "Area 1",
