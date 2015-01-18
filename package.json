@@ -3,9 +3,10 @@
   "private": true,
   "main": "index.html",
   "window": {
-    "toolbar": true,
+    "toolbar": false,
     "width": 1024,
-    "height": 600
+    "height": 600,
+    "focus": true
   },
   "dependencies": {
     "nodewebkit": "^0.11.5",
