@@ -232,6 +232,7 @@ Ext.define('Get.view.main.MainController', {
 	checkForUnsavedChanges: function(callback, scope) {
 		var me = this;
 		if (this.project.get('isModified')) {
+			this.nodeWebkitGuiController.focusWindow();
 			Ext.Msg.show({
 				message: 'Änderungen in "' + this.project.get('name') + '" speichern?',
 				buttons: Ext.Msg.YESNOCANCEL,

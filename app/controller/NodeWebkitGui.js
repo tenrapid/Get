@@ -1,179 +1,244 @@
-Ext.define('Get.controller.NodeWebkitGui', function() {
-	var gui = require('nw.gui'),
-		win = gui.Window.get(),
-		fwm,
-		focusedWindowManager,
-		menuBar,
-		fileMenuItem;
+Ext.define('Get.controller.NodeWebkitGui', {
+	extend: 'Ext.app.Controller',
 
-	// menuBar
+	id: 'nodewebkitgui', 
 
-	menuBar = new gui.Menu({ type: "menubar" });
-	fileMenuItem = new gui.MenuItem({
-		type: 'normal',
-		label: 'Datei',
-		submenu: new gui.Menu()
-	});
+	gui: null,
+	win: null,
 
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'normal',
-		label: 'Neues Fenster',
-		key: 'n',
-		click: function() {
-			focusedWindowManager.fireControllerEvent('newMenuItem');
+	init: function() {
+		this.gui = require('nw.gui');
+		this.win = this.gui.Window.get();
+
+		this.focusedWindowManager = require('./app/controller/windowfocusmanager.js');
+		this.focusedWindowManager.register(this.win, this.buildMenuBar());
+	},
+
+	onLaunch: function() {
+		var win = this.win,
+			viewModel = Get.app.getMainView().getViewModel();
+
+		viewModel.bind('{windowTitle}', function(val) {
+			win.title = val;
+		});
+	},
+
+	buildMenuBar: function() {
+		var gui = this.gui,
+			win = this.win,
+			fwm = this.focusedWindowManager,
+			cmd = process.platform === 'darwin' ? 'cmd' : 'ctrl',
+			menuBar,
+			fileMenuItem;
+
+		menuBar = new gui.Menu({ type: "menubar" });
+		fileMenuItem = new gui.MenuItem({
+			type: 'normal',
+			label: 'Datei',
+			submenu: new gui.Menu()
+		});
+
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Neues Fenster',
+			key: 'n',
+			modifiers: cmd,
+			click: fwm.fireControllerEvent.bind(fwm, 'newMenuItem') 
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Öffnen …',
+			key: 'o',
+			modifiers: cmd,
+			click: fwm.fireControllerEvent.bind(fwm, 'openMenuItem') 
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Speichern',
+			key: 's',
+			modifiers: cmd,
+			click: fwm.fireControllerEvent.bind(fwm, 'saveMenuItem') 
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Speichern als …',
+			key: 's',
+			modifiers: 'shift-' +cmd,
+			click: fwm.fireControllerEvent.bind(fwm, 'saveAsMenuItem') 
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Schließen',
+			key: 'w',
+			modifiers: cmd,
+			click: fwm.fireControllerEvent.bind(fwm, 'closeMenuItem') 
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'ReloadDev',
+			key: 'r',
+			modifiers: cmd,
+			click: function() {
+				win.reloadDev();
+			}
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'ShowDevTools',
+			key: 'i',
+			modifiers: 'alt-' + cmd,
+			click: function() {
+				win.showDevTools();
+			}
+		}));
+
+		if (process.platform === 'darwin') {
+			menuBar.createMacBuiltin("Get");
 		}
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'separator'
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'normal',
-		label: 'Öffnen …',
-		key: 'o',
-		click: function() {
-			focusedWindowManager.fireControllerEvent('openMenuItem');
-		}
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'normal',
-		label: 'Speichern',
-		key: 's',
-		click: function() {
-			focusedWindowManager.fireControllerEvent('saveMenuItem');
-		}
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'normal',
-		label: 'Speichern als …',
-		key: 'S',
-		modifier: 'shift',
-		click: function() {
-			focusedWindowManager.fireControllerEvent('saveAsMenuItem');
-		}
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'separator'
-	}));
-	fileMenuItem.submenu.append(new gui.MenuItem({
-		type: 'normal',
-		label: 'Schließen',
-		key: 'w',
-		click: function() {
-			focusedWindowManager.fireControllerEvent('closeMenuItem');
-		}
-	}));
+		menuBar.insert(fileMenuItem, 1);
+		return menuBar;
+	},
 
-	if (process.platform === 'darwin') {
-		menuBar.createMacBuiltin("Get");
-	}
-	menuBar.insert(fileMenuItem, 1);
+	openWindow: function() {
+		var win = this.gui.Window.open(window.location.href, {
+			focus: true,
+			toolbar: false
+		});
+		this.focusedWindowManager.register(win);
+	},
 
-	// focusedWindowManager
+	closeWindow: function() {
+		this.focusedWindowManager.close(this.win);
+	},
 
-	if (!global.focusedWindowManager) {
-		global.focusedWindowManager = {
-			windows: {},
-			focused: null,
-			lastFocused: [],
-		};
-	}
-	fwm = global.focusedWindowManager;
+	focusWindow: function() {
+		this.focusedWindowManager.focus(this.win);
+	},
 
-	focusedWindowManager = {
-		register: function(win) {
+	focusedWindowManager: {
+		windows: null,
+		lastFocused: null,
+
+		init: function() {
+			if (!global.focusedWindowManager) {
+				global.focusedWindowManager = {
+					windows: {},
+					lastFocused: []
+				};
+			}
+			this.windows = global.focusedWindowManager.windows;
+			this.lastFocused = global.focusedWindowManager.lastFocused;
+		},
+
+		register: function(win, menuBar) {
 			var me = this,
 				handler;
 
-			if (!(win.id in fwm.windows)) {
-				handler = {
-					focus: function() {
-						if (win.id in fwm.windows) {
-							me.setFocused(win);
-						}
-					},
-					close: function() {
-						if (win != fwm.focused) {
-							win.focus();
-						}
-						win.window.Get.app.getController('NodeWebkitGui', true).fireEvent('closeMenuItem');
-					}
-				};
-				win.on('focus', handler.focus);
-				win.on('close', handler.close);
-				fwm.windows[win.id] = {
-					win: win,
-					handler: handler,
-				};
+			this.init();
+			if (this.windows[win.id]) {
+				return;
+			}
+
+			handler = {
+				onFocus: this.onFocus.bind(this, win),
+				onClose: this.onClose.bind(this, win)
+			};
+			if (process.platform === 'darwin') {
+				win.on('focus', handler.onFocus);
+			}
+			win.on('close', handler.onClose);
+
+			win.menu = menuBar;
+
+			win.window.addEventListener('unload', function() {
+				console.log('unload');
+				me.unregister(win);
+			});
+
+			this.windows[win.id] = {
+				win: win,
+				handler: handler,
+				menuBar: menuBar
+			};
+			if (process.platform === 'darwin') {
 				this.setFocused(win);
 			}
 		},
+
+		unregister: function(win) {
+			console.log('unregister');
+			var handler = this.windows[win.id].handler;
+			if (process.platform === 'darwin') {
+				win.removeListener('focus', handler.onFocus);
+			}
+			win.removeListener('close', handler.onClose);
+			// win.menu = null;
+			delete this.windows[win.id];
+
+			if (process.platform === 'darwin') {
+				this.lastFocused.splice(this.lastFocused.indexOf(win), 1);
+				if (this.lastFocused.length) {
+					// this.setFocused(this.lastFocused[0]);
+				}
+			}
+		},
+
 		setFocused: function(win) {
 			var index;
-			if (win != fwm.focused) {
-				index = fwm.lastFocused.indexOf(win);
+
+			if (win != this.lastFocused[0]) {
+				index = this.lastFocused.indexOf(win);
 				if (index >= 0) {
-					fwm.lastFocused.splice(index, 1);
+					this.lastFocused.splice(index, 1);
 				}
-				if (fwm.focused) {
-					fwm.lastFocused.unshift(fwm.focused);
-				}
-				fwm.focused = win;
+				this.lastFocused.unshift(win);
 				if (process.platform === 'darwin') {
-					win.menu = menuBar;
+					this.setMenuBar(win);
 				}
-				// console.log('setFocused', fwm.focused.id, fwm.lastFocused.map(function(win) {return win.id;}));
+				console.log('setFocused', this.lastFocused.map(function(win) {return win.id;}));
 			}
 		},
+
+		setMenuBar: function(win) {
+			var menuBar = this.windows[win.id].menuBar;
+			win.menu = menuBar;
+			console.log('setMenuBar', this.lastFocused.map(function(win) {return win.id;}));
+		},
+
+		onFocus: function(win) {
+			console.log('onFocus');
+			this.setFocused(win);
+		},
+
+		onClose: function(win) {
+			console.log('onClose');
+			win.window.Get.app.getController('NodeWebkitGui', true).fireEvent('closeMenuItem');
+		},
+
 		close: function(win) {
-			var handler = fwm.windows[win.id].handler,
-				lastFocused;
-			win.removeListener('focus', handler.focus);
-			win.removeListener('close', handler.close);
-			delete fwm.windows[win.id];
-			if (win == fwm.focused) {
-				fwm.focused = null;
-			}
-			if (fwm.lastFocused.indexOf(win) >= 0) {
-				fwm.lastFocused.splice(fwm.lastFocused.indexOf(win), 1);
-			}
-			if (fwm.lastFocused.length) {
-				lastFocused = fwm.lastFocused[0];
-				lastFocused.focus();
-			}
+			console.log('close');
+			this.unregister(win);
 			win.close();
 		},
+
+		focus: function(win) {
+			console.log('focus');
+			win.focus();
+		},
+
 		fireControllerEvent: function(e) {
-			fwm.focused.window.Get.app.getController('NodeWebkitGui', true).fireEvent(e);
+			this.lastFocused[0].window.Get.app.getController('NodeWebkitGui', true).fireEvent(e);
 		}
-	};
-	focusedWindowManager.register(win);
 
-	return {
-		extend: 'Ext.app.Controller',
+	}
 
-		id: 'nodewebkitgui', 
-
-		init: function() {
-			if (!win.menu && process.platform !== 'darwin') {
-				win.menu = menuBar;
-			}
-		},
-
-		onLaunch: function() {
-			var viewModel = Get.app.getMainView().getViewModel();
-			viewModel.bind('{windowTitle}', function(val) {
-				win.title = val;
-			});
-		},
-
-		openWindow: function() {
-			gui.Window.open(window.location.href, {
-				focus: true
-			});
-		},
-
-		closeWindow: function() {
-			focusedWindowManager.close(win);
-		}
-	};
 });
