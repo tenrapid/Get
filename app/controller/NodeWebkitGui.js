@@ -7,6 +7,8 @@ Ext.define('Get.controller.NodeWebkitGui', {
 	win: null,
 	menuBarManager: null,
 
+	saveMenuItem: null,
+
 	init: function() {
 		var nodeMoulePath = '';
 
@@ -35,11 +37,15 @@ Ext.define('Get.controller.NodeWebkitGui', {
 	},
 
 	onLaunch: function() {
-		var win = this.win,
+		var me = this,
+			win = this.win,
 			viewModel = Get.app.getMainView().getViewModel();
 
 		viewModel.bind('{windowTitle}', function(val) {
 			win.title = val;
+		});
+		viewModel.bind('{project.isModified}', function(isModified) {
+			me.saveMenuItem.enabled = isModified;
 		});
 	},
 
@@ -77,18 +83,19 @@ Ext.define('Get.controller.NodeWebkitGui', {
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'openMenuItem') 
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		this.saveMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern',
 			key: 's',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'saveMenuItem') 
-		}));
+		});
+		fileMenuItem.submenu.append(this.saveMenuItem);
 		fileMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern als …',
 			key: 's',
-			modifiers: 'shift-' +cmd,
+			modifiers: 'shift-' + cmd,
 			click: fireEvent.bind(fireEventScope, 'saveAsMenuItem') 
 		}));
 		fileMenuItem.submenu.append(new gui.MenuItem({
