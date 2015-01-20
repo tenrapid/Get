@@ -1,3 +1,5 @@
+// console is not available in all callbacks
+// var console = global.console;
 
 var EventEmitter = require('events');
 var emitter = new EventEmitter();
@@ -25,6 +27,11 @@ var windowFocusManager = {
 
 	unregister: function(win) {
 		// console.log('windowFocusManager.unregister', win.id);
+		if (win == this.lastFocused[0] && this.lastFocused.length >= 2) {
+			// This happens only if the closed window was focused and the devtools of another window received focus.
+			// This is necessarybecause we don't listen to dev tools 'focus' events.
+			this.setFocused(this.lastFocused[1]);
+		}
 		this.lastFocused.splice(this.lastFocused.indexOf(win), 1);
 		delete this.windows[win.id];
 		emitter.emit('closed', win);
@@ -53,7 +60,7 @@ var windowFocusManager = {
 	},
 
 	onFocus: function(win) {
-		// console.log('windowFocusManager.onFocus');
+		// console.log('windowFocusManager.onFocus', win.id);
 		this.setFocused(win);
 	},
 

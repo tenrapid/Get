@@ -128,7 +128,9 @@ Ext.define('Get.controller.NodeWebkitGui', {
 			key: 'i',
 			modifiers: 'alt-' + cmd,
 			click: function() {
-				win.showDevTools();
+				var devTools = win.showDevTools();
+				devTools.width = 1024;
+				devTools.height = 600;
 			}
 		}));
 

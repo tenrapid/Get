@@ -1,3 +1,5 @@
+// console is not available in all callbacks
+// var console = global.console;
 
 var windowFocusManager = require('./windowFocusManager.js');
 
