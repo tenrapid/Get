@@ -9,6 +9,12 @@ module.exports = function(grunt) {
 			'run': {
 				cmd: 'node_modules/.bin/nodewebkit build/production/Get/'
 			},
+			'refresh': {
+				cmd: 'sencha app refresh'
+			},
+			'build': {
+				cmd: 'sencha app build'
+			}
 		},
 		concurrent: {
 			install: ['download-extjs', 'build-openlayers', 'build-node-sqlite3']
@@ -22,6 +28,10 @@ module.exports = function(grunt) {
 	grunt.registerTask('default', ['exec:run-dev']);
 
 	grunt.registerTask('run', ['exec:run']);
+
+	grunt.registerTask('refresh', ['exec:refresh']);
+
+	grunt.registerTask('build', ['exec:build']);
 
 	grunt.registerTask('install', ['git-submodule-init', 'concurrent:install']);
 

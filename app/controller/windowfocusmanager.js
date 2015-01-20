@@ -1,60 +1,33 @@
 
-module.exports = {
+var EventEmitter = require('events');
+var emitter = new EventEmitter();
+
+// Order of events after win.close(true)
+//		1. 'focus' from window that receives focus after window is closed
+//		2. 'closed' from closed window
+
+var windowFocusManager = {
 	windows: {},
 	lastFocused: [],
-	menuBarWin: null,
 
-	register: function(win, menuBar) {
-		var me = this,
-			handler;
-
-		console.log('register', win.id, menuBar && menuBar.id);
+	register: function(win) {
 		if (this.windows[win.id]) {
-			this.windows[win.id].menuBar = menuBar;
 			return;
 		}
+		// console.log('windowFocusManager.register', win.id);
 
-		handler = {
-			onFocus: this.onFocus.bind(this, win),
-			onClose: this.onClose.bind(this, win)
-		};
-		win.on('focus', handler.onFocus);
-		win.on('close', handler.onClose);
+		win.on('focus', this.onFocus.bind(this, win));
+		win.on('closed', this.onClosed.bind(this, win));
 
-		if (menuBar) {
-			win.menu = menuBar;
-			if (!this.menuBarWin) {
-				this.menuBarWin = win;
-			}
-		}
-		// win.window.addEventListener('unload', function() {
-		// 	console.log('unload');
-		// 	me.unregister(win);
-		// });
-
-		this.windows[win.id] = {
-			win: win,
-			handler: handler,
-			menuBar: menuBar
-		};
+		this.windows[win.id] = true;
 		this.setFocused(win);
 	},
 
 	unregister: function(win) {
-		console.log('unregister');
-		var handler = this.windows[win.id].handler;
-		win.removeListener('focus', handler.onFocus);
-		win.removeListener('close', handler.onClose);
-
+		// console.log('windowFocusManager.unregister', win.id);
 		this.lastFocused.splice(this.lastFocused.indexOf(win), 1);
-		if (this.lastFocused.length) {
-			if (win == this.menuBarWin) {
-				this.menuBarWin = this.lastFocused[0];
-				this.lastFocused[0].menu = this.windows[this.lastFocused[0].id].menuBar;
-			}
-		}
-
 		delete this.windows[win.id];
+		emitter.emit('closed', win);
 	},
 
 	setFocused: function(win) {
@@ -66,36 +39,34 @@ module.exports = {
 				this.lastFocused.splice(index, 1);
 			}
 			this.lastFocused.unshift(win);
-			console.log('setFocused', this.lastFocused.map(function(win) {return win.id;}));
+			// console.log('windowFocusManager.setFocused', this.lastFocused.map(function(win) {return win.id;}));
+			emitter.emit('focus', win);
 		}
+	},
+
+	getFocused: function() {
+		return this.lastFocused[0];
+	},
+
+	isFocused: function(win) {
+		return win == this.lastFocused[0];
 	},
 
 	onFocus: function(win) {
-		console.log('onFocus');
+		// console.log('windowFocusManager.onFocus');
 		this.setFocused(win);
 	},
 
-	onClose: function(win) {
-		console.log('onClose');
-		win.window.Get.app.getController('NodeWebkitGui', true).fireEvent('closeMenuItem');
-	},
-
-	close: function(win) {
-		console.log('close');
+	onClosed: function(win) {
+		// console.log('windowFocusManager.onClosed', win.id);
 		this.unregister(win);
-		win.close();
 	},
 
-	focus: function(win) {
-		console.log('focus');
-		win.focus();
-	},
-
-	fireControllerEvent: function(e) {
-		var w = this.lastFocused[0].window;
-		if (w.Get && w.Get.app) {
-			w.Get.app.getController('NodeWebkitGui', true).fireEvent(e);
-		}
-	}
+	addListener: emitter.addListener.bind(emitter),
+	on: emitter.addListener.bind(emitter),
+	removeListener: emitter.removeListener.bind(emitter)
 
 };
+
+module.exports = windowFocusManager;
+
