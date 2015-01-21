@@ -90,7 +90,7 @@ Ext.define('Get.model.Project', {
 
 	destroy: function() {
 		var me = this;
-		this.layerStore.destroy();
+		this.layerStore && this.layerStore.destroy();
 		this.layerStore = null;
 		this.stores.forEach(function(name) {
 			me.getStore(name).destroy();
@@ -99,28 +99,37 @@ Ext.define('Get.model.Project', {
 		this.session.destroy();
 		this.session = null;
 		this.getProxy().destroy();
-		this.projectModificationController.destroy();
+		this.projectModificationController && this.projectModificationController.destroy();
 		this.callParent();
 	},
 	
 	load: function(callback, scope) {
 		var me = this,
 			filename = this.get('filename'),
-			onLoad = Ext.Function.createBarrier(filename ? this.stores.length + 1 : 1, function() {
-				me.updateName();
+			errors = [],
+			onLoadCount = filename ? this.stores.length + 1 : 1,
+			onLoad = function(records, operation, success) {
+				onLoadCount--;
 
-				me.buildLayerTree();
-				me.adjustIdentifierSeeds();
+				if (!success) {
+					errors.push(operation.getError());
+				}
+				if (onLoadCount === 0) {
+					if (!errors.length) {
+						me.updateName();
+						me.buildLayerTree();
+						me.adjustIdentifierSeeds();
 
-				me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
-					project: me
-				});
+						me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
+							project: me
+						});
 
-				me.set('layers', me.layerStore);
-				me.set('waypoints', me.waypointStore);
-
-				Ext.callback(callback, scope, [me]);
-			});
+						me.set('layers', me.layerStore);
+						me.set('waypoints', me.waypointStore);
+					}
+					Ext.callback(callback, scope, [me, errors.length ? errors : null]);
+				} 
+			};
 
 		if (filename) {
 			this.callParent([{
@@ -133,21 +142,29 @@ Ext.define('Get.model.Project', {
 		else {
 			var root = this.layerStore.getRoot();
 			root.set('loaded', true);
-			root.expand(false, onLoad);
+			root.expand(false, function() {
+				onLoad(null, null, true);
+			});
 		}
 	},
 	
 	save: function(callback, scope) {
 		var me = this,
 			saveBatch = this.session.getSaveBatch();
+
 		if (saveBatch) {
 			saveBatch.on('complete', function() {
-				console.log('saveBatch complete');
-				if (!saveBatch.hasException()) {
+				var errors;
+				if (saveBatch.hasException()) {
+					errors = saveBatch.getExceptions().map(function(operation) {
+						return operation.getError();
+					});
+				}
+				if (!errors) {
 					me.updateName();
 				}
 				me.projectModificationController.afterSave();
-				Ext.callback(callback, scope, [me, saveBatch.getExceptions()]);
+				Ext.callback(callback, scope, [me, errors]);
 			});
 			// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
 			// We need the proxies of this project's stores.

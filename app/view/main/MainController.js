@@ -48,10 +48,6 @@ Ext.define('Get.view.main.MainController', {
 		this.nodeWebkitGuiController = Get.app.getNodeWebkitGuiController();
 	},
 	
-	// TODO: project load/save error handling
-	// TODO: don't allow overwriting of files that are open in another window
-	// TODO: investigate store listeners of sqlite proxy
-
 	load: function(project) {
 		if (this.project) {
 			var viewModel = this.getViewModel();
@@ -64,11 +60,29 @@ Ext.define('Get.view.main.MainController', {
 		project.load(this.onLoad, this);
 	},
 	
-	onLoad: function(project) {
-		var me = this,
-			view = me.getView(),
-			viewModel = me.getViewModel();
-			
+	onLoad: function(project, error) {
+		var view = this.getView(),
+			viewModel = this.getViewModel();
+		
+		if (error) {
+			var message = '"' + project.get('filename') + '" konnte nicht geladen werden.';
+			error.forEach(function(e) {
+				message += '\n' + e;
+			});
+			Ext.Msg.show({
+				title: 'Error',
+				icon: Ext.Msg.ERROR,
+				buttons: Ext.Msg.OK,
+				message: message
+			});
+			Ext.Msg.down('toolbar').setLayout({pack: 'center'});
+
+			project.destroy();
+			project = Ext.create('Get.model.Project');
+			this.load(project);
+			return;
+		}
+
 		project.waypointStore.setStoreId('waypoints');
 		Ext.data.StoreManager.register(project.waypointStore);
 		
@@ -76,12 +90,28 @@ Ext.define('Get.view.main.MainController', {
 		viewModel.setSession(project.session);
 		viewModel.set('project', project);
 		viewModel.notify();
-		me.project = project;
-		me.fireEvent('projectLoad');
+		this.project = project;
+		this.fireEvent('projectLoad');
 	},
 	
 	save: function() {
-		this.project.save();
+		this.project.save(this.onSave, this);
+	},
+
+	onSave: function(project, error) {
+		if (error) {
+			var message = '"' + project.get('filename') + '" konnte nicht gespeichert werden.';
+			error.forEach(function(e) {
+				message += '\n' + e;
+			});
+			Ext.Msg.show({
+				title: 'Error',
+				icon: Ext.Msg.ERROR,
+				buttons: Ext.Msg.OK,
+				message: message
+			});
+			Ext.Msg.down('toolbar').setLayout({pack: 'center'});
+		}
 	},
 
 	onFileInputElChange: function(e) {
@@ -130,6 +160,8 @@ Ext.define('Get.view.main.MainController', {
 		this.load(project);
 	},
 
+	// TODO: don't allow overwriting of files that are open in another window
+
 	onSaveMenuItem: function() {
 		var filename = this.project.get('filename');
 
@@ -140,7 +172,7 @@ Ext.define('Get.view.main.MainController', {
 			this.save();
 		}
 		else {
-			this.onSaveAsMenuItem()
+			this.onSaveAsMenuItem();
 		}
 	},
 	onSaveAsMenuItem: function() {
