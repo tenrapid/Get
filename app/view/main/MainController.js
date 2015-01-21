@@ -65,18 +65,7 @@ Ext.define('Get.view.main.MainController', {
 			viewModel = this.getViewModel();
 		
 		if (error) {
-			var message = '"' + project.get('filename') + '" konnte nicht geladen werden.';
-			error.forEach(function(e) {
-				message += '\n' + e;
-			});
-			Ext.Msg.show({
-				title: 'Error',
-				icon: Ext.Msg.ERROR,
-				buttons: Ext.Msg.OK,
-				message: message
-			});
-			Ext.Msg.down('toolbar').setLayout({pack: 'center'});
-
+			this.showErrorMessage('"' + project.get('filename') + '" konnte nicht geladen werden.', error);
 			project.destroy();
 			project = Ext.create('Get.model.Project');
 			this.load(project);
@@ -100,18 +89,21 @@ Ext.define('Get.view.main.MainController', {
 
 	onSave: function(project, error) {
 		if (error) {
-			var message = '"' + project.get('filename') + '" konnte nicht gespeichert werden.';
-			error.forEach(function(e) {
-				message += '\n' + e;
-			});
-			Ext.Msg.show({
-				title: 'Error',
-				icon: Ext.Msg.ERROR,
-				buttons: Ext.Msg.OK,
-				message: message
-			});
-			Ext.Msg.down('toolbar').setLayout({pack: 'center'});
+			this.showErrorMessage('"' + project.get('filename') + '" konnte nicht gespeichert werden.', error);
 		}
+	},
+
+	showErrorMessage: function(message, error) {
+		Ext.Array.from(error).forEach(function(e) {
+			message += '<br>' + e;
+		});
+		Ext.Msg.show({
+			title: 'Error',
+			icon: Ext.Msg.ERROR,
+			buttons: Ext.Msg.OK,
+			message: message
+		});
+		Ext.Msg.down('toolbar').setLayout({pack: 'center'});
 	},
 
 	onFileInputElChange: function(e) {

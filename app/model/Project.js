@@ -105,6 +105,7 @@ Ext.define('Get.model.Project', {
 	
 	load: function(callback, scope) {
 		var me = this,
+			fs = require('fs'),
 			filename = this.get('filename'),
 			errors = [],
 			onLoadCount = filename ? this.stores.length + 1 : 1,
@@ -132,6 +133,11 @@ Ext.define('Get.model.Project', {
 			};
 
 		if (filename) {
+			if (!fs.existsSync(filename)) {
+				Ext.callback(callback, scope, [me, new Error('"' + filename + '" existiert nicht.')]);
+				return;
+			}
+
 			this.callParent([{
 				callback: onLoad
 			}]);
