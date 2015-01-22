@@ -10,18 +10,13 @@ Ext.define('Get.controller.NodeWebkitGui', {
 	saveMenuItem: null,
 
 	init: function() {
-		var nodeMoulePath = '';
-
 		this.gui = require('nw.gui');
 		this.win = this.gui.Window.get();
 
 		this.win.on('close', this.fireEvent.bind(this, 'closeMenuItem'));
 
 		if (process.platform === 'darwin') {
-			//<debug>
-				nodeMoulePath = './app/controller/';
-			//</debug>
-			this.menuBarManager = require(nodeMoulePath + 'menubarmanager.js');
+			this.menuBarManager = require('menubarmanager');
 			// this.menuBarManager.register(this.win, this.buildMenuBar());
 			var menuBar = this.buildMenuBar();
 			menuBar.append(new this.gui.MenuItem({
@@ -39,7 +34,7 @@ Ext.define('Get.controller.NodeWebkitGui', {
 	onLaunch: function() {
 		var me = this,
 			win = this.win,
-			viewModel = Get.app.getMainView().getViewModel();
+			viewModel = this.getApplication().getMainView().getViewModel();
 
 		viewModel.bind('{windowTitle}', function(val) {
 			win.title = val;

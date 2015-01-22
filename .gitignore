@@ -1,6 +1,6 @@
 build
 ext
-node_modules
+node_modules/*/*
 resources/js
 bootstrap.*
 .sublime-grunt.cache

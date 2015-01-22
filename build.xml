@@ -41,8 +41,6 @@
 
 	<target name="-after-build">
 		<copy file="${app.dir}/package.json" toDir="${app.output}" />
-        <copy file="${app.dir}/app/controller/menubarmanager.js" toDir="${app.dir}/node_modules" />
-        <copy file="${app.dir}/app/controller/windowfocusmanager.js" toDir="${app.dir}/node_modules" />
 	</target>
 
 </project>
