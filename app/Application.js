@@ -8,7 +8,7 @@ Ext.define('Get.Application', {
 	],
 
 	controllers: [
-		'NodeWebkitGui'
+		'MenuBar'
 	],
 
 	requires: [

@@ -11,8 +11,7 @@ Ext.define('Get.view.main.MainController', {
 	config: {
 		listen: {
 			controller: {
-				'#nodewebkitgui': {
-					newMenuItem: 'onNewMenuItem',
+				'#menubar': {
 					openMenuItem: 'onOpenMenuItem',
 					saveMenuItem: 'onSaveMenuItem',
 					saveAsMenuItem: 'onSaveAsMenuItem',
@@ -23,13 +22,17 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	project: null,
-	nodeWebkitGuiController: null,
+	win: null,
 	isDialogVisible: false,
 	openFileDialogInputEl: null,
 	saveFileDialogInputEl: null,
 
 	init: function() {
-		var me = this;
+		var me = this,
+			gui = require('nw.gui');
+
+		this.win = gui.Window.get();
+
 		['openFileDialog', 'saveFileDialog'].forEach(function(elementId) {
 			var input = Ext.get(elementId).dom;
 			input.files.append(new File('', ''));
@@ -44,8 +47,6 @@ Ext.define('Get.view.main.MainController', {
 			hide: this.onDialogHide,
 			scope: this
 		});
-
-		this.nodeWebkitGuiController = Get.app.getNodeWebkitGuiController();
 	},
 	
 	load: function(project) {
@@ -131,10 +132,6 @@ Ext.define('Get.view.main.MainController', {
 		this.isDialogVisible = false;
 	},
 	
-	onNewMenuItem: function() {
-		this.nodeWebkitGuiController.openWindow();
-	},
-
 	onOpenMenuItem: function() {
 		var me = this;
 
@@ -252,14 +249,14 @@ Ext.define('Get.view.main.MainController', {
 			return;
 		}
 		this.checkForUnsavedChanges(function() {
-			this.nodeWebkitGuiController.closeWindow();
+			this.win.close(true);
 		}, this);
 	},
 
 	checkForUnsavedChanges: function(callback, scope) {
 		var me = this;
 		if (this.project.get('isModified')) {
-			this.nodeWebkitGuiController.focusWindow();
+			this.win.focus();
 			Ext.Msg.show({
 				message: 'Änderungen in "' + this.project.get('name') + '" speichern?',
 				buttons: Ext.Msg.YESNOCANCEL,

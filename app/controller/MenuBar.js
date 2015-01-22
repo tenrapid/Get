@@ -1,7 +1,7 @@
-Ext.define('Get.controller.NodeWebkitGui', {
+Ext.define('Get.controller.MenuBar', {
 	extend: 'Ext.app.Controller',
 
-	id: 'nodewebkitgui', 
+	id: 'menubar', 
 
 	gui: null,
 	win: null,
@@ -66,7 +66,7 @@ Ext.define('Get.controller.NodeWebkitGui', {
 			label: 'Neues Fenster',
 			key: 'n',
 			modifiers: cmd,
-			click: fireEvent.bind(fireEventScope, 'newMenuItem') 
+			click: this.newWindow.bind(this) 
 		}));
 		fileMenuItem.submenu.append(new gui.MenuItem({
 			type: 'separator'
@@ -143,7 +143,7 @@ Ext.define('Get.controller.NodeWebkitGui', {
 		return menuBar;
 	},
 
-	openWindow: function() {
+	newWindow: function() {
 		var win = this.gui.Window.open(window.location.href, {
 			focus: true,
 			toolbar: false
@@ -151,14 +151,6 @@ Ext.define('Get.controller.NodeWebkitGui', {
 		if (process.platform === 'darwin') {
 			this.menuBarManager.register(win);
 		}
-	},
-
-	closeWindow: function() {
-		this.win.close(true);
-	},
-
-	focusWindow: function() {
-		this.win.focus();
-	},
+	}
 
 });
