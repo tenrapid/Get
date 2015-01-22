@@ -195,7 +195,9 @@ Ext.define('Get.view.main.MainController', {
 				me.save();
 			},
 			duplicate = function() {
-				if (currentFilename) {
+				if (currentFilename && filename !== currentFilename) {
+					// SaveAs: copy the currently open file to the new location. If the new filename and
+					// the current one are the same, then do not copy and handle it as a regular save.
 					me.project.getProxy().closeDatabase(function() {
 						if (filename !== currentFilename) {
 							shell.cp(currentFilename, filename);
@@ -213,6 +215,7 @@ Ext.define('Get.view.main.MainController', {
 		}
 
 		if (fs.existsSync(filename) && filename !== currentFilename) {
+			// SaveAs: remove an existing file 
 			// TODO: Übernimmt Chrome in Windows auch die Überprüfung auf existierende Datei?
 			shell.rm(filename);
 		}
