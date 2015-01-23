@@ -31,14 +31,7 @@ Ext.define('Get.controller.MenuBar', {
 
 		if (process.platform === 'darwin') {
 			this.menuBarManager = require('menubarmanager');
-			// this.menuBarManager.register(this.win, this.buildMenuBar());
-			var menuBar = this.buildMenuBar();
-			menuBar.append(new this.gui.MenuItem({
-				type: 'normal',
-				label: this.win.id,
-				submenu: new this.gui.Menu()
-			}));
-			this.menuBarManager.register(this.win, menuBar);
+			this.menuBarManager.register(this.win, this.buildMenuBar());
 		}
 		else {
 			this.win.menu = this.buildMenuBar();
@@ -76,9 +69,13 @@ Ext.define('Get.controller.MenuBar', {
 			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
 			fireEventScope = isMac ? this.menuBarManager : this,
 			menuBar,
-			fileMenuItem;
+			fileMenuItem,
+			debugMenuItem;
 
 		menuBar = new gui.Menu({ type: "menubar" });
+
+		// File menu
+
 		fileMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Datei',
@@ -93,9 +90,6 @@ Ext.define('Get.controller.MenuBar', {
 			click: fireEvent.bind(fireEventScope, 'newMenuItem') 
 		}));
 		fileMenuItem.submenu.append(new gui.MenuItem({
-			type: 'separator'
-		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Öffnen …',
 			key: 'o',
@@ -108,6 +102,16 @@ Ext.define('Get.controller.MenuBar', {
 			submenu: new gui.Menu()
 		});
 		fileMenuItem.submenu.append(this.recentFilesMenuItem);
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Schließen',
+			key: 'w',
+			modifiers: cmd,
+			click: fireEvent.bind(fireEventScope, 'closeMenuItem') 
+		}));
 		this.saveMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern',
@@ -123,20 +127,21 @@ Ext.define('Get.controller.MenuBar', {
 			modifiers: 'shift-' + cmd,
 			click: fireEvent.bind(fireEventScope, 'saveAsMenuItem') 
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
-			type: 'separator'
-		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+
+		if (process.platform === 'darwin') {
+			menuBar.createMacBuiltin("Get");
+		}
+		menuBar.insert(fileMenuItem, 1);
+
+		// Debug menu
+
+		debugMenuItem = new this.gui.MenuItem({
 			type: 'normal',
-			label: 'Schließen',
-			key: 'w',
-			modifiers: cmd,
-			click: fireEvent.bind(fireEventScope, 'closeMenuItem') 
-		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
-			type: 'separator'
-		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+			label: this.win.id,
+			submenu: new this.gui.Menu()
+		});
+
+		debugMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'ReloadDev',
 			key: 'r',
@@ -145,7 +150,7 @@ Ext.define('Get.controller.MenuBar', {
 				win.reloadDev();
 			}
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		debugMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Reload',
 			key: 'r',
@@ -154,7 +159,7 @@ Ext.define('Get.controller.MenuBar', {
 				win.reload();
 			}
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		debugMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'ShowDevTools',
 			key: 'i',
@@ -165,11 +170,8 @@ Ext.define('Get.controller.MenuBar', {
 				devTools.height = 600;
 			}
 		}));
+		menuBar.append(debugMenuItem);
 
-		if (process.platform === 'darwin') {
-			menuBar.createMacBuiltin("Get");
-		}
-		menuBar.insert(fileMenuItem, 1);
 		return menuBar;
 	},
 
