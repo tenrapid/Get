@@ -12,9 +12,11 @@ Ext.define('Get.Application', {
 	],
 
 	requires: [
+		'Ext.state.LocalStorageProvider'
 	],
 
 	init: function() {
+		Ext.state.Manager.setProvider(new Ext.state.LocalStorageProvider());
 	},
 
 	launch: function () {

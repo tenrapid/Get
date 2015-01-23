@@ -12,7 +12,9 @@ Ext.define('Get.view.main.MainController', {
 		listen: {
 			controller: {
 				'#menubar': {
+					newMenuItem: 'onNewMenuItem',
 					openMenuItem: 'onOpenMenuItem',
+					recentProjectsMenuItem: 'onRecentProjectsMenuItem',
 					saveMenuItem: 'onSaveMenuItem',
 					saveAsMenuItem: 'onSaveAsMenuItem',
 					closeMenuItem: 'onCloseMenuItem',
@@ -21,8 +23,18 @@ Ext.define('Get.view.main.MainController', {
 		}
 	},
 
+	routes: {
+		'project/:filename': {
+			action: 'onOpenFileDialog',
+			conditions: {
+				':filename': '(.+)'
+			}
+		}
+	},
+
 	project: null,
 	win: null,
+	projectManager: null,
 	isDialogVisible: false,
 	openFileDialogInputEl: null,
 	saveFileDialogInputEl: null,
@@ -32,6 +44,7 @@ Ext.define('Get.view.main.MainController', {
 			gui = require('nw.gui');
 
 		this.win = gui.Window.get();
+		this.projectManager = require('projectmanager');
 
 		['openFileDialog', 'saveFileDialog'].forEach(function(elementId) {
 			var input = Ext.get(elementId).dom;
@@ -55,6 +68,7 @@ Ext.define('Get.view.main.MainController', {
 			this.fireEvent('projectUnload');
 			viewModel.set('project', null);
 			viewModel.notify();
+			this.projectManager.projectClosed(this.project.get('filename'));
 			this.project.destroy();
 			this.project = null;
 		}
@@ -82,6 +96,8 @@ Ext.define('Get.view.main.MainController', {
 		viewModel.notify();
 		this.project = project;
 		this.fireEvent('projectLoad');
+		this.projectManager.projectOpened(project.get('filename'), this.win);
+		Ext.state.Manager.set('recentProjects', this.projectManager.getRecentProjects());
 	},
 	
 	save: function() {
@@ -92,6 +108,8 @@ Ext.define('Get.view.main.MainController', {
 		if (error) {
 			this.showErrorMessage('"' + project.get('filename') + '" konnte nicht gespeichert werden.', error);
 		}
+		this.projectManager.projectOpened(project.get('filename'), this.win);
+		Ext.state.Manager.set('recentProjects', this.projectManager.getRecentProjects());
 	},
 
 	showErrorMessage: function(message, error) {
@@ -115,7 +133,7 @@ Ext.define('Get.view.main.MainController', {
 
 		if (files.length) {
 			// onOpenFileDialog or onSaveFileDialog
-			this['on' + Ext.String.capitalize(input.id)](files[0]);
+			this['on' + Ext.String.capitalize(input.id)](files[0].path);
 		}
 
 		// Reset so that the change event can fire if the same file is selected again.
@@ -132,6 +150,36 @@ Ext.define('Get.view.main.MainController', {
 		this.isDialogVisible = false;
 	},
 	
+	onNewMenuItem: function(filename) {
+		var href = window.location.origin + window.location.pathname + (filename ? '#project/' + filename : ''),
+			gui = require('nw.gui'),
+			win = gui.Window.open(href, {
+				focus: true,
+				toolbar: false
+			});
+		this.fireEvent('new', win);
+	},
+
+	onRecentProjectsMenuItem: function(filename) {
+		var project;
+
+		if (this.projectManager.isOpen(filename)) {
+			this.projectManager.getProjectWindow(filename).focus();
+		}
+		else if (this.project && (this.project.get('isModified') || this.project.get('filename'))) {
+			this.onNewMenuItem(filename);
+		}
+		else {
+			if (this.isDialogVisible) {
+				return;
+			}
+			project = Ext.create('Get.model.Project', {
+				filename: filename
+			});
+			this.load(project);
+		}
+	},
+
 	onOpenMenuItem: function() {
 		var me = this;
 
@@ -142,14 +190,21 @@ Ext.define('Get.view.main.MainController', {
 			me.openFileDialogInputEl.click();
 		});
 	},
-	onOpenFileDialog: function(file) {
-		var project = Ext.create('Get.model.Project', {
-			filename: file.path
-		});
-		this.load(project);
-	},
+	onOpenFileDialog: function(filename) {
+		var project,
+			win;
 
-	// TODO: don't allow overwriting of files that are open in another window
+		if (this.projectManager.isOpen(filename)) {
+			win = this.projectManager.getProjectWindow(filename);
+			win.focus();
+		}
+		else {
+			project = Ext.create('Get.model.Project', {
+				filename: filename
+			});
+			this.load(project);
+		}
+	},
 
 	onSaveMenuItem: function() {
 		var filename = this.project.get('filename');
@@ -180,13 +235,12 @@ Ext.define('Get.view.main.MainController', {
 		}
 		input.click();
 	},
-	onSaveFileDialog: function(file) {
+	onSaveFileDialog: function(filename) {
 		var me = this,
 			fs = require('fs'),
 			path = require('path'),
 			shell = require('shelljs'),
 			currentFilename = me.project.get('filename'),
-			filename = file.path,
 			save = function() {
 				me.project.set('filename', filename);
 				me.save();
@@ -195,10 +249,9 @@ Ext.define('Get.view.main.MainController', {
 				if (currentFilename && filename !== currentFilename) {
 					// SaveAs: copy the currently open file to the new location. If the new filename and
 					// the current one are the same, then do not copy and handle it as a regular save.
+					me.projectManager.projectClosed(currentFilename);
 					me.project.getProxy().closeDatabase(function() {
-						if (filename !== currentFilename) {
-							shell.cp(currentFilename, filename);
-						}
+						shell.cp(currentFilename, filename);
 						save();
 					});
 				}
@@ -212,6 +265,11 @@ Ext.define('Get.view.main.MainController', {
 		}
 
 		if (fs.existsSync(filename) && filename !== currentFilename) {
+			if (this.projectManager.isOpen(filename)) {
+				this.showErrorMessage('Speichern nicht möglich. ' + 
+					'Die Datei "' + filename + '" ist bereits in einem anderen Fenster geöffnet.');
+				return;
+			}
 			// SaveAs: remove an existing file 
 			// TODO: Übernimmt Chrome in Windows auch die Überprüfung auf existierende Datei?
 			shell.rm(filename);
@@ -249,6 +307,8 @@ Ext.define('Get.view.main.MainController', {
 			return;
 		}
 		this.checkForUnsavedChanges(function() {
+			this.projectManager.projectClosed(this.project.get('filename'));
+			this.fireEvent('close');
 			this.win.close(true);
 		}, this);
 	},

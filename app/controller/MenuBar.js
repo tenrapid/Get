@@ -3,11 +3,25 @@ Ext.define('Get.controller.MenuBar', {
 
 	id: 'menubar', 
 
+	config: {
+		listen: {
+			controller: {
+				'#main': {
+					'new': 'onNew',
+					'close': 'onClose',
+				},
+			},
+		}
+	},
+
 	gui: null,
 	win: null,
 	menuBarManager: null,
+	projectManager: null,
+	recentProjectsChangedHandler: null,
 
 	saveMenuItem: null,
+	recentFilesMenuItem: null,
 
 	init: function() {
 		this.gui = require('nw.gui');
@@ -29,6 +43,12 @@ Ext.define('Get.controller.MenuBar', {
 		else {
 			this.win.menu = this.buildMenuBar();
 		}
+
+		this.recentProjectsChangedHandler = this.onRecentProjectsChanged.bind(this);
+		this.projectManager = require('projectmanager');
+		this.projectManager.setRecentProjects(Ext.state.Manager.get('recentProjects'));
+		this.projectManager.on('recentProjectsChanged', this.recentProjectsChangedHandler);
+		this.onRecentProjectsChanged(this.projectManager.getRecentProjects());
 	},
 
 	onLaunch: function() {
@@ -42,6 +62,10 @@ Ext.define('Get.controller.MenuBar', {
 		viewModel.bind('{project.isModified}', function(isModified) {
 			me.saveMenuItem.enabled = isModified;
 		});
+	},
+
+	onClose: function() {
+		this.projectManager.removeListener('recentProjectsChanged', this.recentProjectsChangedHandler);
 	},
 
 	buildMenuBar: function() {
@@ -66,7 +90,7 @@ Ext.define('Get.controller.MenuBar', {
 			label: 'Neues Fenster',
 			key: 'n',
 			modifiers: cmd,
-			click: this.newWindow.bind(this) 
+			click: fireEvent.bind(fireEventScope, 'newMenuItem') 
 		}));
 		fileMenuItem.submenu.append(new gui.MenuItem({
 			type: 'separator'
@@ -78,6 +102,12 @@ Ext.define('Get.controller.MenuBar', {
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'openMenuItem') 
 		}));
+		this.recentFilesMenuItem = new gui.MenuItem({
+			type: 'normal',
+			label: 'Zuletzt verwendet',
+			submenu: new gui.Menu()
+		});
+		fileMenuItem.submenu.append(this.recentFilesMenuItem);
 		this.saveMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern',
@@ -119,7 +149,7 @@ Ext.define('Get.controller.MenuBar', {
 			type: 'normal',
 			label: 'Reload',
 			key: 'r',
-			modifiers: 'shift' + cmd,
+			modifiers: 'shift-' + cmd,
 			click: function() {
 				win.reload();
 			}
@@ -143,11 +173,26 @@ Ext.define('Get.controller.MenuBar', {
 		return menuBar;
 	},
 
-	newWindow: function() {
-		var win = this.gui.Window.open(window.location.href, {
-			focus: true,
-			toolbar: false
+	onRecentProjectsChanged: function(recentProjects) {
+		var me = this,
+			gui = this.gui,
+			menu = new gui.Menu(),
+			path = require('path'),
+			isMac = process.platform === 'darwin',
+			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
+			fireEventScope = isMac ? this.menuBarManager : this;
+
+		recentProjects.forEach(function(filename) {
+			menu.append(new gui.MenuItem({
+				type: 'normal',
+				label: path.basename(filename),
+				click: fireEvent.bind(fireEventScope, 'recentProjectsMenuItem', filename)
+			}));
 		});
+		this.recentFilesMenuItem.submenu = menu;
+	},
+
+	onNew: function(win) {
 		if (process.platform === 'darwin') {
 			this.menuBarManager.register(win);
 		}
