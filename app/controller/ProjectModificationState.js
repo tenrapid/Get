@@ -8,7 +8,7 @@ Ext.define('Get.controller.ProjectModificationState', {
 		// listen on association stores
 		listen: {
 			store: {
-				tourWaypoints: {
+				tourWaypoint: {
 					update: 'onRecordUpdate',
 					add: 'onRecordOperation',
 					remove: 'onRecordOperation'
