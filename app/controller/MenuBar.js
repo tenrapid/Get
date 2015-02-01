@@ -90,6 +90,9 @@ Ext.define('Get.controller.MenuBar', {
 			click: fireEvent.bind(fireEventScope, 'newMenuItem') 
 		}));
 		fileMenuItem.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenuItem.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Öffnen …',
 			key: 'o',
