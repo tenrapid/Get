@@ -17,7 +17,7 @@ Ext.define('Get.model.TourWaypoint', {
 		{
 			name: 'areaId', 
 			reference: {
-				parent: 'Area',
+				type: 'Area',
 				inverse: {
 					storeConfig: {
 						// damit kann der Assoziationsstore als Instanz von FeatureStore erzeugt werden

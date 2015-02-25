@@ -63,31 +63,50 @@ Ext.define('Get.view.layers.LayersController', {
 
 	onAddLayer: function () {
 		var me = this,
-			layerItem = me.selectedLayerItem;
+			layerItem = me.selectedLayerItem,
+			project = me.getView().getViewModel().get('project');
 		
 		if (layerItem.isRoot()) {
+			project.undoManager.beginUndoGroup();
 			layerItem.appendChild({
 				name: "Tour"
 			}).set('loaded', true);
+			project.undoManager.endUndoGroup();
 		}
 		else if (layerItem.entityName === 'Tour') {
 			layerItem.expand();
+			project.undoManager.beginUndoGroup();
 			layerItem.appendChild({
 				name: "Gebiet",
 				leaf: true
 			});
+			project.undoManager.endUndoGroup();
 		}
 	},
 		
 	onRemoveLayer: function () {
 		var me = this,
-			layerItem = me.selectedLayerItem;
+			layerItem = me.selectedLayerItem,
+			project = me.getView().getViewModel().get('project');
+
 		me.getView().getSelectionModel().select(layerItem.previousSibling || layerItem.nextSibling || layerItem.parentNode);
 
 		layerItem.cascadeBy(function(item) {
 			me.fireEvent('layerItemRemove', item, item.tourWaypoints());
 		});
+
+		project.undoManager.beginUndoGroup();
+		if (layerItem.entityName === 'Area') {
+			// drop tour waypoints that are only linked to this area and not to a tour
+			// TODO: are tour waypoints always linked to a tour?
+			layerItem.tourWaypoints().each(function(tourWaypoint) {
+				if (!tourWaypoint.getTour()) {
+					tourWaypoint.drop();
+				}
+			});
+		}
 		layerItem.drop();
+		project.undoManager.endUndoGroup();
 	},
 		
 	onBeforeLayerItemEdit: function(editor, context) {

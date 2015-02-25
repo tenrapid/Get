@@ -10,7 +10,9 @@ Ext.define('Get.model.Project', {
 		'Get.store.Tour',
 		'Get.store.Area',
 		'Get.store.Layer',
+		'Get.controller.ProjectStoreConsolidation',
 		'Get.controller.ProjectModificationState',
+		'Get.controller.UndoManager',
 		'tenrapid.data.proxy.Sqlite'
 	],
 
@@ -54,9 +56,10 @@ Ext.define('Get.model.Project', {
 	],
 
 	layerStore: null,
+	undoManager: null,
 
 	constructor: function(data) {
-		// window.p = this;
+		window.p = this;
 		var me = this,
 			session = Ext.create('Ext.data.Session'),
 			proxyConfig = {
@@ -99,6 +102,7 @@ Ext.define('Get.model.Project', {
 		this.session.destroy();
 		this.session = null;
 		this.getProxy().destroy();
+		this.projectStoreConsolidationController && this.projectStoreConsolidationController.destroy();
 		this.projectModificationController && this.projectModificationController.destroy();
 		this.callParent();
 	},
@@ -121,7 +125,13 @@ Ext.define('Get.model.Project', {
 						me.buildLayerTree();
 						me.adjustIdentifierSeeds();
 
+						me.projectStoreConsolidationController = Ext.create('Get.controller.ProjectStoreConsolidation', {
+							project: me
+						});
 						me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
+							project: me
+						});
+						me.undoManager = Ext.create('Get.controller.UndoManager', {
 							project: me
 						});
 
@@ -334,4 +344,3 @@ Ext.define('Get.model.Project', {
 	},
 
 });
-

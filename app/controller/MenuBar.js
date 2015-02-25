@@ -22,6 +22,10 @@ Ext.define('Get.controller.MenuBar', {
 
 	saveMenuItem: null,
 	recentFilesMenuItem: null,
+	macSystemUndoMenuItem: null,
+	macSystemRedoMenuItem: null,
+	undoMenuItem: null,
+	redoMenuItem: null,
 
 	init: function() {
 		this.gui = require('nw.gui');
@@ -70,9 +74,13 @@ Ext.define('Get.controller.MenuBar', {
 			fireEventScope = isMac ? this.menuBarManager : this,
 			menuBar,
 			fileMenuItem,
+			editMenuItem,
 			debugMenuItem;
 
 		menuBar = new gui.Menu({ type: "menubar" });
+		if (isMac) {
+			menuBar.createMacBuiltin("Get");
+		}
 
 		// File menu
 
@@ -131,10 +139,37 @@ Ext.define('Get.controller.MenuBar', {
 			click: fireEvent.bind(fireEventScope, 'saveAsMenuItem') 
 		}));
 
-		if (process.platform === 'darwin') {
-			menuBar.createMacBuiltin("Get");
+		menuBar.insert(fileMenuItem, isMac ? 1 : 0);
+
+		// Edit menu
+
+		this.undoMenuItem = new gui.MenuItem({
+			type: 'normal',
+			label: 'Rückgängig',
+			key: 'z',
+			modifiers: cmd,
+			click: fireEvent.bind(fireEventScope, 'undoMenuItem') 
+		});
+		this.redoMenuItem = new gui.MenuItem({
+			type: 'normal',
+			label: 'Wiederholen',
+			key: 'z',
+			modifiers: 'shift-' + cmd,
+			click: fireEvent.bind(fireEventScope, 'redoMenuItem') 
+		});
+
+		if (isMac) {
+			editMenuItem = menuBar.items[2];
+			this.macSystemUndoMenuItem = editMenuItem.submenu.items[0];
+			this.macSystemRedoMenuItem = editMenuItem.submenu.items[1];
+			// this.macSystemUndoMenuItem.click = function() { console.log('uuuundo');};
+			editMenuItem.submenu.remove(this.macSystemUndoMenuItem);
+			editMenuItem.submenu.remove(this.macSystemRedoMenuItem);
+			// editMenuItem.submenu.items[0] = this.undoMenuItem;
+			// editMenuItem.submenu.items[1] = this.redoMenuItem;
+			editMenuItem.submenu.insert(this.undoMenuItem, 0);
+			editMenuItem.submenu.insert(this.redoMenuItem, 1);
 		}
-		menuBar.insert(fileMenuItem, 1);
 
 		// Debug menu
 

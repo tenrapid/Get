@@ -5,16 +5,6 @@ Ext.define('Get.controller.ProjectModificationState', {
 
 	config: {
 		project: null,
-		// listen on association stores
-		listen: {
-			store: {
-				tourWaypoint: {
-					update: 'onRecordUpdate',
-					add: 'onRecordOperation',
-					remove: 'onRecordOperation'
-				},
-			}
-		}
 	},
 
 	dirtyRecordsMap: null,
@@ -23,12 +13,7 @@ Ext.define('Get.controller.ProjectModificationState', {
 		this.callParent(arguments);
 
 		var me = this,
-			project = this.getProject(),
-			session = project.session,
-			stores = Ext.Array.clone(project.stores);
-
-		// remove association stores from cloned stores list
-		Ext.Array.remove(stores, 'tourWaypoint');
+			project = this.getProject();
 
 		project.stores.forEach(function(name) {
 			project.getStore(name).on({
@@ -39,13 +24,6 @@ Ext.define('Get.controller.ProjectModificationState', {
 			});
 		});
 
-		project.layerStore.on({
-			nodeappend: this.onNodeAdd,
-			nodeinsert: this.onNodeAdd,
-			noderemove: this.onNodeRemove,
-			scope: this
-		});
-
 		this.dirtyRecordsMap = {};
 	},
 
@@ -54,19 +32,9 @@ Ext.define('Get.controller.ProjectModificationState', {
 		this.callParent();
 	},
 
-	onNodeAdd: function(store, record) {
-		// console.log('onNodeAdd', record);
-		this.getProject().getStore(Ext.String.uncapitalize(record.entityName)).add(record);
-	},
-
-	onNodeRemove: function(store, record) {
-		// console.log('onNodeRemove', record);
-		this.getProject().getStore(Ext.String.uncapitalize(record.entityName)).remove(record);
-	},
-
 	onRecordOperation: function(store, records) {
-		var me = this;
 		// console.log('onRecordOperation', records);
+		var me = this;
 		records.forEach(function(record) {
 			me.onModification(record);
 		});

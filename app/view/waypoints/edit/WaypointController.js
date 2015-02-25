@@ -66,7 +66,10 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 	},
 
 	onSave: function() {
+		var project = this.getViewModel().get('project');
+		project.undoManager.beginUndoGroup();
 		this.getSession().save();
+		project.undoManager.endUndoGroup();
 		this.closeView();
 	},
 	
