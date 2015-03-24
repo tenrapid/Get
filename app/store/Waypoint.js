@@ -4,5 +4,5 @@ Ext.define('Get.store.Waypoint', {
 	alias: 'store.waypoint',
 
 	pageSize: 0,
-	geometryPropertyUsersGetter: 'tourWaypoints',
+	geometryPropertyAssociation: 'tourWaypoints',
 });

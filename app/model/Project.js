@@ -5,6 +5,7 @@ Ext.define('Get.model.Project', {
 		'Ext.data.Session',
 		'Ext.data.TreeStore',
 		'Ext.data.TreeModel',
+		'Get.data.Session',
 		'Get.store.Waypoint',
 		'Get.store.TourWaypoint',
 		'Get.store.Tour',
@@ -61,7 +62,7 @@ Ext.define('Get.model.Project', {
 	constructor: function(data) {
 		window.p = this;
 		var me = this,
-			session = Ext.create('Ext.data.Session'),
+			session = Ext.create('Get.data.Session'),
 			proxyConfig = {
 				type: 'sqlite',
 				uniqueIdStrategy: true,
@@ -283,7 +284,9 @@ Ext.define('Get.model.Project', {
 
 	createTestData: function() {
 		var waypoints = [],
-			waypoint;
+			waypoint,
+			tourWaypoint;
+
 		for (var i = 1; i <= 20; i++) {
 			waypoint = {
 				name: 'WP' + i,
@@ -297,7 +300,7 @@ Ext.define('Get.model.Project', {
 			};
 			waypoints.push(waypoint);
 		}
-		this.waypointStore.add(waypoints);
+		waypoints = this.waypointStore.add(waypoints);
 
 		var root = this.layerStore.getRoot();
 		var tour1 = root.appendChild({
@@ -319,28 +322,82 @@ Ext.define('Get.model.Project', {
 			"leaf": true,
 		});
 		
-		tour1.tourWaypoints().add({
-			name: 'TWP1',
-			waypointId: this.waypointStore.getAt(0).getId(),
-		});
-		tour1.tourWaypoints().add({
-			name: 'TWP2',
-			waypointId: this.waypointStore.getAt(1).getId(),
-		});
-		tour1.tourWaypoints().add({
-			name: 'TWP3',
-			waypointId: this.waypointStore.getAt(2).getId(),
-		});
-		tour2.tourWaypoints().add({
-			name: 'TWP4',
-			waypointId: this.waypointStore.getAt(2).getId(),
-		});
-		tour2.tourWaypoints().add({
-			name: 'TWP5',
-			waypointId: this.waypointStore.getAt(3).getId(),
-		});
-		// tour1.tourWaypoints().getAt(2).setArea(area1);
-		area1.tourWaypoints().add(tour1.tourWaypoints().getAt(2));
+		tourWaypoint = waypoints[0].tourWaypoints().add({ name: 'TWP1' })[0];
+		tour1.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = waypoints[1].tourWaypoints().add({ name: 'TWP2' })[0];
+		tour1.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = waypoints[2].tourWaypoints().add({ name: 'TWP3' })[0];
+		tour1.tourWaypoints().add(tourWaypoint);
+		area1.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = waypoints[2].tourWaypoints().add({ name: 'TWP4' })[0];
+		tour2.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = waypoints[3].tourWaypoints().add({ name: 'TWP5' })[0];
+		tour2.tourWaypoints().add(tourWaypoint);
+
+		// TODO: Undo-Szenarien
+		// create testdata -> select Tour 1 -> delete WP1 -> undo   ok
+		// create testdata -> delete WP1 -> select Tour 1 -> undo   ok
+		// create testdata -> select Tour 1 -> delete -> undo -> select and expand Tour 1 -> undo -> Area 2 disappears ??? ok
+		// load -> delete WP1 -> select Tour 1 -> undo   ok
 	},
+
+	createTestData_: function() {
+		var waypoints = [],
+			waypoint,
+			tourWaypoint;
+
+		for (var i = 1; i <= 5; i++) {
+			waypoint = {
+				name: 'WP' + i,
+				geometry: {
+					type: 'Point',
+					coordinates: [
+						13.71 + 0.06 * Math.random(),
+						51.03 + 0.04 * Math.random(),
+					]
+				}
+			};
+			waypoints.push(waypoint);
+		}
+		waypoints = this.waypointStore.add(waypoints);
+
+		var root = this.layerStore.getRoot();
+		var tour1 = root.appendChild({
+			"name": "Tour 1",
+			"leaf": false,
+			"loaded": true
+		});
+		var tour2 = root.appendChild({
+			"name": "Tour 2",
+			"leaf": false,
+			"loaded": true
+		});
+		var area1 = tour1.appendChild({
+			"name": "Area 1",
+			"leaf": true,
+		});
+		var area2 = tour1.appendChild({
+			"name": "Area 2",
+			"leaf": true,
+		});
+		
+		tourWaypoint = this.session.createRecord('TourWaypoint', {name: 'TWP1'});
+		waypoints[0].tourWaypoints().add(tourWaypoint);
+		tour1.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = this.session.createRecord('TourWaypoint', {name: 'TWP2'});
+		waypoints[1].tourWaypoints().add(tourWaypoint);
+		tour1.tourWaypoints().add(tourWaypoint);
+		area1.tourWaypoints().add(tourWaypoint);
+
+		tourWaypoint = this.session.createRecord('TourWaypoint', {name: 'TWP3'});
+		waypoints[2].tourWaypoints().add(tourWaypoint);
+		tour2.tourWaypoints().add(tourWaypoint);
+	},
+
 
 });

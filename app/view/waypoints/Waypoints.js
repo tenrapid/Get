@@ -46,7 +46,8 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			text: 'Waypoint',
 			hidden: true,
 			renderer: function(value, meta, record) {
-				return record.getWaypoint && record.getWaypoint().get('name');
+				var waypoint = record.getWaypoint && record.getWaypoint();
+				return waypoint ? waypoint.get('name') : '';
 			},
 			flex: 8,
 			itemId: 'waypointColumn'

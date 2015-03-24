@@ -83,29 +83,12 @@ Ext.define('Get.view.layers.Layers', {
 		},
 		'->',
 		{
-			text: 'Load',
-			handler: function() {
-				Get.app.getMainView().controller.load(Ext.create('Get.model.Project', {
-					filename: 'Dresden.get'
-				}));
-			}
-		},
-		{
 			text: 'TestData',
 			handler: function() {
 				var project = this.lookupViewModel(true).get('project');
 				project.undoManager.beginUndoGroup();
 				project.createTestData();
 				project.undoManager.endUndoGroup();
-			}
-		},
-		{
-			text: 'Clear',
-			handler: function() {
-				var models = ['Waypoint', 'TourWaypoint', 'Tour', 'Area'];
-				Ext.each(models, function(model) {
-					Get.app.getModel(model).getProxy().clear();
-				});
 			}
 		}
 	],

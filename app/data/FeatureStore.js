@@ -6,9 +6,12 @@ Ext.define('Get.data.FeatureStore', {
 	config: {
 		layer: null,
 		geometryProperty: 'geometry',
-		geometryPropertyHolderGetter: null,
-		geometryPropertyUsersGetter: null,
+		geometryPropertyAssociation: null,
 	},
+
+	geometryPropertyUsersGetter: null,
+	geometryPropertyHolderGetter: null,
+	geometryPropertyHolderForeignKey: null,
 
 	isLayerBound: false,
 	
@@ -16,6 +19,17 @@ Ext.define('Get.data.FeatureStore', {
 	
 	constructor: function(config) {
 		this.callParent([config]);
+
+		if (this.geometryPropertyAssociation) {
+			var role = this.model.associations[this.geometryPropertyAssociation];
+			if (role.isMany) {
+				this.geometryPropertyUsersGetter = role.getterName;
+			}
+			else {
+				this.geometryPropertyHolderGetter = role.getterName;
+				this.geometryPropertyHolderForeignKey = role.association.getFieldName();
+			}
+		}
 
 		if (config.layer) {
 			this.bindLayer(config.layer);
@@ -80,17 +94,24 @@ Ext.define('Get.data.FeatureStore', {
 
 	addFeatureToRecord: function(record) {
 		var geometry,
+			geometryPropertyHolder,
+			olGeometry,
 			feature;
+
 		if (this.geometryPropertyHolderGetter) {
-			record.set('geometry', record[this.geometryPropertyHolderGetter]().get(this.geometryProperty));
+			geometryPropertyHolder = record[this.geometryPropertyHolderGetter]();
+			if (geometryPropertyHolder) {
+				record.set(this.geometryProperty, geometryPropertyHolder.get(this.geometryProperty));
+			}
 		}
-		geometry = record.get('geometry');
-		if (geometry) {
+		geometry = record.get(this.geometryProperty);
+		if (geometry.geometry) {
 			geometry.transform(this.layer.map.getProjectionObject());
-			feature = new OpenLayers.Feature.Vector(geometry.geometry.clone(), Ext.apply({}, record.getData()));
-			this.featureMap[record.getId()] = feature;
-			return feature;
+			olGeometry = geometry.geometry.clone();
 		}
+		feature = new OpenLayers.Feature.Vector(olGeometry, Ext.apply({}, record.getData()));
+		this.featureMap[record.getId()] = feature;
+		return feature;
 	},
 	
 	getFeature: function(record) {
@@ -134,11 +155,12 @@ Ext.define('Get.data.FeatureStore', {
 			features = [];
 			
 		Ext.each(records, function(record) {
-			var id = record.getId();
-			if (!me.featureMap[id]) {
-				me.addFeatureToRecord(record);
+			var id = record.getId(),
+				feature = me.featureMap[id];
+			if (!feature) {
+				feature = me.addFeatureToRecord(record);
 			}
-			features.push(me.featureMap[id]);
+			features.push(feature);
 		});
 		this._adding = true;
 		this.layer.addFeatures(features);
@@ -309,10 +331,15 @@ Ext.define('Get.data.FeatureStore', {
 		var me = this,
 			feature,
 			cont,
-			geometryModified = false;
-			
+			geometryPropertyHolder,
+			geometryModified = false,
+			geometryPropertyHolderModified = false;
+
 		if (!me._updating) {
 			feature = me.getFeature(record);
+			if (!feature) {
+				return;
+			}
 			if (feature.state !== OpenLayers.State.INSERT) {
 				feature.state = OpenLayers.State.UPDATE;
 			}
@@ -322,10 +349,19 @@ Ext.define('Get.data.FeatureStore', {
 			if (cont !== false) {
 				Ext.each(modifiedFieldNames, function(field) {
 					feature.attributes[field] = record.get(field);
-					if (field == me.geometryProperty) {
+					if (field === me.geometryProperty) {
 						geometryModified = true;
 					}
+					else if (field === me.geometryPropertyHolderForeignKey) {
+						geometryPropertyHolderModified = true;
+					}
 				});
+				if (geometryPropertyHolderModified) {
+					geometryPropertyHolder = record[me.geometryPropertyHolderGetter]();
+					if (geometryPropertyHolder) {
+						record.set(me.geometryProperty, geometryPropertyHolder.get(me.geometryProperty));
+					}
+				}
 				if (geometryModified) {
 					var geometry = record.get(me.geometryProperty),
 						featureGeometryId = feature.geometry && feature.geometry.id;

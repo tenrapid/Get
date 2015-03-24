@@ -18,6 +18,11 @@ Ext.define('Get.view.layers.LayersController', {
 					projectUnload: 'onProjectUnload',
 				},
 			},
+			store: {
+				'layer': {
+					nodebeforeremove: 'onBeforeLayerStoreNodeRemove',
+				},
+			},
 		},
 	},
 
@@ -61,7 +66,7 @@ Ext.define('Get.view.layers.LayersController', {
 		viewModel.getParent().set('selectedLayerItem', item);
 	},
 
-	onAddLayer: function () {
+	onAddLayer: function() {
 		var me = this,
 			layerItem = me.selectedLayerItem,
 			project = me.getView().getViewModel().get('project');
@@ -84,12 +89,10 @@ Ext.define('Get.view.layers.LayersController', {
 		}
 	},
 		
-	onRemoveLayer: function () {
+	onRemoveLayer: function() {
 		var me = this,
 			layerItem = me.selectedLayerItem,
 			project = me.getView().getViewModel().get('project');
-
-		me.getView().getSelectionModel().select(layerItem.previousSibling || layerItem.nextSibling || layerItem.parentNode);
 
 		layerItem.cascadeBy(function(item) {
 			me.fireEvent('layerItemRemove', item, item.tourWaypoints());
@@ -107,6 +110,13 @@ Ext.define('Get.view.layers.LayersController', {
 		}
 		layerItem.drop();
 		project.undoManager.endUndoGroup();
+	},
+
+	onBeforeLayerStoreNodeRemove: function(parentLayerItem, layerItem) {
+		// select a sibling or the parent of the currently selected layer item if it is going to be removed
+		if (layerItem === this.selectedLayerItem) {
+			this.getView().getSelectionModel().select(layerItem.previousSibling || layerItem.nextSibling || layerItem.parentNode);
+		}
 	},
 		
 	onBeforeLayerItemEdit: function(editor, context) {

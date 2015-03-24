@@ -12,16 +12,13 @@ Ext.define('Get.controller.ProjectModificationState', {
 	constructor: function() {
 		this.callParent(arguments);
 
-		var me = this,
-			project = this.getProject();
+		var project = this.getProject();
 
-		project.stores.forEach(function(name) {
-			project.getStore(name).on({
-				update: me.onRecordUpdate,
-				add: me.onRecordOperation,
-				remove: me.onRecordOperation,
-				scope: me
-			});
+		project.session.on({
+			update: this.onRecordUpdate,
+			add: this.onRecordOperation,
+			remove: this.onRecordOperation,
+			scope: this
 		});
 
 		this.dirtyRecordsMap = {};
@@ -32,15 +29,12 @@ Ext.define('Get.controller.ProjectModificationState', {
 		this.callParent();
 	},
 
-	onRecordOperation: function(store, records) {
+	onRecordOperation: function(record) {
 		// console.log('onRecordOperation', records);
-		var me = this;
-		records.forEach(function(record) {
-			me.onModification(record);
-		});
+		this.onModification(record);
 	},
 
-	onRecordUpdate: function(store, record, operation, modifiedFieldNames, details) {
+	onRecordUpdate: function(record, operation, modifiedFieldNames) {
 		if (operation === Ext.data.Model.COMMIT) {
 			// console.log('commit', arguments);
 		}
@@ -57,6 +51,9 @@ Ext.define('Get.controller.ProjectModificationState', {
 				if (modifiedFieldNames && modifiedFieldNames.length === 1 && modifiedFieldNames[0] === 'geometry')  {
 					return;
 				}
+			}
+			else if (record.entityName === 'Project') {
+				return;
 			}
 		}
 		// console.log('onRecordUpdate', store, operation, modifiedFieldNames, details);

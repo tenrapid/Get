@@ -51,6 +51,7 @@ Ext.define('Get.controller.ProjectStoreConsolidation', {
 
 	onAssociationStoreRemove: function(store, records) {
 		if (store.associatedEntity) {
+			console.log('onAssociationStoreRemove', arguments);
 			var project = this.getProject(),
 				storeName = Ext.String.uncapitalize(records[0].entityName);
 			project.getStore(storeName).remove(records);
