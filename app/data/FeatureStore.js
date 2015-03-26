@@ -37,6 +37,7 @@ Ext.define('Get.data.FeatureStore', {
 	},
 
 	destroy: function() {
+		this.fireEvent('beforeDestroy', this);
 		this.unbindLayer();
 		this.callParent();
 	},

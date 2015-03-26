@@ -13,7 +13,6 @@ Ext.define('Get.view.map.MapController', {
 				'#layers': {
 					beforeLayerItemSelect: 'onBeforeLayerItemSelect',
 					layerItemSelect: 'onLayerItemSelect',
-					layerItemRemove: 'onLayerItemRemove',
 				},
 				'#main': {
 // 					projectLoad: Ext.emptyFn,
@@ -24,21 +23,24 @@ Ext.define('Get.view.map.MapController', {
 	},
 
 	visibleVectorLayer: null,
-	waypointStores: {},
+	waypointStores: null,
 
 	init: function() {
 		this.mon(this.getView().layers, {
 			datachanged: this.updateBaseLayerMenuItems,
 			scope: this
 		});
+		this.waypointStores = {};
 	},
 	
 	onProjectUnload: function() {
-		var map = this.getView().map;
+		var me = this,
+			map = this.getView().map;
 		
-		Ext.iterate(this.waypointStores, function(key, store) {
-			var layer = store.layer;
-			store.unbindLayer();
+		Ext.iterate(this.waypointStores, function(key, waypointStore) {
+			var layer = waypointStore.layer;
+			waypointStore.unbindLayer();
+			waypointStore.un('beforeDestroy', me.onWaypointStoreBeforeDestroy, me);
 			map.removeLayer(layer);
 		});
 		this.waypointStores = {};
@@ -103,12 +105,16 @@ Ext.define('Get.view.map.MapController', {
 		});
 		map.addLayer(layer);
 		waypointStore.bindLayer(layer);
+		waypointStore.on({
+			beforeDestroy: this.onWaypointStoreBeforeDestroy,
+			scope: this
+		});
 		this.waypointStores[layer.id] = waypointStore;
 		
 		return layer;
 	},
 	
-	onLayerItemRemove: function(item, waypointStore) {
+	onWaypointStoreBeforeDestroy: function(waypointStore) {
 		var layer = waypointStore.layer,
 			map = this.getView().map;
 			

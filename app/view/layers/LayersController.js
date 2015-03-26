@@ -94,10 +94,6 @@ Ext.define('Get.view.layers.LayersController', {
 			layerItem = me.selectedLayerItem,
 			project = me.getView().getViewModel().get('project');
 
-		layerItem.cascadeBy(function(item) {
-			me.fireEvent('layerItemRemove', item, item.tourWaypoints());
-		});
-
 		project.undoManager.beginUndoGroup();
 		if (layerItem.entityName === 'Area') {
 			// drop tour waypoints that are only linked to this area and not to a tour

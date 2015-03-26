@@ -11,7 +11,7 @@ Ext.define('Get.model.Project', {
 		'Get.store.Tour',
 		'Get.store.Area',
 		'Get.store.Layer',
-		'Get.controller.ProjectStoreConsolidation',
+		'Get.controller.ProjectStoreEventNormalization',
 		'Get.controller.ProjectModificationState',
 		'Get.controller.UndoManager',
 		'tenrapid.data.proxy.Sqlite'
@@ -103,8 +103,9 @@ Ext.define('Get.model.Project', {
 		this.session.destroy();
 		this.session = null;
 		this.getProxy().destroy();
-		this.projectStoreConsolidationController && this.projectStoreConsolidationController.destroy();
+		this.projectStoreEventNormalizationController && this.projectStoreEventNormalizationController.destroy();
 		this.projectModificationController && this.projectModificationController.destroy();
+		this.undoManager && this.undoManager.destroy();
 		this.callParent();
 	},
 	
@@ -126,7 +127,7 @@ Ext.define('Get.model.Project', {
 						me.buildLayerTree();
 						me.adjustIdentifierSeeds();
 
-						me.projectStoreConsolidationController = Ext.create('Get.controller.ProjectStoreConsolidation', {
+						me.projectStoreEventNormalizationController = Ext.create('Get.controller.ProjectStoreEventNormalization', {
 							project: me
 						});
 						me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
@@ -337,12 +338,6 @@ Ext.define('Get.model.Project', {
 
 		tourWaypoint = waypoints[3].tourWaypoints().add({ name: 'TWP5' })[0];
 		tour2.tourWaypoints().add(tourWaypoint);
-
-		// TODO: Undo-Szenarien
-		// create testdata -> select Tour 1 -> delete WP1 -> undo   ok
-		// create testdata -> delete WP1 -> select Tour 1 -> undo   ok
-		// create testdata -> select Tour 1 -> delete -> undo -> select and expand Tour 1 -> undo -> Area 2 disappears ??? ok
-		// load -> delete WP1 -> select Tour 1 -> undo   ok
 	},
 
 	createTestData_: function() {
