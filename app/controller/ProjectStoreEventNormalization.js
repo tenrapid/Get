@@ -38,12 +38,40 @@ Ext.define('Get.controller.ProjectStoreEventNormalization', {
 			});
 		});
 
-		this.relayEvents(project.session, ['update']);
+		project.session.on({
+			update: this.onUpdate,
+			scope: this
+		});
 	},
 
 	destroy: function() {
 		this.setProject(null);
 		this.callParent();
+	},
+
+	onUpdate: function(record, operation, modifiedFieldNames) {
+		if (operation === Ext.data.Model.EDIT) {
+			if (!modifiedFieldNames) {
+				return;
+			}
+			else if (record.entityName === 'Tour' || record.entityName === 'Area') {
+				if (modifiedFieldNames.length === 1) {
+					var field = modifiedFieldNames[0];
+					if (field == 'loading' || field == 'loaded' || field == 'expanded') {
+						return;
+					}
+				}
+			} 
+			else if (record.entityName === 'TourWaypoint') {
+				if (modifiedFieldNames.length === 1 && modifiedFieldNames[0] === 'geometry')  {
+					return;
+				}
+			}
+			else if (record.entityName === 'Project') {
+				return;
+			}
+		}
+		this.fireEvent('update', record, operation, modifiedFieldNames);
 	},
 
 	onAssociationStoreAdd: function(store, records, index) {

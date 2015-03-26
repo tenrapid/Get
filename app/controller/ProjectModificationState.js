@@ -1,26 +1,29 @@
 Ext.define('Get.controller.ProjectModificationState', {
 	extend: 'Ext.app.Controller',
 
+	/* 
+		TODO: Undoing a record drop after saving a project does not set the state to modified
+	*/
+
 	id: 'projectmodificationstate',
 
 	config: {
 		project: null,
+		listen: {
+			controller: {
+				'#projectstoreeventnormalization': {
+					add: 'onRecordOperation',
+					remove: 'onRecordOperation',
+					update: 'onRecordUpdate'
+				}
+			}
+		}
 	},
 
 	dirtyRecordsMap: null,
 
 	constructor: function() {
 		this.callParent(arguments);
-
-		var project = this.getProject();
-
-		project.session.on({
-			update: this.onRecordUpdate,
-			add: this.onRecordOperation,
-			remove: this.onRecordOperation,
-			scope: this
-		});
-
 		this.dirtyRecordsMap = {};
 	},
 
@@ -29,36 +32,20 @@ Ext.define('Get.controller.ProjectModificationState', {
 		this.callParent();
 	},
 
-	onRecordOperation: function(record) {
+	onRecordOperation: function(store, records) {
+		var me = this;
+		records.forEach(function(record) {
+			me.onModification(record);
+		});
 		// console.log('onRecordOperation', records);
-		this.onModification(record);
 	},
 
 	onRecordUpdate: function(record, operation, modifiedFieldNames) {
 		if (operation === Ext.data.Model.COMMIT) {
 			// console.log('commit', arguments);
 		}
-		if (operation === Ext.data.Model.EDIT) {
-			if (record.entityName === 'Tour' || record.entityName === 'Area') {
-				if (modifiedFieldNames && modifiedFieldNames.length === 1) {
-					var field = modifiedFieldNames[0];
-					if (field == 'loading' || field == 'loaded' || field == 'expanded') {
-						return;
-					}
-				}
-			} 
-			else if (record.entityName === 'TourWaypoint') {
-				if (modifiedFieldNames && modifiedFieldNames.length === 1 && modifiedFieldNames[0] === 'geometry')  {
-					return;
-				}
-			}
-			else if (record.entityName === 'Project') {
-				return;
-			}
-		}
-		// console.log('onRecordUpdate', store, operation, modifiedFieldNames, details);
-		// console.log('onRecordUpdate', arguments);
 		this.onModification(record);
+		// console.log('onRecordUpdate', arguments);
 	},
 
 	onModification: function(record) {

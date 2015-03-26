@@ -42,8 +42,9 @@ Ext.define('Get.controller.UndoManager', {
 			load -> select Area 1 -> delete -> undo   ok
 			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears ???
 
-			TODO: enable/disable undo/redo menu items 
 			TODO: use system undo/redo if textfield is focused
+			TODO: operytion type 'fn' to register operations from outside e.g. for undoing selection changes 
+			TODO: enable/disable undo/redo menu items 
 		*/
 
 		this.undoStack = [];
@@ -99,26 +100,6 @@ Ext.define('Get.controller.UndoManager', {
 		}
 
 		if (operation === Ext.data.Model.EDIT) {
-			if (!modifiedFieldNames) {
-				return;
-			}
-			else if (record.entityName === 'Tour' || record.entityName === 'Area') {
-				if (modifiedFieldNames.length === 1) {
-					var field = modifiedFieldNames[0];
-					if (field == 'loading' || field == 'loaded' || field == 'expanded') {
-						return;
-					}
-				}
-			} 
-			else if (record.entityName === 'TourWaypoint') {
-				if (modifiedFieldNames.length === 1 && modifiedFieldNames[0] === 'geometry')  {
-					return;
-				}
-			}
-			else if (record.entityName === 'Project') {
-				return;
-			}
-
 			previousValues = {};
 			newValues = {};
 			modifiedFieldNames.forEach(function(field) {
