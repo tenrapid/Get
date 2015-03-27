@@ -95,6 +95,12 @@ Ext.define('Get.view.layers.LayersController', {
 			project = me.getView().getViewModel().get('project');
 
 		project.undoManager.beginUndoGroup();
+		project.undoManager.registerUndoOperation({
+			type: 'fn',
+			undo: function() {
+				me.getView().getSelectionModel().select(layerItem);
+			}
+		});
 		if (layerItem.entityName === 'Area') {
 			// drop tour waypoints that are only linked to this area and not to a tour
 			// TODO: are tour waypoints always linked to a tour?

@@ -45,8 +45,6 @@ Ext.define('Get.controller.UndoManager', {
 			load -> select Area 1 -> delete -> undo   ok
 			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears ???
 			load -> delete Tour 1 -> save -> undo -> select Area 1 -> TPW3 not shown   ok
-
-			TODO: operation type 'fn' to register operations from outside e.g. for undoing selection changes 
 		*/
 
 		this.undoStack = [];
@@ -223,6 +221,11 @@ Ext.define('Get.controller.UndoManager', {
 			case 'remove':
 				this.undoRecordDrop(operation);
 				break;
+			case 'fn':
+				if (typeof operation.undo === 'function') {
+					operation.undo();
+				}
+				break;
 		}
 	},
 
@@ -248,6 +251,11 @@ Ext.define('Get.controller.UndoManager', {
 				break;
 			case 'remove':
 				record.drop();
+				break;
+			case 'fn':
+				if (typeof operation.redo === 'function') {
+					operation.redo();
+				}
 				break;
 		}
 	},
