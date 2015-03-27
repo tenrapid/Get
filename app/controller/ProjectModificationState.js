@@ -1,10 +1,6 @@
 Ext.define('Get.controller.ProjectModificationState', {
 	extend: 'Ext.app.Controller',
 
-	/* 
-		TODO: Undoing a record drop after saving a project does not set the state to modified
-	*/
-
 	id: 'projectmodificationstate',
 
 	config: {

@@ -41,10 +41,11 @@ Ext.define('Get.controller.UndoManager', {
 			load -> delete WP1 -> select Tour 1 -> undo   ok
 			load -> select Area 1 -> delete -> undo   ok
 			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears ???
+			load -> delete Tour 1 -> save -> undo -> select Area 1 -> TPW3 not shown   ok
 
 			TODO: use system undo/redo if textfield is focused
-			TODO: operytion type 'fn' to register operations from outside e.g. for undoing selection changes 
 			TODO: enable/disable undo/redo menu items 
+			TODO: operation type 'fn' to register operations from outside e.g. for undoing selection changes 
 		*/
 
 		this.undoStack = [];
@@ -232,6 +233,9 @@ Ext.define('Get.controller.UndoManager', {
 			record.dropped = false;
 			if (record.erased) {
 				record.erased = false;
+				// an erased record that is not phantom must be set to phantom because it was already dropped
+				// from the database
+				record.phantom = true;
 				// clear the session attribute of a phantom record, so that the record can be adopted again
 				// in store.add(record)
 				record.session = null;
@@ -275,13 +279,13 @@ Ext.define('Get.controller.UndoManager', {
 			store.insert(operation.type == 'add' ? operation.addIndex : operation.removeIndex, record);
 		}
 
-		// Ext.iterate(record.associations, function(roleName, role) {
-		// 	if (role.isMany) {
-		// 		// Create the association stores with this call because they were deleted during drop and 
-		// 		// only setting the foreign key of an associated record does not create them.
-		// 		role.getAssociatedStore(record);
-		// 	}
-		// });
+		Ext.iterate(record.associations, function(roleName, role) {
+			if (role.isMany) {
+				// Create the association stores with this call because they were deleted during drop and 
+				// only setting the foreign key of an associated record does not create them.
+				role.getAssociatedStore(record);
+			}
+		});
 	}
 
 });
