@@ -43,7 +43,7 @@ Ext.define('Get.controller.UndoManager', {
 			create testdata -> delete WP1 -> select Tour 1 -> undo   ok
 			load -> delete WP1 -> select Tour 1 -> undo   ok
 			load -> select Area 1 -> delete -> undo   ok
-			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears ???
+			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears   ok
 			load -> delete Tour 1 -> save -> undo -> select Area 1 -> TPW3 not shown   ok
 		*/
 
@@ -89,6 +89,14 @@ Ext.define('Get.controller.UndoManager', {
 					previousSibling: record.previousSibling,
 					nextSibling: record.nextSibling
 				});
+				if (record.childNodes.length) {
+					operation.childNodeSiblings = record.childNodes.map(function(childNode) {
+						return {
+							previousSibling: childNode.previousSibling,
+							nextSibling: childNode.nextSibling
+						};
+					});
+				}
 			}
 			me.registerUndoOperation(operation);
 		});
@@ -290,10 +298,12 @@ Ext.define('Get.controller.UndoManager', {
 			// are recreated first and they don't have a reference to their parent. Theirfore they have 
 			// to be added to the corresponding project's store and cannot be appended to their parent.
 
-			// set the 'parentNode' attribute of all child nodes because it was cleared during the drop
-			// of this node
-			record.childNodes.forEach(function(childNode) {
+			// restore the 'parentNode', 'previousSibling' and 'nextSibling' attributes of all child nodes 
+			// because they were cleared during the drop of this node
+			record.childNodes.forEach(function(childNode, i) {
 				childNode.parentNode = record;
+				childNode.previousSibling = operation.childNodeSiblings[i].previousSibling;
+				childNode.nextSibling = operation.childNodeSiblings[i].nextSibling;
 			});
 			// undo the modification of 'lastParentId' because it leads to a dirty record during the
 			// call of appendChild/insertBefore in updateInfo()
