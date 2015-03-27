@@ -144,10 +144,12 @@ Ext.define('Get.view.main.MainController', {
 
 	onDialogShow: function() {
 		this.isDialogVisible = true;
+		this.fireEvent('dialogVisibleChanged', this.isDialogVisible);
 	},
 	
 	onDialogHide: function() {
 		this.isDialogVisible = false;
+		this.fireEvent('dialogVisibleChanged', this.isDialogVisible);
 	},
 	
 	onNewMenuItem: function(filename) {

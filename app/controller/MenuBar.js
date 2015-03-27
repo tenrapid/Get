@@ -9,8 +9,25 @@ Ext.define('Get.controller.MenuBar', {
 				'#main': {
 					'new': 'onNew',
 					'close': 'onClose',
+					'dialogVisibleChanged': 'onFileDialogVisibleChanged'
 				},
+				'#undomanager': {
+					'canUndoChanged': 'onCanUndoChanged',
+					'canRedoChanged': 'onCanRedoChanged',
+				}
 			},
+			component: {
+				'edit\\.waypoint': {
+					show: {
+						fn: 'onEditWindowVisibleChanged',
+						args: [true]
+					},
+					hide: {
+						fn: 'onEditWindowVisibleChanged',
+						args: [false]
+					}
+				},
+			}
 		}
 	},
 
@@ -22,10 +39,12 @@ Ext.define('Get.controller.MenuBar', {
 
 	saveMenuItem: null,
 	recentFilesMenuItem: null,
-	macSystemUndoMenuItem: null,
-	macSystemRedoMenuItem: null,
+	editMenuItem: null,
 	undoMenuItem: null,
 	redoMenuItem: null,
+	canUndo: false,
+	canRedo: false,
+	openEditWindowCount: 0,
 
 	init: function() {
 		this.gui = require('nw.gui');
@@ -143,32 +162,23 @@ Ext.define('Get.controller.MenuBar', {
 
 		// Edit menu
 
-		this.undoMenuItem = new gui.MenuItem({
-			type: 'normal',
-			label: 'Rückgängig',
-			key: 'z',
-			modifiers: cmd,
-			click: fireEvent.bind(fireEventScope, 'undoMenuItem') 
-		});
-		this.redoMenuItem = new gui.MenuItem({
-			type: 'normal',
-			label: 'Wiederholen',
-			key: 'z',
-			modifiers: 'shift-' + cmd,
-			click: fireEvent.bind(fireEventScope, 'redoMenuItem') 
-		});
-
 		if (isMac) {
-			editMenuItem = menuBar.items[2];
-			this.macSystemUndoMenuItem = editMenuItem.submenu.items[0];
-			this.macSystemRedoMenuItem = editMenuItem.submenu.items[1];
-			// this.macSystemUndoMenuItem.click = function() { console.log('uuuundo');};
-			editMenuItem.submenu.remove(this.macSystemUndoMenuItem);
-			editMenuItem.submenu.remove(this.macSystemRedoMenuItem);
-			// editMenuItem.submenu.items[0] = this.undoMenuItem;
-			// editMenuItem.submenu.items[1] = this.redoMenuItem;
-			editMenuItem.submenu.insert(this.undoMenuItem, 0);
-			editMenuItem.submenu.insert(this.redoMenuItem, 1);
+			this.editMenuItem = menuBar.items[2];
+			this.undoMenuItem = this.editMenuItem.submenu.items[0];
+			this.redoMenuItem = this.editMenuItem.submenu.items[1];
+		}
+		else {
+			this.editMenuItem = new gui.MenuItem({
+				type: 'normal',
+				label: 'Bearbeiten',
+				submenu: new gui.Menu()
+			});
+		}
+
+		this.updateUndoRedoMenuItems();
+
+		if (!isMac) {
+			menuBar.insert(this.editMenuItem, 1);
 		}
 
 		// Debug menu
@@ -213,6 +223,67 @@ Ext.define('Get.controller.MenuBar', {
 		return menuBar;
 	},
 
+	updateUndoRedoMenuItems: function(dialogVisible) {
+		var gui = this.gui,
+			isMac = process.platform === 'darwin',
+			cmd = isMac ? 'cmd' : 'ctrl',
+			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
+			fireEventScope = isMac ? this.menuBarManager : this;
+
+		if (dialogVisible) {
+			if (isMac) {
+				this.editMenuItem.submenu.remove(this.undoMenuItem);
+				this.editMenuItem.submenu.remove(this.redoMenuItem);
+				this.undoMenuItem = new gui.MenuItem({
+					label: 'Rückgängig',
+					key: 'z',
+					modifiers: cmd,
+					selector: 'undo:'
+				});
+				this.redoMenuItem = new gui.MenuItem({
+					label: 'Wiederholen',
+					key: 'z',
+					modifiers: 'shift-' + cmd,
+					selector: 'redo:'
+				});
+				this.editMenuItem.submenu.insert(this.undoMenuItem, 0);
+				this.editMenuItem.submenu.insert(this.redoMenuItem, 1);
+			}
+			else {
+				this.undoMenuItem.enabled = false;
+				this.redoMenuItem.enabled = false;
+			}
+		}
+		else {
+			if (isMac && this.undoMenuItem && this.redoMenuItem) {
+				this.editMenuItem.submenu.remove(this.undoMenuItem);
+				this.editMenuItem.submenu.remove(this.redoMenuItem);
+				this.undoMenuItem = null;
+				this.redoMenuItem = null;
+			}
+			if (!this.undoMenuItem && !this.redoMenuItem) {
+				this.undoMenuItem = new gui.MenuItem({
+					type: 'normal',
+					label: 'Rückgängig',
+					key: 'z',
+					modifiers: cmd,
+					click: fireEvent.bind(fireEventScope, 'undoMenuItem') 
+				});
+				this.redoMenuItem = new gui.MenuItem({
+					type: 'normal',
+					label: 'Wiederholen',
+					key: 'z',
+					modifiers: 'shift-' + cmd,
+					click: fireEvent.bind(fireEventScope, 'redoMenuItem') 
+				});
+				this.editMenuItem.submenu.insert(this.undoMenuItem, 0);
+				this.editMenuItem.submenu.insert(this.redoMenuItem, 1);
+			}
+			this.undoMenuItem.enabled = this.canUndo;
+			this.redoMenuItem.enabled = this.canRedo;
+		}
+	},
+
 	onRecentProjectsChanged: function(recentProjects) {
 		var me = this,
 			gui = this.gui,
@@ -236,6 +307,29 @@ Ext.define('Get.controller.MenuBar', {
 		if (process.platform === 'darwin') {
 			this.menuBarManager.register(win);
 		}
-	}
+	},
+
+	onCanUndoChanged: function(canUndo) {
+		this.canUndo = canUndo;
+		this.undoMenuItem.enabled = canUndo;
+	},
+
+	onCanRedoChanged: function(canRedo) {
+		this.canRedo = canRedo;
+		this.redoMenuItem.enabled = canRedo;
+	},
+
+	onFileDialogVisibleChanged: function(visible) {
+		// TODO: enable/disable file menu items
+		this.updateUndoRedoMenuItems(visible);
+	},
+
+	onEditWindowVisibleChanged: function(visible) {
+		this.openEditWindowCount += (visible ? 1 : -1);
+		if (this.openEditWindowCount === 0 || this.openEditWindowCount === 1 && visible) {
+			// only if last window closed or first window opened
+			this.updateUndoRedoMenuItems(this.openEditWindowCount > 0);
+		}
+	},
 
 });

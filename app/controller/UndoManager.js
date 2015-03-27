@@ -31,6 +31,9 @@ Ext.define('Get.controller.UndoManager', {
 	groupStack: null,
 	currentGroup: null,
 
+	canUndo: false,
+	canRedo: false,
+
 	constructor: function() {
 		this.callParent(arguments);
 
@@ -43,8 +46,6 @@ Ext.define('Get.controller.UndoManager', {
 			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears ???
 			load -> delete Tour 1 -> save -> undo -> select Area 1 -> TPW3 not shown   ok
 
-			TODO: use system undo/redo if textfield is focused
-			TODO: enable/disable undo/redo menu items 
 			TODO: operation type 'fn' to register operations from outside e.g. for undoing selection changes 
 		*/
 
@@ -52,6 +53,9 @@ Ext.define('Get.controller.UndoManager', {
 		this.redoStack = [];
 		this.groupStack = [];
 		this.currentGroup = this.undoStack;
+
+		this.fireEvent('canUndoChanged', this.canUndo);
+		this.fireEvent('canRedoChanged', this.canRedo);
 
 		// Debugging
 		window.u = this;
@@ -125,6 +129,7 @@ Ext.define('Get.controller.UndoManager', {
 		this.currentGroup = [];
 		if (this.redoStack.length) {
 			this.redoStack = [];
+			this.updateCanRedo();
 		}
 	},
 	
@@ -143,8 +148,26 @@ Ext.define('Get.controller.UndoManager', {
 
 	registerUndoOperation: function(operation) {
 		this.currentGroup.push(operation);
+		this.updateCanUndo();
 		if (this.groupStack.length === 0 && this.redoStack.length) {
 			this.redoStack = [];
+			this.updateCanRedo();
+		}
+	},
+
+	updateCanUndo: function() {
+		var newCanUndo = this.undoStack.length ? true : false;
+		if (this.canUndo !== newCanUndo) {
+			this.canUndo = newCanUndo;
+			this.fireEvent('canUndoChanged', this.canUndo);
+		}
+	},
+
+	updateCanRedo: function() {
+		var newCanRedo = this.redoStack.length ? true : false;
+		if (this.canRedo !== newCanRedo) {
+			this.canRedo = newCanRedo;
+			this.fireEvent('canRedoChanged', this.canRedo);
 		}
 	},
 
@@ -159,6 +182,8 @@ Ext.define('Get.controller.UndoManager', {
 		this.listenersSuspended = false;
 		
 		this.redoStack.push(operation);
+		this.updateCanUndo();
+		this.updateCanRedo();
 	},
 
 	redo: function() {
@@ -172,6 +197,8 @@ Ext.define('Get.controller.UndoManager', {
 		this.listenersSuspended = false;
 
 		this.undoStack.push(operation);
+		this.updateCanUndo();
+		this.updateCanRedo();
 	},
 
 	undoOperation: function(operation) {
