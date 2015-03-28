@@ -38,7 +38,7 @@ Ext.define('Get.controller.UndoManager', {
 		this.callParent(arguments);
 
 		/* 
-			TODO: Undo-Szenarien
+			TEST: Undo-Szenarien
 			create testdata -> select Tour 1 -> delete WP1 -> undo   ok
 			create testdata -> delete WP1 -> select Tour 1 -> undo   ok
 			load -> delete WP1 -> select Tour 1 -> undo   ok
