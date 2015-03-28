@@ -19,6 +19,11 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 					projectUnload: 'onProjectUnload',
 				},
 			},
+			store: {
+				'waypoint': {
+					update: 'onWaypointUpdate'
+				}
+			}
 		},
 	},
 
@@ -72,6 +77,21 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		});
 		project.undoManager.endUndoGroup();
 		Ext.resumeLayouts(true);
+	},
+
+	onWaypointUpdate: function(store, waypoint, operation, modifiedFieldNames) {
+		var view = this.getView().getView(),
+			gridStore = view.getStore();
+
+		// update the waypoint cell of a tourwaypoint if the waypoint was updated
+		if (gridStore.getModel().entityName === 'TourWaypoint' && operation === Ext.data.Model.EDIT && modifiedFieldNames) {
+			waypoint.tourWaypoints().each(function(tourWaypoint) {
+				if (gridStore.contains(tourWaypoint)) {
+					// calling private method of Ext.view.Table
+					view.onUpdate(gridStore, tourWaypoint);
+				}
+			});
+		}
 	},
 	
 	onClickButton: function () {
