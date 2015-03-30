@@ -1,9 +1,11 @@
 Ext.define('Get.view.waypoints.WaypointsController', {
 	extend: 'Ext.app.ViewController',
+	
 	alias: 'controller.waypoints',
 
 	requires: [
 		'Get.view.waypoints.edit.Waypoint',
+		'Ext.data.Model'
 	],
 
 	id: 'waypoints', 
