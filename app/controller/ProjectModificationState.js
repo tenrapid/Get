@@ -8,8 +8,10 @@ Ext.define('Get.controller.ProjectModificationState', {
 		listen: {
 			controller: {
 				'#projectstoreeventnormalization': {
-					add: 'onRecordOperation',
-					remove: 'onRecordOperation',
+					add: 'onStoreOperation',
+					remove: 'onStoreOperation',
+					create: 'onRecordOperation',
+					drop: 'onRecordOperation',
 					update: 'onRecordUpdate'
 				}
 			}
@@ -28,12 +30,17 @@ Ext.define('Get.controller.ProjectModificationState', {
 		this.callParent();
 	},
 
-	onRecordOperation: function(store, records) {
+	onStoreOperation: function(store, records) {
 		var me = this;
 		records.forEach(function(record) {
 			me.onModification(record);
 		});
-		// console.log('onRecordOperation', records);
+		// console.log('onStoreOperation', records);
+	},
+
+	onRecordOperation: function(record) {
+		this.onModification(record);
+		// console.log('onRecordOperation', arguments);
 	},
 
 	onRecordUpdate: function(record, operation, modifiedFieldNames) {

@@ -13,12 +13,20 @@ Ext.define('Get.controller.UndoManager', {
 				},
 				'#projectstoreeventnormalization': {
 					add: {
-						fn: 'onRecordOperation',
+						fn: 'onStoreOperation',
 						args: ['add']
 					},
 					remove: {
-						fn: 'onRecordOperation',
+						fn: 'onStoreOperation',
 						args: ['remove']
+					},
+					create: {
+						fn: 'onRecordOperation',
+						args: ['create']
+					},
+					drop: {
+						fn: 'onRecordOperation',
+						args: ['drop']
 					},
 					update: 'onRecordUpdate'
 				}
@@ -45,6 +53,7 @@ Ext.define('Get.controller.UndoManager', {
 			load -> select Area 1 -> delete -> undo   ok
 			create testdata/load -> delete Tour 1 -> undo -> expand Tour 1 -> delete Area 1 -> Area 2 disappears   ok
 			load -> delete Tour 1 -> save -> undo -> select Area 1 -> TPW3 not shown   ok
+			load -> delete Area 1 -> undo -> redo -> undo -> project still modified   ok
 		*/
 
 		this.undoStack = [];
@@ -64,7 +73,7 @@ Ext.define('Get.controller.UndoManager', {
 		this.callParent();
 	},
 
-	onRecordOperation: function(type, store, records, index) {
+	onStoreOperation: function(type, store, records, index) {
 		var me = this,
 			len = records.length,
 			operation;
@@ -73,13 +82,12 @@ Ext.define('Get.controller.UndoManager', {
 			return;
 		}
 
-		// console.log('onRecordOperation', arguments);
+		// console.log('onStoreOperation', arguments);
 		records.forEach(function(record, i) {
 			operation = {
 				type: type,
 				record: record,
 				store: store,
-				dirty: record.dirty,
 				addIndex: index + i,
 				removeIndex: index
 			};
@@ -100,6 +108,17 @@ Ext.define('Get.controller.UndoManager', {
 			}
 			me.registerUndoOperation(operation);
 		});
+	},
+
+	onRecordOperation: function(type, record) {
+		if (this.listenersSuspended) {
+			return;
+		}
+
+		this.registerUndoOperation({
+			type: type,
+			record: record
+		});	
 	},
 
 	onRecordUpdate: function(record, operation, modifiedFieldNames) {
@@ -209,9 +228,6 @@ Ext.define('Get.controller.UndoManager', {
 
 	undoOperation: function(operation) {
 		var me = this,
-			record = operation.record,
-			project = this.getProject(),
-			store,
 			i;
 
 		switch (operation.type) {
@@ -220,14 +236,20 @@ Ext.define('Get.controller.UndoManager', {
 					me.undoOperation(operation.group[i]);
 				}
 				break;
+			case 'create':
+				operation.record.drop();
+				break;
+			case 'drop':
+				this.undoDropOperation(operation);
+				break;
 			case 'edit':
-				record.set(operation.previousValues);
+				operation.record.set(operation.previousValues);
 				break;
 			case 'add':
-				record.drop();
+				this.undoAddOperation(operation);
 				break;
 			case 'remove':
-				this.undoRecordDrop(operation);
+				this.undoRemoveOperation(operation);
 				break;
 			case 'fn':
 				if (typeof operation.undo === 'function') {
@@ -239,9 +261,6 @@ Ext.define('Get.controller.UndoManager', {
 
 	redoOperation: function(operation) {
 		var me = this,
-			record = operation.record,
-			project = this.getProject(),
-			store,
 			i,
 			len;
 
@@ -251,14 +270,20 @@ Ext.define('Get.controller.UndoManager', {
 					me.redoOperation(operation.group[i]);
 				}
 				break;
+			case 'create':
+				this.undoDropOperation(operation);
+				break;
+			case 'drop':
+				operation.record.drop();
+				break;
 			case 'edit':
 				operation.record.set(operation.newValues);
 				break;
 			case 'add': 
-				this.undoRecordDrop(operation);
+				this.undoRemoveOperation(operation);
 				break;
 			case 'remove':
-				record.drop();
+				this.undoAddOperation(operation);
 				break;
 			case 'fn':
 				if (typeof operation.redo === 'function') {
@@ -268,29 +293,33 @@ Ext.define('Get.controller.UndoManager', {
 		}
 	},
 
-	undoRecordDrop: function(operation) {
+	undoDropOperation: function(operation) {
 		var record = operation.record,
 			store = operation.store;
 
-		if (record.dropped) {
-			record.dropped = false;
-			if (record.erased) {
-				record.erased = false;
-				// an erased record that is not phantom must be set to phantom because it was already dropped
-				// from the database
-				record.phantom = true;
-				// clear the session attribute of a phantom record, so that the record can be adopted again
-				// in store.add(record)
-				record.session = null;
+		record.dropped = false;
+		if (record.erased) {
+			record.erased = false;
+			if (record.phantom) {
+				record.session.add(record);
 			}
-			else {
-				// evict the record from the session and clear it's session attribute, so that an 'add' event
-				// is fired when the record is adopted again by the session in store.add(record)
-				record.session.evict(record);
-				record.session = null;
-			}
-			record.dirty = operation.dirty;
+			// an erased record that is not phantom must be set to phantom because it was already dropped
+			// from the database
+			record.phantom = true;
 		}
+
+		Ext.iterate(record.associations, function(roleName, role) {
+			if (role.isMany) {
+				// Create the association stores with this call because they were deleted during drop and 
+				// only setting the foreign key of an associated record does not create them.
+				role.getAssociatedStore(record);
+			}
+		});
+	},
+
+	undoRemoveOperation: function(operation) {
+		var record = operation.record,
+			store = operation.store;
 	
 		if (record.isNode && operation.parentNode) {
 			// Why (record.isNode && operation.parentNode):
@@ -323,14 +352,22 @@ Ext.define('Get.controller.UndoManager', {
 			}
 			store.insert(operation.type == 'add' ? operation.addIndex : operation.removeIndex, record);
 		}
+	},
 
-		Ext.iterate(record.associations, function(roleName, role) {
-			if (role.isMany) {
-				// Create the association stores with this call because they were deleted during drop and 
-				// only setting the foreign key of an associated record does not create them.
-				role.getAssociatedStore(record);
+	undoAddOperation: function(operation) {
+		var record = operation.record,
+			store = operation.store;
+
+		if (record.isNode && operation.parentNode) {
+			operation.parentNode.removeChild(record);
+		}
+		else {
+			if (store.associatedEntity && !store.session) {
+				// association store was destroyed, need to get the current one
+				store = operation.store = store.associatedEntity[store.role.getterName]();
 			}
-		});
+			store.remove(record);
+		}
 	}
 
 });

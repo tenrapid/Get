@@ -40,6 +40,8 @@ Ext.define('Get.controller.ProjectStoreEventNormalization', {
 
 		project.session.on({
 			update: this.onUpdate,
+			add: this.onCreate,
+			remove: this.onDrop,
 			scope: this
 		});
 	},
@@ -47,6 +49,14 @@ Ext.define('Get.controller.ProjectStoreEventNormalization', {
 	destroy: function() {
 		this.setProject(null);
 		this.callParent();
+	},
+
+	onCreate: function(record) {
+		this.fireEvent('create', record);
+	},
+
+	onDrop: function(record) {
+		this.fireEvent('drop', record);
 	},
 
 	onUpdate: function(record, operation, modifiedFieldNames) {
