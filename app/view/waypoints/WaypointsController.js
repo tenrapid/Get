@@ -1,6 +1,6 @@
 Ext.define('Get.view.waypoints.WaypointsController', {
 	extend: 'Ext.app.ViewController',
-	
+
 	alias: 'controller.waypoints',
 
 	requires: [
@@ -28,6 +28,8 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			}
 		},
 	},
+
+	// TODO: persist order of waypoints
 
 	onProjectLoad: function() {
 		this.getView().getView().scrollRowIntoView(0);
@@ -71,6 +73,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		project.undoManager.registerUndoOperation({
 			type: 'fn',
 			undo: function() {
+				// TODO: only select waypoints that are visible in grid
 				me.getView().getSelectionModel().select(waypoints);
 			}
 		});

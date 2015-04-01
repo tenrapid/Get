@@ -29,6 +29,8 @@ Ext.define('Get.view.layers.LayersController', {
 	isLayerSelectionForced: false,
 	selectedLayerItem: null,
 
+	// TODO: persist order of layers
+
 	onProjectLoad: function() {
 		var view = this.getView();
 		this.isLayerSelectionForced = true;

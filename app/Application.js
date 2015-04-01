@@ -11,6 +11,8 @@ Ext.define('Get.Application', {
 		'MenuBar'
 	],
 
+	// TODO: Copy/Paste-Controller
+
 	requires: [
 		'Ext.state.LocalStorageProvider'
 	],
