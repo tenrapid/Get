@@ -9,8 +9,8 @@
     "focus": true
   },
   "dependencies": {
-    "nodewebkit": "^0.11.5",
-    "sqlite3": "mapbox/node-sqlite3"
+    "nodewebkit": "0.11.5",
+    "sqlite3": "mapbox/node-sqlite3#78a134bd6a4b32baa393b43883058ac6c5063ea0"
   },
   "devDependencies": {
     "download": "^3.3.0",
