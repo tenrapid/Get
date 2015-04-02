@@ -119,7 +119,9 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 			}
 			modifiedFieldNames.forEach(function(fieldName) {
 				editingRecord.set(fieldName, record.get(fieldName));
-				delete editingRecord.modified[fieldName];
+				if (editingRecord.modified) {
+					delete editingRecord.modified[fieldName];
+				}
 			});
 		}
 	},
