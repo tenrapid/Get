@@ -82,10 +82,10 @@ module.exports = function(grunt) {
 			done = this.async();
 
 		shell.pushd('openlayers/build');
-		shell.exec('./build.py', {silent: true}, function(code, output) {
+		shell.exec('python build.py', {silent: true}, function(code, output) {
 			if (code !== 0) {
 				grunt.log.writeln(output);
-				grunt.warn('./build.py failed.');
+				grunt.warn('build.py failed.');
 			}
 			shell.popd();
 			shell.mkdir('-p', 'resources/js/openlayers');
@@ -97,7 +97,18 @@ module.exports = function(grunt) {
 	grunt.registerTask('build-node-sqlite3', function() {
 		var shell = require('shelljs'),
 			done = this.async(),
-			cmd = 'node_modules/node-pre-gyp/bin/node-pre-gyp build --runtime=node-webkit --target_arch=x64 --target=0.11.5';
+			cmd;
+
+		if (process.platform === 'darwin') {
+			cmd = 'node_modules/.bin/node-pre-gyp rebuild --runtime=node-webkit --target_arch=x64 --target=0.11.5';
+		}
+		else if (process.platform === 'win32' || process.platform === 'win64') {
+			cmd = 'node_modules\\.bin\\node-pre-gyp rebuild --runtime=node-webkit --target_arch=ia32 --target=0.11.5';
+		}
+		else {
+			grunt.warn('build-node-sqlite3 failed. Platform not supported.');
+			done();
+		}
 
 		shell.pushd('node_modules/sqlite3');
 		shell.exec(cmd, {silent: true}, function(code, output) {
