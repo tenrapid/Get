@@ -37,9 +37,9 @@ Ext.define('Get.controller.MenuBar', {
 	projectManager: null,
 	recentProjectsChangedHandler: null,
 
-	saveMenuItem: null,
-	recentFilesMenuItem: null,
-	editMenuItem: null,
+	saveMenu: null,
+	recentFilesMenu: null,
+	editMenu: null,
 	undoMenuItem: null,
 	redoMenuItem: null,
 	canUndo: false,
@@ -76,7 +76,7 @@ Ext.define('Get.controller.MenuBar', {
 			win.title = val;
 		});
 		viewModel.bind('{project.isModified}', function(isModified) {
-			me.saveMenuItem.enabled = isModified;
+			me.saveMenu.enabled = isModified;
 		});
 	},
 
@@ -92,9 +92,9 @@ Ext.define('Get.controller.MenuBar', {
 			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
 			fireEventScope = isMac ? this.menuBarManager : this,
 			menuBar,
-			fileMenuItem,
-			editMenuItem,
-			debugMenuItem;
+			fileMenu,
+			editMenu,
+			debugMenu;
 
 		menuBar = new gui.Menu({ type: "menubar" });
 		if (isMac) {
@@ -103,54 +103,54 @@ Ext.define('Get.controller.MenuBar', {
 
 		// File menu
 
-		fileMenuItem = new gui.MenuItem({
+		fileMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Datei',
 			submenu: new gui.Menu()
 		});
 
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Neues Fenster',
 			key: 'n',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'newMenuItem') 
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Öffnen …',
 			key: 'o',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'openMenuItem') 
 		}));
-		this.recentFilesMenuItem = new gui.MenuItem({
+		this.recentFilesMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Zuletzt verwendet',
 			submenu: new gui.Menu()
 		});
-		fileMenuItem.submenu.append(this.recentFilesMenuItem);
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(this.recentFilesMenu);
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Schließen',
 			key: 'w',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'closeMenuItem') 
 		}));
-		this.saveMenuItem = new gui.MenuItem({
+		this.saveMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern',
 			key: 's',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'saveMenuItem') 
 		});
-		fileMenuItem.submenu.append(this.saveMenuItem);
-		fileMenuItem.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(this.saveMenu);
+		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern als …',
 			key: 's',
@@ -158,38 +158,53 @@ Ext.define('Get.controller.MenuBar', {
 			click: fireEvent.bind(fireEventScope, 'saveAsMenuItem') 
 		}));
 
-		menuBar.insert(fileMenuItem, isMac ? 1 : 0);
+		if (isMac) {
+			menuBar.insert(fileMenu, 1);
+		}
+		else {
+			menuBar.append(fileMenu);
+		}
 
 		// Edit menu
 
 		if (isMac) {
-			this.editMenuItem = menuBar.items[2];
-			this.undoMenuItem = this.editMenuItem.submenu.items[0];
-			this.redoMenuItem = this.editMenuItem.submenu.items[1];
+			this.editMenu = menuBar.items[2];
 		}
 		else {
-			this.editMenuItem = new gui.MenuItem({
+			this.editMenu = new gui.MenuItem({
 				type: 'normal',
 				label: 'Bearbeiten',
 				submenu: new gui.Menu()
 			});
+			this.editMenu.submenu.append(new gui.MenuItem({
+				type: 'normal',
+				label: 'Rückgängig',
+				key: 'z',
+				modifiers: cmd,
+				click: fireEvent.bind(fireEventScope, 'undoMenuItem') 
+			}));
+			this.editMenu.submenu.append(new gui.MenuItem({
+				type: 'normal',
+				label: 'Wiederholen',
+				key: 'z',
+				modifiers: 'shift-' + cmd,
+				click: fireEvent.bind(fireEventScope, 'redoMenuItem') 
+			}));
+			menuBar.append(this.editMenu);
 		}
-
+		this.undoMenuItem = this.editMenu.submenu.items[0];
+		this.redoMenuItem = this.editMenu.submenu.items[1];
 		this.updateUndoRedoMenuItems();
-
-		if (!isMac) {
-			menuBar.insert(this.editMenuItem, 1);
-		}
 
 		// Debug menu
 
-		debugMenuItem = new this.gui.MenuItem({
+		debugMenu = new this.gui.MenuItem({
 			type: 'normal',
 			label: this.win.id,
 			submenu: new this.gui.Menu()
 		});
 
-		debugMenuItem.submenu.append(new gui.MenuItem({
+		debugMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'ReloadDev',
 			key: 'r',
@@ -198,7 +213,7 @@ Ext.define('Get.controller.MenuBar', {
 				win.reloadDev();
 			}
 		}));
-		debugMenuItem.submenu.append(new gui.MenuItem({
+		debugMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Reload',
 			key: 'r',
@@ -207,7 +222,7 @@ Ext.define('Get.controller.MenuBar', {
 				win.reload();
 			}
 		}));
-		debugMenuItem.submenu.append(new gui.MenuItem({
+		debugMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'ShowDevTools',
 			key: 'i',
@@ -218,7 +233,7 @@ Ext.define('Get.controller.MenuBar', {
 				devTools.height = 600;
 			}
 		}));
-		menuBar.append(debugMenuItem);
+		menuBar.append(debugMenu);
 
 		return menuBar;
 	},
@@ -232,8 +247,8 @@ Ext.define('Get.controller.MenuBar', {
 
 		if (dialogVisible) {
 			if (isMac) {
-				this.editMenuItem.submenu.remove(this.undoMenuItem);
-				this.editMenuItem.submenu.remove(this.redoMenuItem);
+				this.editMenu.submenu.remove(this.undoMenuItem);
+				this.editMenu.submenu.remove(this.redoMenuItem);
 				this.undoMenuItem = new gui.MenuItem({
 					label: 'Rückgängig',
 					key: 'z',
@@ -246,8 +261,8 @@ Ext.define('Get.controller.MenuBar', {
 					modifiers: 'shift-' + cmd,
 					selector: 'redo:'
 				});
-				this.editMenuItem.submenu.insert(this.undoMenuItem, 0);
-				this.editMenuItem.submenu.insert(this.redoMenuItem, 1);
+				this.editMenu.submenu.insert(this.undoMenuItem, 0);
+				this.editMenu.submenu.insert(this.redoMenuItem, 1);
 			}
 			else {
 				this.undoMenuItem.enabled = false;
@@ -256,12 +271,8 @@ Ext.define('Get.controller.MenuBar', {
 		}
 		else {
 			if (isMac && this.undoMenuItem && this.redoMenuItem) {
-				this.editMenuItem.submenu.remove(this.undoMenuItem);
-				this.editMenuItem.submenu.remove(this.redoMenuItem);
-				this.undoMenuItem = null;
-				this.redoMenuItem = null;
-			}
-			if (!this.undoMenuItem && !this.redoMenuItem) {
+				this.editMenu.submenu.remove(this.undoMenuItem);
+				this.editMenu.submenu.remove(this.redoMenuItem);
 				this.undoMenuItem = new gui.MenuItem({
 					type: 'normal',
 					label: 'Rückgängig',
@@ -276,8 +287,8 @@ Ext.define('Get.controller.MenuBar', {
 					modifiers: 'shift-' + cmd,
 					click: fireEvent.bind(fireEventScope, 'redoMenuItem') 
 				});
-				this.editMenuItem.submenu.insert(this.undoMenuItem, 0);
-				this.editMenuItem.submenu.insert(this.redoMenuItem, 1);
+				this.editMenu.submenu.insert(this.undoMenuItem, 0);
+				this.editMenu.submenu.insert(this.redoMenuItem, 1);
 			}
 			this.undoMenuItem.enabled = this.canUndo;
 			this.redoMenuItem.enabled = this.canRedo;
@@ -287,11 +298,22 @@ Ext.define('Get.controller.MenuBar', {
 	onRecentProjectsChanged: function(recentProjects) {
 		var me = this,
 			gui = this.gui,
-			menu = new gui.Menu(),
 			path = require('path'),
 			isMac = process.platform === 'darwin',
 			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
-			fireEventScope = isMac ? this.menuBarManager : this;
+			fireEventScope = isMac ? this.menuBarManager : this,
+			menu,
+			menuBar;
+
+		if (isMac) {
+			menu = new gui.Menu();
+		}
+		else {
+			// build a whole new menu bar because setting a new submenu of a menu item 
+			// does not work on windows
+			menuBar = this.buildMenuBar();
+			menu = this.recentFilesMenu.submenu;
+		}
 
 		recentProjects.forEach(function(filename) {
 			menu.append(new gui.MenuItem({
@@ -300,7 +322,13 @@ Ext.define('Get.controller.MenuBar', {
 				click: fireEvent.bind(fireEventScope, 'recentProjectsMenuItem', filename)
 			}));
 		});
-		this.recentFilesMenuItem.submenu = menu;
+
+		if (isMac) {
+			this.recentFilesMenu.submenu = menu;
+		}
+		else {
+			this.win.menu = menuBar;
+		}
 	},
 
 	onNew: function(win) {
