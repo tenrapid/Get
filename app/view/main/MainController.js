@@ -273,35 +273,9 @@ Ext.define('Get.view.main.MainController', {
 				return;
 			}
 			// SaveAs: remove an existing file 
-			// TODO: Übernimmt Chrome in Windows auch die Überprüfung auf existierende Datei?
 			shell.rm(filename);
 		}
 		duplicate();
-
-		// if (fs.existsSync(filename)) {
-		// 	Ext.Msg.show({
-		// 		message: '"' + path.basename(filename) + '" existiert bereits. Soll die Datei ersetzt werden?',
-		// 		buttons: Ext.Msg.OKCANCEL,
-		// 		buttonText: {
-		// 			ok: 'Ersetzen',
-		// 			cancel: 'Abbrechen'
-		// 		},
-		// 		icon: Ext.Msg.WARNING,
-		// 		fn: function(choice) {
-		// 			if (choice == 'ok') {
-		// 				if (filename !== currentFilename) {
-		// 					shell.rm(filename);
-		// 				}
-		// 				duplicate();
-		// 			}
-		// 		}
-		// 	});
-		// 	Ext.Msg.down('button#ok').addCls('btn-ok');
-		// 	Ext.Msg.down('toolbar').setLayout({pack: 'end'});
-		// }
-		// else {
-		// 	duplicate();
-		// }
 	},
 
 	onCloseMenuItem: function() {
