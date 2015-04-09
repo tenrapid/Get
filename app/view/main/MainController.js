@@ -240,26 +240,11 @@ Ext.define('Get.view.main.MainController', {
 	onSaveFileDialog: function(filename) {
 		var me = this,
 			fs = require('fs'),
-			path = require('path'),
 			shell = require('shelljs'),
 			currentFilename = me.project.get('filename'),
 			save = function() {
 				me.project.set('filename', filename);
 				me.save();
-			},
-			duplicate = function() {
-				if (currentFilename && filename !== currentFilename) {
-					// SaveAs: copy the currently open file to the new location. If the new filename and
-					// the current one are the same, then do not copy and handle it as a regular save.
-					me.projectManager.projectClosed(currentFilename);
-					me.project.getProxy().closeDatabase(function() {
-						shell.cp(currentFilename, filename);
-						save();
-					});
-				}
-				else {
-					save();
-				}
 			};
 
 		if (!Ext.String.endsWith(filename, '.get', true)) {
@@ -267,15 +252,27 @@ Ext.define('Get.view.main.MainController', {
 		}
 
 		if (fs.existsSync(filename) && filename !== currentFilename) {
+			// SaveAs: remove an existing file, but only if it is not open
 			if (this.projectManager.isOpen(filename)) {
 				this.showErrorMessage('Speichern nicht möglich. ' + 
 					'Die Datei "' + filename + '" ist bereits in einem anderen Fenster geöffnet.');
 				return;
 			}
-			// SaveAs: remove an existing file 
 			shell.rm(filename);
 		}
-		duplicate();
+
+		if (currentFilename && filename !== currentFilename) {
+			// SaveAs: copy the currently open file to the new location. If the new filename and
+			// the current one are the same, then do not copy and handle it as a regular save.
+			me.projectManager.projectClosed(currentFilename);
+			me.project.getProxy().closeDatabase(function() {
+				shell.cp(currentFilename, filename);
+				save();
+			});
+		}
+		else {
+			save();
+		}
 	},
 
 	onCloseMenuItem: function() {
