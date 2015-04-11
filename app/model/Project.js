@@ -220,9 +220,25 @@ Ext.define('Get.model.Project', {
 			tourStore = this.tourStore,
 			areaStore = this.areaStore;
 
+		areaStore.sort([
+			{
+				property: 'parentId',
+				direction: 'ASC'
+			},
+			{
+				property: 'index',
+				direction: 'ASC'
+			}
+		]);
 		areaStore.each(function(record) {
 			tourStore.getById(record.get('parentId')).appendChild(record);
 		});
+		tourStore.sort([
+			{
+				property: 'index',
+				direction: 'ASC'
+			}
+		]);
 		tourStore.each(function(record) {
 			record.set('loaded', true);
 			root.appendChild(record);

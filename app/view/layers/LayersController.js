@@ -29,7 +29,11 @@ Ext.define('Get.view.layers.LayersController', {
 	isLayerSelectionForced: false,
 	selectedLayerItem: null,
 
-	// TODO: persist order of layers
+	init: function() {
+		var treeView = this.getView().getView();
+		treeView.on('beforedrop', this.onBeforeDrop, this);
+		treeView.on('drop', this.onDrop, this);
+	},
 
 	onProjectLoad: function() {
 		var view = this.getView();
@@ -127,6 +131,40 @@ Ext.define('Get.view.layers.LayersController', {
 		if (context.record.isRoot()) {
 			return false;
 		}
+	},
+
+	onBeforeDrop: function(node, data) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			selectionModel = view.getSelectionModel(),
+			record = data.records[0];
+
+
+		project.undoManager.beginUndoGroup();
+		project.undoManager.registerUndoOperation({
+			type: 'fn',
+			undo: function() {
+				selectionModel.select(record);
+			}
+		});
+		project.undoManager.onStoreOperation('remove', null, data.records);
+	},
+
+	onDrop: function(node, data) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			selectionModel = view.getSelectionModel(),
+			record = data.records[0];
+
+		project.undoManager.registerUndoOperation({
+			type: 'fn',
+			redo: function() {
+				selectionModel.select(record);
+			}
+		});
+		project.undoManager.endUndoGroup();
+
+		selectionModel.select(record);
 	}
 		
 });

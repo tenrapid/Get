@@ -21,6 +21,31 @@ Ext.define('Get.view.layers.Layers', {
 		overItemCls: null,
 		markDirty: false,
 		loadMask: false,
+		plugins: {
+			ptype: 'treeviewdragdrop',
+			containerScroll: true,
+			nodeHighlightOnDrop: false,
+			dropZone: {
+				isValidDropPoint: function(node, position, dragZone, e, data) {
+					var view = this.view,
+            			targetRecord = view.getRecord(node),
+            			record = data.records[0];
+
+            		if (position === 'append') {
+            			return false;
+            		}
+            		if (record.entityName === 'Area') {
+            			if (targetRecord.entityName !== 'Area') {
+            				return false;
+            			}
+            			if (record.parentNode != targetRecord.parentNode) {
+            				return false;
+            			}
+            		}
+					return Object.getPrototypeOf(this).isValidDropPoint.apply(this, arguments);
+				}
+			}
+		}
 	},
 	rootVisible: true,
 	root: {

@@ -3,6 +3,10 @@ Ext.define('Get.model.Waypoint', {
 	
 	fields: [
 		{
+			name: 'index',
+			type: 'int'
+		},
+		{
 			name: 'geometry',
 			type: 'geometry'
 		},
