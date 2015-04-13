@@ -14,6 +14,7 @@ Ext.define('Get.model.Project', {
 		'Get.controller.ProjectStoreEventNormalization',
 		'Get.controller.ProjectModificationState',
 		'Get.controller.UndoManager',
+		'Get.controller.ProjectWaypointIndexUpdate',
 		'tenrapid.data.proxy.Sqlite'
 	],
 
@@ -106,6 +107,7 @@ Ext.define('Get.model.Project', {
 		this.projectStoreEventNormalizationController && this.projectStoreEventNormalizationController.destroy();
 		this.projectModificationController && this.projectModificationController.destroy();
 		this.undoManager && this.undoManager.destroy();
+		this.projectWaypointIndexUpdateController && this.projectWaypointIndexUpdateController.destroy();
 		this.callParent();
 	},
 	
@@ -126,6 +128,7 @@ Ext.define('Get.model.Project', {
 						me.updateName();
 						me.buildLayerTree();
 						me.adjustIdentifierSeeds();
+						me.sortWaypoints();
 
 						me.projectStoreEventNormalizationController = Ext.create('Get.controller.ProjectStoreEventNormalization', {
 							project: me
@@ -134,6 +137,9 @@ Ext.define('Get.model.Project', {
 							project: me
 						});
 						me.undoManager = Ext.create('Get.controller.UndoManager', {
+							project: me
+						});
+						me.projectWaypointIndexUpdateController = Ext.create('Get.controller.ProjectWaypointIndexUpdate', {
 							project: me
 						});
 
@@ -275,6 +281,17 @@ Ext.define('Get.model.Project', {
 				// not nodes are created in Model.constructor which uses the session to generate an id.
 				me.session.getIdentifier(model).setSeed(seed);
 			}
+		});
+	},
+
+	sortWaypoints: function() {
+		// sort the waypoints and tour waypoints and remove the sorter afterwards
+		this.waypointStore.sort('index', 'ASC');
+		this.waypointStore.data.getSorters().removeAll();
+		this.tourStore.getRange().concat(this.areaStore.getRange()).forEach(function(layer) {
+			var store = layer.tourWaypoints();
+			store.sort(store.getIndexField(), 'ASC');
+			store.data.getSorters().removeAll();
 		});
 	},
 	

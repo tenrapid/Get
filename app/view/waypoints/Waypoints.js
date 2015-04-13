@@ -3,6 +3,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	xtype: 'get-waypoints',
 
 	requires: [
+		'Ext.grid.plugin.DragDrop',
 		'Get.view.waypoints.WaypointsController',
 		'Get.view.waypoints.WaypointsModel',
 		'Get.selection.FeatureModel',
@@ -15,6 +16,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 
 	title: 'Waypoints',
 	border: false,
+	sortableColumns: false,
 	reserveScrollbar: true,
 	bind: {
 		title: '{selectedLayerItem.name}',
@@ -28,6 +30,11 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	viewConfig: {
 		overItemCls: null,
 		markDirty: false,
+		plugins: {
+			ptype: 'gridviewdragdrop',
+			dragText: 'Drag and drop to reorganize',
+			containerScroll: true,
+		}
 	},
 	columns: [
 		{
@@ -40,11 +47,13 @@ Ext.define('Get.view.waypoints.Waypoints', {
 		{
 			text: 'Name',
 			dataIndex: 'name',
+			menuDisabled: true,
 			flex: 3
 		},
 		{
 			text: 'Waypoint',
 			hidden: true,
+			menuDisabled: true,
 			renderer: function(value, meta, record) {
 				var waypoint = record.getWaypoint && record.getWaypoint();
 				return waypoint ? waypoint.get('name') : '';

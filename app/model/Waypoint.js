@@ -4,7 +4,8 @@ Ext.define('Get.model.Waypoint', {
 	fields: [
 		{
 			name: 'index',
-			type: 'int'
+			type: 'int',
+			defaultValue: -1
 		},
 		{
 			name: 'geometry',

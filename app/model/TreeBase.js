@@ -21,7 +21,7 @@ Ext.define('Get.model.TreeBase', {
 		{
 			name: 'index',
 			type: 'int',
-			defaultValue : -1,
+			defaultValue: -1,
 			convert: null,
 			persist: true
 		}

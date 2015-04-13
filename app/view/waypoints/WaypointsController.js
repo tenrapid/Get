@@ -29,7 +29,11 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		},
 	},
 
-	// TODO: persist order of waypoints
+	init: function() {
+		var gridView = this.getView().getView();
+		gridView.on('beforedrop', this.onBeforeDrop, this);
+		gridView.on('drop', this.onDrop, this);
+	},
 
 	onProjectLoad: function() {
 		this.getView().getView().scrollRowIntoView(0);
@@ -98,7 +102,37 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			});
 		}
 	},
+
+	onBeforeDrop: function(node, data) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			selectionModel = view.getSelectionModel();
+
+		project.undoManager.beginUndoGroup();
+		project.undoManager.registerUndoOperation({
+			type: 'fn',
+			undo: function() {
+				selectionModel.select(data.records);
+			}
+		});
+	},
 	
+	onDrop: function(node, data) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			selectionModel = view.getSelectionModel();
+
+		project.undoManager.registerUndoOperation({
+			type: 'fn',
+			redo: function() {
+				selectionModel.select(data.records);
+			}
+		});
+		project.undoManager.endUndoGroup();
+
+		selectionModel.select(data.records);
+	},
+
 	onClickButton: function () {
 		Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
 	},

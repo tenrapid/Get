@@ -15,6 +15,11 @@ Ext.define('Get.model.TourWaypoint', {
 			}
 		},
 		{
+			name: 'tourIndex',
+			type: 'int',
+			defaultValue: -1
+		},
+		{
 			name: 'areaId', 
 			reference: {
 				type: 'Area',
@@ -25,6 +30,11 @@ Ext.define('Get.model.TourWaypoint', {
 					}
 				}
 			}
+		},
+		{
+			name: 'areaIndex',
+			type: 'int',
+			defaultValue: -1
 		},
 		{
 			name: 'waypointId', 

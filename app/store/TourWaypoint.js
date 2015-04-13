@@ -5,4 +5,8 @@ Ext.define('Get.store.TourWaypoint', {
 
 	pageSize: 0,
 	geometryPropertyAssociation: 'waypoint',
+
+	getIndexField: function() {
+		return this.associatedEntity ? Ext.String.uncapitalize(this.associatedEntity.entityName) + 'Index' : null;
+	}
 });
