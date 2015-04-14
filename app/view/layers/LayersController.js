@@ -22,6 +22,16 @@ Ext.define('Get.view.layers.LayersController', {
 				'layer': {
 					nodebeforeremove: 'onBeforeLayerStoreNodeRemove',
 				},
+				'waypoint': {
+					add: 'onWaypointOperation',
+					remove: 'onWaypointOperation',
+					clear: 'onWaypointOperation'
+				},
+				'tourWaypoint': {
+					add: 'onWaypointOperation',
+					remove: 'onWaypointOperation',
+					clear: 'onWaypointOperation'
+				}
 			},
 		},
 	},
@@ -130,6 +140,19 @@ Ext.define('Get.view.layers.LayersController', {
 	onBeforeLayerItemEdit: function(editor, context) {
 		if (context.record.isRoot()) {
 			return false;
+		}
+	},
+
+	onWaypointOperation: function(store, records) {
+		// update the number of waypoints counter on the right side of a layer item
+		var view = this.getView().getView(),
+			treeStore = view.getStore();
+
+		if (store.model.entityName === 'Waypoint') {
+			view.onUpdate(treeStore, treeStore.getRoot());
+		}
+		else if (store.associatedEntity) {
+			view.onUpdate(treeStore, store.associatedEntity);
 		}
 	},
 
