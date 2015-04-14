@@ -109,12 +109,14 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			selectionModel = view.getSelectionModel();
 
 		project.undoManager.beginUndoGroup();
-		project.undoManager.registerUndoOperation({
-			type: 'fn',
-			undo: function() {
-				selectionModel.select(data.records);
-			}
-		});
+		// TODO: maintain selection of waypoints after drag and drop
+		// project.undoManager.registerUndoOperation({
+		// 	type: 'fn',
+		// 	undo: function() {
+		// 		selectionModel.select(data.records);
+		// 	}
+		// });
+		// selectionModel.deselectAll();
 	},
 	
 	onDrop: function(node, data) {
@@ -122,15 +124,15 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			project = view.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel();
 
-		project.undoManager.registerUndoOperation({
-			type: 'fn',
-			redo: function() {
-				selectionModel.select(data.records);
-			}
-		});
+		// project.undoManager.registerUndoOperation({
+		// 	type: 'fn',
+		// 	redo: function() {
+		// 		selectionModel.select(data.records);
+		// 	}
+		// });
 		project.undoManager.endUndoGroup();
 
-		selectionModel.select(data.records);
+		// selectionModel.select(data.records);
 	},
 
 	onClickButton: function () {
