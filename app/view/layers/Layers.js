@@ -83,7 +83,6 @@ Ext.define('Get.view.layers.Layers', {
 			text: '',
 			align: 'right',
 			renderer: function(value, metadata, record) {
-				// TODO: update count after adding/removing of tour waypoints
 				metadata.style = 'font-size: 11px; color: #bbb;';
 				var store = record.isRoot() ? Ext.getStore('waypoints') : record.tourWaypoints();
 				return store && store.count() || '';

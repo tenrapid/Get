@@ -162,7 +162,6 @@ Ext.define('Get.view.layers.LayersController', {
 			selectionModel = view.getSelectionModel(),
 			record = data.records[0];
 
-
 		project.undoManager.beginUndoGroup();
 		project.undoManager.registerUndoOperation({
 			type: 'fn',
