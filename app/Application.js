@@ -23,7 +23,7 @@ Ext.define('Get.Application', {
 
 	launch: function () {
 		var mainController = this.getMainView().getController(),
-			project = Ext.create('Get.model.Project');
+			project = Ext.create('Get.project.Project');
 		mainController.load(project);
 	},
 	

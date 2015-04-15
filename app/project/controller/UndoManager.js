@@ -1,4 +1,4 @@
-Ext.define('Get.controller.UndoManager', {
+Ext.define('Get.project.controller.UndoManager', {
 	extend: 'Ext.app.Controller',
 
 	id: 'undomanager',

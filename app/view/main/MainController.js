@@ -3,7 +3,7 @@ Ext.define('Get.view.main.MainController', {
 	alias: 'controller.main',
 
 	requires: [
-		'Get.model.Project',
+		'Get.project.Project',
 	],
 
 	id: 'main', 
@@ -82,7 +82,7 @@ Ext.define('Get.view.main.MainController', {
 		if (error) {
 			this.showErrorMessage('"' + project.get('filename') + '" konnte nicht geladen werden.', error);
 			project.destroy();
-			project = Ext.create('Get.model.Project');
+			project = Ext.create('Get.project.Project');
 			this.load(project);
 			return;
 		}
@@ -175,7 +175,7 @@ Ext.define('Get.view.main.MainController', {
 			if (this.isDialogVisible) {
 				return;
 			}
-			project = Ext.create('Get.model.Project', {
+			project = Ext.create('Get.project.Project', {
 				filename: filename
 			});
 			this.load(project);
@@ -201,7 +201,7 @@ Ext.define('Get.view.main.MainController', {
 			win.focus();
 		}
 		else {
-			project = Ext.create('Get.model.Project', {
+			project = Ext.create('Get.project.Project', {
 				filename: filename
 			});
 			this.load(project);

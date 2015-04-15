@@ -1,5 +1,5 @@
-Ext.define('Get.model.Project', {
-	extend: 'Get.model.Base',
+Ext.define('Get.project.Project', {
+	extend: 'Ext.data.Model',
 
 	requires: [
 		'Ext.data.Session',
@@ -11,14 +11,27 @@ Ext.define('Get.model.Project', {
 		'Get.store.Tour',
 		'Get.store.Area',
 		'Get.store.Layer',
-		'Get.controller.ProjectStoreEventNormalization',
-		'Get.controller.ProjectModificationState',
-		'Get.controller.UndoManager',
-		'Get.controller.ProjectWaypointIndexUpdate',
+		'Get.project.controller.StoreEventNormalization',
+		'Get.project.controller.ModificationState',
+		'Get.project.controller.UndoManager',
+		'Get.project.controller.WaypointIndexUpdate',
 		'tenrapid.data.proxy.Sqlite'
 	],
 
+	schema: {
+		id: 'project',
+		namespace: 'Get.project',
+	},
+
+	identifier: {
+		type: 'sequential',
+	},
+	
 	fields: [
+		{
+			name: 'id',
+			type: 'int'
+		},
 		{
 			name: 'name',
 			defaultValue: 'Unbenannt',
@@ -51,6 +64,10 @@ Ext.define('Get.model.Project', {
 			name: 'isModified',
 			persist: false
 		}
+	],
+
+	controllers: [
+		'StoreEventNormalization', 'ModificationState', 'UndoManager', 'WaypointIndexUpdate'
 	],
 
 	stores: [
@@ -95,7 +112,7 @@ Ext.define('Get.model.Project', {
 
 	destroy: function() {
 		var me = this;
-		this.layerStore && this.layerStore.destroy();
+		this.layerStore.destroy();
 		this.layerStore = null;
 		this.stores.forEach(function(name) {
 			me.getStore(name).destroy();
@@ -104,10 +121,7 @@ Ext.define('Get.model.Project', {
 		this.session.destroy();
 		this.session = null;
 		this.getProxy().destroy();
-		this.projectStoreEventNormalizationController && this.projectStoreEventNormalizationController.destroy();
-		this.projectModificationController && this.projectModificationController.destroy();
-		this.undoManager && this.undoManager.destroy();
-		this.projectWaypointIndexUpdateController && this.projectWaypointIndexUpdateController.destroy();
+		this.destroyControllers();
 		this.callParent();
 	},
 	
@@ -130,18 +144,8 @@ Ext.define('Get.model.Project', {
 						me.adjustIdentifierSeeds();
 						me.sortWaypoints();
 
-						me.projectStoreEventNormalizationController = Ext.create('Get.controller.ProjectStoreEventNormalization', {
-							project: me
-						});
-						me.projectModificationController = Ext.create('Get.controller.ProjectModificationState', {
-							project: me
-						});
-						me.undoManager = Ext.create('Get.controller.UndoManager', {
-							project: me
-						});
-						me.projectWaypointIndexUpdateController = Ext.create('Get.controller.ProjectWaypointIndexUpdate', {
-							project: me
-						});
+						me.createControllers();
+						me.undoManager = me.undoManagerController;
 
 						me.set('layers', me.layerStore);
 						me.set('waypoints', me.waypointStore);
@@ -187,7 +191,7 @@ Ext.define('Get.model.Project', {
 				if (!errors) {
 					me.updateName();
 				}
-				me.projectModificationController.afterSave();
+				me.modificationStateController.afterSave();
 				Ext.callback(callback, scope, [me, errors]);
 			});
 			// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
@@ -209,6 +213,24 @@ Ext.define('Get.model.Project', {
 			me.updateName();
 			Ext.callback(callback, scope, [me, null]);
 		}
+	},
+
+	createControllers: function() {
+		var me = this;
+		this.controllers.forEach(function (controller) {
+			me[Ext.String.uncapitalize(controller) + 'Controller'] = Ext.create('Get.project.controller.' + controller, {
+				project: me
+			});
+		});
+	},
+
+	destroyControllers: function() {
+		var me = this;
+		this.controllers.forEach(function (controller) {
+			if (me[Ext.String.uncapitalize(controller) + 'Controller']) {
+				me[Ext.String.uncapitalize(controller) + 'Controller'].destroy();	
+			}
+		});
 	},
 
 	updateName: function() {

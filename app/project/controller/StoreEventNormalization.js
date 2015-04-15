@@ -1,4 +1,4 @@
-Ext.define('Get.controller.ProjectStoreEventNormalization', {
+Ext.define('Get.project.controller.StoreEventNormalization', {
 	extend: 'Ext.app.Controller',
 
 	id: 'projectstoreeventnormalization',

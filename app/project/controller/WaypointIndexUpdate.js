@@ -1,4 +1,4 @@
-Ext.define('Get.controller.ProjectWaypointIndexUpdate', {
+Ext.define('Get.project.controller.WaypointIndexUpdate', {
 	extend: 'Ext.app.Controller',
 
 	id: 'projectwaypointindexupdate',

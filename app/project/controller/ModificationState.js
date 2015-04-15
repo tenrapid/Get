@@ -1,4 +1,4 @@
-Ext.define('Get.controller.ProjectModificationState', {
+Ext.define('Get.project.controller.ModificationState', {
 	extend: 'Ext.app.Controller',
 
 	id: 'projectmodificationstate',

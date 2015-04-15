@@ -5,7 +5,6 @@ Ext.define('Get.view.layers.Layers', {
 	requires: [
 		'Get.view.layers.LayersController',
 		'Get.view.layers.LayersModel',
-		'Get.model.Project',
 		'Ext.tree.*',
 	],
 
