@@ -11,10 +11,10 @@ Ext.define('Get.project.Project', {
 		'Get.store.Tour',
 		'Get.store.Area',
 		'Get.store.Layer',
-		'Get.project.controller.StoreEventNormalization',
-		'Get.project.controller.ModificationState',
+		'Get.project.controller.StoreEventNormalizationController',
+		'Get.project.controller.ModificationStateController',
 		'Get.project.controller.UndoManager',
-		'Get.project.controller.WaypointIndexUpdate',
+		'Get.project.controller.WaypointIndexUpdateController',
 		'tenrapid.data.proxy.Sqlite'
 	],
 
@@ -67,7 +67,7 @@ Ext.define('Get.project.Project', {
 	],
 
 	controllers: [
-		'StoreEventNormalization', 'ModificationState', 'UndoManager', 'WaypointIndexUpdate'
+		'StoreEventNormalizationController', 'ModificationStateController', 'UndoManager', 'WaypointIndexUpdateController'
 	],
 
 	stores: [
@@ -145,7 +145,6 @@ Ext.define('Get.project.Project', {
 						me.sortWaypoints();
 
 						me.createControllers();
-						me.undoManager = me.undoManagerController;
 
 						me.set('layers', me.layerStore);
 						me.set('waypoints', me.waypointStore);
@@ -218,7 +217,7 @@ Ext.define('Get.project.Project', {
 	createControllers: function() {
 		var me = this;
 		this.controllers.forEach(function (controller) {
-			me[Ext.String.uncapitalize(controller) + 'Controller'] = Ext.create('Get.project.controller.' + controller, {
+			me[Ext.String.uncapitalize(controller)] = Ext.create('Get.project.controller.' + controller, {
 				project: me
 			});
 		});
@@ -227,8 +226,8 @@ Ext.define('Get.project.Project', {
 	destroyControllers: function() {
 		var me = this;
 		this.controllers.forEach(function (controller) {
-			if (me[Ext.String.uncapitalize(controller) + 'Controller']) {
-				me[Ext.String.uncapitalize(controller) + 'Controller'].destroy();	
+			if (me[Ext.String.uncapitalize(controller)]) {
+				me[Ext.String.uncapitalize(controller)].destroy();	
 			}
 		});
 	},
