@@ -5,22 +5,16 @@ Ext.define('Get.project.controller.StoreEventNormalizationController', {
 
 	config: {
 		project: null,
-		listen: {
-			store: {
-				tourWaypoint: {
-					add: 'onAssociationStoreAdd',
-					remove: 'onAssociationStoreRemove',
-					clear: 'onAssociationStoreClear',
-				}
-			}
-		}
 	},
 
 	constructor: function() {
 		this.callParent(arguments);
 
 		var me = this,
-			project = this.getProject();
+			project = this.getProject(),
+			listenConfig = {
+				store: {}
+			};
 		
 		project.layerStore.on({
 			nodeappend: this.onNodeStoreAdd,
@@ -37,6 +31,15 @@ Ext.define('Get.project.controller.StoreEventNormalizationController', {
 				scope: me
 			});
 		});
+
+		['tourWaypoint', 'picture'].forEach(function(store) {
+			listenConfig.store[store] = {
+				add: 'onAssociationStoreAdd',
+				remove: 'onAssociationStoreRemove',
+				clear: 'onAssociationStoreClear',
+			};
+		});
+		this.listen(listenConfig);
 
 		project.session.on({
 			update: this.onUpdate,

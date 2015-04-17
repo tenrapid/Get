@@ -8,6 +8,7 @@ Ext.define('Get.project.Project', {
 		'Get.data.Session',
 		'Get.store.Waypoint',
 		'Get.store.TourWaypoint',
+		'Get.store.Picture',
 		'Get.store.Tour',
 		'Get.store.Area',
 		'Get.store.Layer',
@@ -71,11 +72,8 @@ Ext.define('Get.project.Project', {
 	],
 
 	stores: [
-		'tour', 'area', 'waypoint', 'tourWaypoint' 
+		'tour', 'area', 'waypoint', 'tourWaypoint', 'picture' 
 	],
-
-	layerStore: null,
-	undoManager: null,
 
 	constructor: function(data) {
 		window.p = this;
