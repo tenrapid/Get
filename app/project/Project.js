@@ -16,6 +16,7 @@ Ext.define('Get.project.Project', {
 		'Get.project.controller.ModificationStateController',
 		'Get.project.controller.UndoManager',
 		'Get.project.controller.WaypointIndexUpdateController',
+		'Get.project.controller.PictureManager',
 		'tenrapid.data.proxy.Sqlite'
 	],
 
@@ -68,7 +69,11 @@ Ext.define('Get.project.Project', {
 	],
 
 	controllers: [
-		'StoreEventNormalizationController', 'ModificationStateController', 'UndoManager', 'WaypointIndexUpdateController'
+		'StoreEventNormalizationController', 
+		'ModificationStateController', 
+		'UndoManager', 
+		'WaypointIndexUpdateController',
+		'PictureManager'
 	],
 
 	stores: [

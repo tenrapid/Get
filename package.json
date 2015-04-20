@@ -9,16 +9,19 @@
     "focus": true
   },
   "dependencies": {
+    "async": "^0.9.0",
+    "blueimp-load-image": "~1.13.0",
     "nodewebkit": "0.11.5",
-    "sqlite3": "mapbox/node-sqlite3#78a134bd6a4b32baa393b43883058ac6c5063ea0"
+    "shelljs": "~0.3.0",
+    "sqlite3": "mapbox/node-sqlite3#78a134bd6a4b32baa393b43883058ac6c5063ea0",
+    "tmp": "~0.0.25"
   },
   "devDependencies": {
     "download": "^3.3.0",
     "download-status": "^2.1.0",
     "grunt": "^0.4.5",
     "grunt-concurrent": "^1.0.0",
-    "grunt-exec": "^0.4.6",
-    "shelljs": "^0.3.0"
+    "grunt-exec": "^0.4.6"
   },
   "scripts": {
     "start": "nodewebkit",

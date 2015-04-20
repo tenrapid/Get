@@ -16,18 +16,27 @@ Ext.define('Get.model.Picture', {
 		{
 			name: 'cropX',
 			type: 'float',
+			defaultValue: 0
 		},
 		{
 			name: 'cropY',
 			type: 'float',
+			defaultValue: 0
 		},
 		{
 			name: 'cropWidth',
 			type: 'float',
+			defaultValue: 1
 		},
 		{
 			name: 'cropHeight',
 			type: 'float',
+			defaultValue: 1
+		},
+		{
+			name: 'filename',
+			type: 'string',
+			persist: false
 		},
 	]
 });
