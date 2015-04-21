@@ -69,10 +69,15 @@ Ext.define('Get.view.main.MainController', {
 			viewModel.set('project', null);
 			viewModel.notify();
 			this.projectManager.projectClosed(this.project.get('filename'));
-			this.project.destroy();
-			this.project = null;
+			this.project.close(function() {
+				this.project.destroy();
+				this.project = null;
+				project.load(this.onLoad, this);
+			}, this);
 		}
-		project.load(this.onLoad, this);
+		else {
+			project.load(this.onLoad, this);
+		}
 	},
 	
 	onLoad: function(project, error) {
@@ -282,7 +287,9 @@ Ext.define('Get.view.main.MainController', {
 		this.checkForUnsavedChanges(function() {
 			this.projectManager.projectClosed(this.project.get('filename'));
 			this.fireEvent('close');
-			this.win.close(true);
+			this.project.close(function() {
+				this.win.close(true);
+			}, this);
 		}, this);
 	},
 

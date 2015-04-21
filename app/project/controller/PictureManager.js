@@ -5,10 +5,9 @@ Ext.define('Get.project.controller.PictureManager', {
 		project: null,
 	},
 
-	projectDb: null,
-	projectDbTableExists: false,
 	tmpDb: null,
 	tmpDbTableExists: false,
+	projectDbTableExists: false,
 
 	pictures: null,
 
@@ -20,9 +19,18 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	constructor: function(config) {
+		var me = this;
+
 		this.initConfig(config);
 		this.pictures = {};
-		Get.model.Picture.prototype.pictureManager = this;
+
+		// TODO: getImage() on Picture instance?
+		// Get.model.Picture.prototype.pictureManager = this;
+
+		// remove tmpDb when doing a ReloadDev
+		window.addEventListener('unload', function() {
+			me.removeTmpDatabase();
+		});
 	},
 
 	add: function(picture, callback, scope) {
@@ -79,6 +87,12 @@ Ext.define('Get.project.controller.PictureManager', {
 		});
 	},
 
+	close: function(callback, scope) {
+		this.removeTmpDatabase(function(err) {
+			Ext.callback(callback, scope, [err]);
+		});
+	},
+
 	createTmpDatabase: function(callback) {
 		var me = this,
 			tmp = require('tmp'),
@@ -99,6 +113,24 @@ Ext.define('Get.project.controller.PictureManager', {
 		}
 		else {
 			callback();
+		}
+	},
+
+	removeTmpDatabase: function(callback) {
+		var me = this,
+			fs = require('fs'),
+			filename = this.tmpDb && this.tmpDb.filename;
+
+		if (filename) {
+			this.tmpDb.close(function() {
+				fs.unlinkSync(filename);
+				me.tmpDb = null;
+				me.tmpDbTableExists = false;
+				if (callback) callback();
+			});
+		}
+		else {
+			if (callback) callback();
 		}
 	},
 
@@ -155,17 +187,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		var me = this,
 			async = require('async'),
 			id = picture.getId(),
-			db;
-
-		if (this.pictures[id]) {
-			db = this.tmpDb;
-		}
-		else {
-			if (!this.projectDb) {
-				this.projectDb = this.project.getProxy().getDatabaseObject();
-			}
-			db = this.projectDb;
-		}
+			db = this.pictures[id] ? this.tmpDb : this.project.getProxy().getDatabaseObject();
 
 		db.get('SELECT ' + size + ' FROM pictureData WHERE id = ?', id, function(err, row) {
 			var buffer = row[size],
@@ -200,7 +222,7 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	beforeProjectSave: function() {
-		// save image data of dropped pictures in temDb
+		// save image data of dropped pictures in tmpDb
 	},
 
 	resize: function(pictureData, callback) {
@@ -262,3 +284,9 @@ Ext.define('Get.project.controller.PictureManager', {
 	}
 
 });
+
+// pic=Ext.create('Get.model.Picture', {filename:'/Users/tenrapid/Desktop/IMG_7790.jpg'})
+// p.pictureManager.add(pic, function() {console.log('add', arguments);})
+// p.pictureManager.getImage(pic, 'thumb', function() {console.log('image', arguments);})
+
+// p.pictureManager.getImage(pic, 'original', function(err,img) {console.log('image', arguments);document.body.appendChild(img);})

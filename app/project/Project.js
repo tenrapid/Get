@@ -217,6 +217,22 @@ Ext.define('Get.project.Project', {
 		}
 	},
 
+	close: function(callback, scope) {
+		var me = this,
+			async = require('async');
+
+		async.parallel([
+			function(callback) {
+				me.getProxy().closeDatabase(callback);
+			},
+			function(callback) {
+				me.pictureManager.close(callback);
+			},
+		], function(err) {
+			Ext.callback(callback, scope, [err]);
+		});
+	},
+
 	createControllers: function() {
 		var me = this;
 		this.controllers.forEach(function (controller) {
