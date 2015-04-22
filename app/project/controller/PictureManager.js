@@ -12,6 +12,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	pictures: null,
 
+	tableName: 'PictureData',
 	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, regular BLOB, thumb BLOB',
 	pictureSizes: {
 		'original': [1200, 1200],
@@ -275,7 +276,7 @@ Ext.define('Get.project.controller.PictureManager', {
 			callback();
 		}
 		else {
-			db.run('CREATE TABLE IF NOT EXISTS pictureData (' + this.shemaString + ')', function(err) {
+			db.run('CREATE TABLE IF NOT EXISTS ' + this.tableName + ' (' + this.shemaString + ')', function(err) {
 				if (!err) {
 					me[db.filename === me.tmpDbFilename ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
 				}
@@ -292,14 +293,14 @@ Ext.define('Get.project.controller.PictureManager', {
 			this.getTmpDatabase.bind(this),
 			function(db, callback) {
 				if (me.pictures[pictureData.id]) {
-					db.run('UPDATE pictureData SET regular = ?, thumb = ? WHERE id = ?', [
+					db.run('UPDATE ' + me.tableName + ' SET regular = ?, thumb = ? WHERE id = ?', [
 							pictureData.regular,
 							pictureData.thumb,
 							pictureData.id
 						], callback);
 				}
 				else {
-					db.run('INSERT INTO pictureData (id, original, regular, thumb) VALUES (?, ?, ?, ?)', [
+					db.run('INSERT INTO ' + me.tableName + ' (id, original, regular, thumb) VALUES (?, ?, ?, ?)', [
 							pictureData.id,
 							pictureData.original,
 							pictureData.regular,
@@ -324,7 +325,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		async.waterfall([
 			getDatabase.bind(this),
 			function(db, callback) {
-				db.get('SELECT ' + size + ' FROM pictureData WHERE id = ?', id, callback);
+				db.get('SELECT ' + size + ' FROM ' + me.tableName + ' WHERE id = ?', id, callback);
 			},
 			function(row, callback) {
 				var buffer = row[size],
@@ -341,9 +342,9 @@ Ext.define('Get.project.controller.PictureManager', {
 	copyPictureData: function(fromDb, toDb, mode, ids, callback) {
 		var async = require('async'),
 			tasks = [],
-			selectSql = 'SELECT * FROM pictureData WHERE id = ?',
-			insertSql = 'INSERT INTO pictureData (id, original, regular, thumb) VALUES (?, ?, ?, ?)',
-			updateSql = 'UPDATE pictureData SET original = ?, regular = ?, thumb = ? WHERE id = ?',
+			selectSql = 'SELECT * FROM ' + this.tableName + ' WHERE id = ?',
+			insertSql = 'INSERT INTO ' + this.tableName + ' (id, original, regular, thumb) VALUES (?, ?, ?, ?)',
+			updateSql = 'UPDATE ' + this.tableName + ' SET original = ?, regular = ?, thumb = ? WHERE id = ?',
 			selectStatement,
 			insertStatement,
 			updateStatement;
@@ -466,7 +467,7 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	gi: function(pic) {
-		this.getImage(pic, 'thumb', function() {
+		this.getImage(pic, 'regular', function() {
 			console.log('getImage', arguments);
 		});
 	},
