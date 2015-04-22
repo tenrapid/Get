@@ -300,12 +300,10 @@ Ext.define('Get.project.controller.UndoManager', {
 		record.dropped = false;
 		if (record.erased) {
 			record.erased = false;
-			if (record.phantom) {
-				record.session.add(record);
-			}
 			// an erased record that is not phantom must be set to phantom because it was already dropped
 			// from the database
 			record.phantom = true;
+			record.session.add(record);
 		}
 
 		Ext.iterate(record.associations, function(roleName, role) {
