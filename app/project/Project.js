@@ -180,35 +180,45 @@ Ext.define('Get.project.Project', {
 	
 	save: function(callback, scope) {
 		var me = this,
+			async = require('async'),
 			saveBatch = this.session.getSaveBatch();
 
 		if (saveBatch) {
-			saveBatch.on('complete', function() {
-				var errors;
-				if (saveBatch.hasException()) {
-					errors = saveBatch.getExceptions().map(function(operation) {
-						return operation.getError();
-					});
-				}
-				if (!errors) {
-					me.updateName();
-				}
-				me.modificationStateController.afterSave();
-				Ext.callback(callback, scope, [me, errors]);
-			});
-			// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
-			// We need the proxies of this project's stores.
-			saveBatch.operations.forEach(function(operation) {
-				var entityName = operation.getProxy().getModel().entityName;
+			async.waterfall([
+				function(callback) {
+					me.pictureManager.save(callback);
+				},
+				function(callback) {
+					// Ext.data.session.BatchVisitor configures the operations with the model's default proxy.
+					// We need the proxies of this project's stores.
+					saveBatch.operations.forEach(function(operation) {
+						var entityName = operation.getProxy().getModel().entityName;
 
-				if (entityName === 'Project') {
-					operation.setProxy(me.getProxy());
+						if (entityName === 'Project') {
+							operation.setProxy(me.getProxy());
+						}
+						else {
+							operation.setProxy(me.getStore(Ext.String.uncapitalize(entityName)).getProxy());
+						}
+					});
+					saveBatch.on('complete', function() {
+						var errors;
+						if (saveBatch.hasException()) {
+							errors = saveBatch.getExceptions().map(function(operation) {
+								return operation.getError();
+							});
+						}
+						if (!errors) {
+							me.updateName();
+						}
+						me.modificationStateController.afterSave();
+						callback(errors);
+					});
+					saveBatch.start();
 				}
-				else {
-					operation.setProxy(me.getStore(Ext.String.uncapitalize(entityName)).getProxy());
-				}
+			], function(err) {
+				Ext.callback(callback, scope, [me, err]);
 			});
-			saveBatch.start();
 		}
 		else {
 			// no changes but filename may be changed due to save as

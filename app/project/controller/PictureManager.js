@@ -6,6 +6,7 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	tmpDb: null,
+	tmpDbFilename: null,
 	tmpDbTableExists: false,
 	projectDbTableExists: false,
 
@@ -87,119 +88,6 @@ Ext.define('Get.project.controller.PictureManager', {
 		});
 	},
 
-	close: function(callback, scope) {
-		this.removeTmpDatabase(function(err) {
-			Ext.callback(callback, scope, [err]);
-		});
-	},
-
-	createTmpDatabase: function(callback) {
-		var me = this,
-			tmp = require('tmp'),
-			sqlite3 = require('sqlite3'),
-			async = require('async'),
-			tmpDbFilename = '/Users/tenrapid/Desktop/tmpdb';
-			// tmpDbFilename = tmp.tmpNameSync();
-
-		if (!this.tmpDb) {
-			async.waterfall([
-				function(callback) {
-					me.tmpDb = new sqlite3.Database(tmpDbFilename, callback);
-				},
-				function(callback) {
-					me.createPictureDataTable(me.tmpDb, callback);
-				}
-			], callback);
-		}
-		else {
-			callback();
-		}
-	},
-
-	removeTmpDatabase: function(callback) {
-		var me = this,
-			fs = require('fs'),
-			filename = this.tmpDb && this.tmpDb.filename;
-
-		if (filename) {
-			this.tmpDb.close(function() {
-				fs.unlinkSync(filename);
-				me.tmpDb = null;
-				me.tmpDbTableExists = false;
-				if (callback) callback();
-			});
-		}
-		else {
-			if (callback) callback();
-		}
-	},
-
-	createPictureDataTable: function(db, callback) {
-		var me = this;
-
-		if (db == this.tmpDb && this.tmpDbTableExists || this.projectDbTableExists) {
-			callback();
-		}
-		else {
-			db.run('CREATE TABLE IF NOT EXISTS pictureData (' + this.shemaString + ')', function(err) {
-				if (!err) {
-					me[db == me.tmpDb ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
-				}
-				callback(err);
-			});
-		}
-	},
-
-	savePictureData: function(pictureData, callback) {
-		var me = this,
-			async = require('async');
-
-		async.waterfall([
-			function(callback) {
-				me.createTmpDatabase(callback);
-			},
-			function(callback) {
-				if (me.pictures[pictureData.id]) {
-					me.tmpDb.run('UPDATE pictureData SET regular = ?, thumb = ? WHERE id = ?', [
-							pictureData.regular,
-							pictureData.thumb,
-							pictureData.id
-						], callback);
-				}
-				else {
-					me.tmpDb.run('INSERT INTO pictureData (id, original, regular, thumb) VALUES (?, ?, ?, ?)', [
-							pictureData.id,
-							pictureData.original,
-							pictureData.regular,
-							pictureData.thumb
-						], callback);
-				}
-			}
-		], function(err) {
-			if (!err) {
-				me.pictures[pictureData.id] = true;
-			}
-			callback(err);
-		});
-	},
-
-	loadPictureData: function(picture, size, callback) {
-		var me = this,
-			async = require('async'),
-			id = picture.getId(),
-			db = this.pictures[id] ? this.tmpDb : this.project.getProxy().getDatabaseObject();
-
-		db.get('SELECT ' + size + ' FROM pictureData WHERE id = ?', id, function(err, row) {
-			var buffer = row[size],
-				pictureData = {
-					id: id
-				};
-
-			pictureData[size] = buffer;
-			callback(err, pictureData);
-		});
-	},
-
 	getImage: function(picture, size, callback, scope) {
 		var me = this,
 			async = require('async');
@@ -221,8 +109,292 @@ Ext.define('Get.project.controller.PictureManager', {
 		});
 	},
 
-	beforeProjectSave: function() {
-		// save image data of dropped pictures in tmpDb
+	save: function(callback, scope) {
+		var me = this,
+			async = require('async'),
+			changedPictures = this.getProject().session.getChanges().Picture;
+
+		if (!changedPictures) {
+			Ext.callback(callback, scope);
+			return;
+		}
+
+		async.waterfall([
+			function(callback) {
+				async.parallel({
+					tmp: me.getTmpDatabase.bind(me),
+					project: me.getProjectDatabase.bind(me)
+				}, callback);
+			},
+			function(db, callback) {
+				var tmpDb = db.tmp,
+					projectDb = db.project,
+					errors = [];
+
+				async.parallel([
+					// dropped pictures
+					function(callback) {
+						var dropped;
+
+						if (!changedPictures.D) {
+							callback();
+							return;
+						}
+
+						dropped = Ext.Array.difference(changedPictures.D, me.pictures);
+
+						me.copyPictureData(projectDb, tmpDb, 'insert', dropped, function(err) {
+							if (!err) {
+								changedPictures.D.forEach(function(id) {
+									me.pictures[id] = true;
+								});
+							}
+							else {
+								errors.push(err);
+							}
+							callback();
+						});
+					},
+					// updated pictures
+					function(callback) {
+						var updated = [];
+
+						if (!changedPictures.U) {
+							callback();
+							return;
+						}
+
+						changedPictures.U.forEach(function(u) {
+							var cropped = Object.keys(u).some(function(prop) {
+								return prop.substr(0, 4) === 'crop'; 
+							});
+							if (cropped) {
+								updated.push(u.id);
+							}
+						});
+
+						me.copyPictureData(tmpDb, projectDb, 'update', updated, function(err) {
+							if (err) {
+								errors.push(err);
+							}
+							callback();
+						});
+					},
+					// created pictures
+					function(callback) {
+						var created;
+
+						if (!changedPictures.C) {
+							callback();
+							return;
+						}
+
+						created = changedPictures.C.map(function(c) {
+							return c.id;
+						});
+
+						me.copyPictureData(tmpDb, projectDb, 'insert', created, function(err) {
+							if (err) {
+								errors.push(err);
+							}
+							callback();
+						});
+					}
+				], function() {
+					callback(errors.length ? errors : null);
+				});
+			},
+		], function(err) {
+			Ext.callback(callback, scope, [err]);
+		});
+	},
+
+	close: function(callback, scope) {
+		this.removeTmpDatabase(function(err) {
+			Ext.callback(callback, scope, [err]);
+		});
+	},
+
+	getTmpDatabase: function(callback) {
+		var me = this,
+			tmp = require('tmp'),
+			sqlite3 = require('sqlite3'),
+			async = require('async'),
+			tmpDb;
+
+		if (!this.tmpDb) {
+			async.waterfall([
+				function(callback) {
+					// me.tmpDbFilename = tmp.tmpNameSync();
+					me.tmpDbFilename = '/Users/tenrapid/Desktop/tmpdb';
+					tmpDb = new sqlite3.Database(me.tmpDbFilename, callback);
+				},
+				function(callback) {
+					me.createPictureDataTable(tmpDb, callback);
+				}
+			], function(err) {
+				me.tmpDb = tmpDb;
+				callback(err, tmpDb);
+			});
+		}
+		else {
+			callback(null, this.tmpDb);
+		}
+	},
+
+	removeTmpDatabase: function(callback) {
+		var me = this,
+			fs = require('fs'),
+			filename = this.tmpDb && this.tmpDb.filename;
+
+		if (filename) {
+			this.tmpDb.close(function() {
+				fs.unlinkSync(filename);
+				me.tmpDb = null;
+				me.tmpDbTableExists = false;
+				if (callback) callback();
+			});
+		}
+		else {
+			if (callback) callback();
+		}
+	},
+
+	getProjectDatabase: function(callback) {
+		var projectDb = this.getProject().getProxy().getDatabaseObject();
+
+		this.createPictureDataTable(projectDb, function(err) {
+			callback(err, projectDb);
+		});
+	},
+
+	createPictureDataTable: function(db, callback) {
+		var me = this;
+
+		if (db.filename === this.tmpDbFilename && this.tmpDbTableExists || this.projectDbTableExists) {
+			callback();
+		}
+		else {
+			db.run('CREATE TABLE IF NOT EXISTS pictureData (' + this.shemaString + ')', function(err) {
+				if (!err) {
+					me[db.filename === me.tmpDbFilename ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
+				}
+				callback(err);
+			});
+		}
+	},
+
+	savePictureData: function(pictureData, callback) {
+		var me = this,
+			async = require('async');
+
+		async.waterfall([
+			this.getTmpDatabase.bind(this),
+			function(db, callback) {
+				if (me.pictures[pictureData.id]) {
+					db.run('UPDATE pictureData SET regular = ?, thumb = ? WHERE id = ?', [
+							pictureData.regular,
+							pictureData.thumb,
+							pictureData.id
+						], callback);
+				}
+				else {
+					db.run('INSERT INTO pictureData (id, original, regular, thumb) VALUES (?, ?, ?, ?)', [
+							pictureData.id,
+							pictureData.original,
+							pictureData.regular,
+							pictureData.thumb
+						], callback);
+				}
+			}
+		], function(err) {
+			if (!err) {
+				me.pictures[pictureData.id] = true;
+			}
+			callback(err);
+		});
+	},
+
+	loadPictureData: function(picture, size, callback) {
+		var me = this,
+			async = require('async'),
+			id = picture.getId(),
+			getDatabase = this.pictures[id] ? this.getTmpDatabase : this.getProjectDatabase;
+
+		async.waterfall([
+			getDatabase.bind(this),
+			function(db, callback) {
+				db.get('SELECT ' + size + ' FROM pictureData WHERE id = ?', id, callback);
+			},
+			function(row, callback) {
+				var buffer = row[size],
+					pictureData = {
+						id: id
+					};
+
+				pictureData[size] = buffer;
+				callback(null, pictureData);
+			}
+		], callback);
+	},
+
+	copyPictureData: function(fromDb, toDb, mode, ids, callback) {
+		var async = require('async'),
+			tasks = [],
+			selectSql = 'SELECT * FROM pictureData WHERE id = ?',
+			insertSql = 'INSERT INTO pictureData (id, original, regular, thumb) VALUES (?, ?, ?, ?)',
+			updateSql = 'UPDATE pictureData SET original = ?, regular = ?, thumb = ? WHERE id = ?',
+			selectStatement,
+			insertStatement,
+			updateStatement;
+
+		if (!(mode === 'insert' || mode === 'update')) {
+			Ext.Error.raise('Invalid value for mode given: ' + mode);
+		}
+
+		async.waterfall([
+			async.apply(async.parallel, [
+				function(callback) {
+					selectStatement = fromDb.prepare(selectSql, callback);
+				}, 
+				function(callback) {
+					insertStatement = toDb.prepare(insertSql, callback);
+				}, 
+				function(callback) {
+					updateStatement = toDb.prepare(updateSql, callback);
+				}
+			]),
+			function(_, callback) {
+				ids.forEach(function(id) {
+					tasks.push(function(callback) {
+						selectStatement.get(id, callback);
+					});
+					switch (mode) {
+						case 'insert':
+							tasks.push(function(row, callback) {
+								insertStatement.run([
+										row.id,
+										row.original,
+										row.regular,
+										row.thumb
+									], callback);
+							});
+							break;
+						case 'update':
+							tasks.push(function(row, callback) {
+								updateStatement.run([
+										row.original,
+										row.regular,
+										row.thumb,
+										row.id
+									], callback);
+							});
+							break;
+					}
+				});
+				async.waterfall(tasks, callback);
+			}
+		], callback);
 	},
 
 	resize: function(pictureData, callback) {
@@ -281,6 +453,32 @@ Ext.define('Get.project.controller.PictureManager', {
 		THUMB: 'thumb',
 		REGULAR: 'regular',
 		ORIGINAL: 'original'
+	},
+
+	cp: function() {
+		var pic = this.getProject().session.createRecord('Picture', {
+			filename: '/Users/tenrapid/Desktop/IMG_7790.jpg'
+		});
+		this.add(pic, function() {
+			console.log('add', arguments);
+		});
+		return pic;
+	},
+
+	gi: function(pic) {
+		this.getImage(pic, 'thumb', function() {
+			console.log('getImage', arguments);
+		});
+	},
+
+	s: function() {
+		this.getProject().getProxy().setFilename('/Users/tenrapid/Desktop/picmantest.get');
+		this.save(function(err) {
+			console.log('save', arguments);
+			if (err) {
+				console.log(err);
+			}
+		});
 	}
 
 });
@@ -288,5 +486,3 @@ Ext.define('Get.project.controller.PictureManager', {
 // pic=Ext.create('Get.model.Picture', {filename:'/Users/tenrapid/Desktop/IMG_7790.jpg'})
 // p.pictureManager.add(pic, function() {console.log('add', arguments);})
 // p.pictureManager.getImage(pic, 'thumb', function() {console.log('image', arguments);})
-
-// p.pictureManager.getImage(pic, 'original', function(err,img) {console.log('image', arguments);document.body.appendChild(img);})
