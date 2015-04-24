@@ -35,8 +35,7 @@ Ext.define('Get.model.Picture', {
 		},
 		{
 			name: 'filename',
-			type: 'string',
-			persist: false
+			type: 'string'
 		},
 		{
 			name: 'db',

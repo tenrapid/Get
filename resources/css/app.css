@@ -23,13 +23,32 @@
 .x-tip-default {
 	border-color: #ddd !important;
 	background-color: #fff !important;
+	transition: opacity 0.05s;
 }
 .x-tip-default .x-tip-anchor {
 	border-color: #fff;
+	width: 18px;
+	height: 18px;
+	border-width: 9px;
 }
 .x-tip-default .x-tip-anchor-bottom {
 	border-bottom-color: transparent;
 	border-left-color: transparent;
+	border-right-color: transparent;
+}
+.x-tip-default .x-tip-anchor-top {
+	border-top-color: transparent;
+	border-left-color: transparent;
+	border-right-color: transparent;
+}
+.x-tip-default .x-tip-anchor-left {
+	border-bottom-color: transparent;
+	border-top-color: transparent;
+	border-left-color: transparent;
+}
+.x-tip-default .x-tip-anchor-right {
+	border-bottom-color: transparent;
+	border-top-color: transparent;
 	border-right-color: transparent;
 }
 
