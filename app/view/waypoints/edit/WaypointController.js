@@ -38,18 +38,20 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 			zwei Fenster mit unterschiedlichen Waypoints geöffnet werden können.
 		*/
 		var viewModel = this.getViewModel(),
-			waypointParentSession = viewModel.get('waypoint'),
-			entityName = waypointParentSession.entityName,
-			id = waypointParentSession.getId(),
 			session = this.getSession(),
 			form = this.lookupReference('form'),
-			waypoint,
-			tourWaypoint;
-			
-		if (entityName == 'TourWaypoint') {
-			tourWaypoint = session.getRecord(entityName, id);
-			waypoint = tourWaypoint.getWaypoint();
-			viewModel.set('waypoint', waypoint);
+			waypointParentSession = viewModel.get('waypoint'),
+			id = waypointParentSession.getId(),
+			isTourWaypoint = waypointParentSession.entityName === 'TourWaypoint',
+			tourWaypoint = isTourWaypoint ? session.getRecord('TourWaypoint', id) : null,
+			waypoint = isTourWaypoint ? tourWaypoint.getWaypoint() : session.getRecord('Waypoint', id);
+
+		ew = waypoint;
+		// set complete to true to prevent a load of the association store
+		waypoint.pictures().complete = true;
+		viewModel.set('waypoint', waypoint);
+
+		if (isTourWaypoint) {
 			viewModel.set('tourWaypoint', tourWaypoint);
 			form.add([
 				{
@@ -74,12 +76,11 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 			this.getView().setBind({title: 'Edit: {tourWaypoint.name}'});
 		}
 		else {
-			waypoint = session.getRecord(entityName, id);
-			viewModel.set('waypoint', waypoint);
 			form.add({
 				xtype: 'edit.waypoint.waypoint-fields'
 			});
 		}
+		viewModel.notify();
 		this.getView().defaultFocus = 'textfield';
 	},
 

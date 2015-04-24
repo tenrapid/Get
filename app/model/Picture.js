@@ -38,5 +38,11 @@ Ext.define('Get.model.Picture', {
 			type: 'string',
 			persist: false
 		},
+		{
+			name: 'db',
+			type: 'boolean',
+			defaultValue: true,
+			persist: false
+		},
 	]
 });

@@ -17,7 +17,7 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 		},
 		{
 			xtype: 'textarea',
-			fieldLabel: 'Description',
+			fieldLabel: 'Beschreibung',
 			grow: true,
 			bind: '{tourWaypoint.description}'
 		},

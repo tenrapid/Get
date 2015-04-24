@@ -25,15 +25,15 @@ Ext.define('Get.view.map.Map', {
 		new OpenLayers.Projection('EPSG:900913')),
 	zoom: 14,
 	layers: [
-		new OpenLayers.Layer.OSM("OpenStreetMap", [
-			'http://a.tile.openstreetmap.org/${z}/${x}/${y}.png',
-			'http://b.tile.openstreetmap.org/${z}/${x}/${y}.png',
-			'http://c.tile.openstreetmap.org/${z}/${x}/${y}.png'
-		]),
 		new OpenLayers.Layer.OSM("Streets Gray", [
 			"http://a.tiles.mapbox.com/v3/examples.map-20v6611k/${z}/${x}/${y}.png",
 			"http://b.tiles.mapbox.com/v3/examples.map-20v6611k/${z}/${x}/${y}.png",
 			"http://c.tiles.mapbox.com/v3/examples.map-20v6611k/${z}/${x}/${y}.png",
+		]),
+		new OpenLayers.Layer.OSM("OpenStreetMap", [
+			'http://a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+			'http://b.tile.openstreetmap.org/${z}/${x}/${y}.png',
+			'http://c.tile.openstreetmap.org/${z}/${x}/${y}.png'
 		]),
 		new OpenLayers.Layer.OSM("Streets", [
 			"http://a.tiles.mapbox.com/v3/examples.c7d2024a/${z}/${x}/${y}.png",

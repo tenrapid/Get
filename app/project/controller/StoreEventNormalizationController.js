@@ -88,21 +88,21 @@ Ext.define('Get.project.controller.StoreEventNormalizationController', {
 	},
 
 	onAssociationStoreAdd: function(store, records, index) {
-		if (store.associatedEntity) {
+		if (store.associatedEntity && store.session == this.getProject().session) {
 			// console.log('onAssociationStoreAdd', arguments);
 			this.fireEvent('add', store, records, index);
 		}
 	},
 
 	onAssociationStoreRemove: function(store, records, index) {
-		if (store.associatedEntity) {
+		if (store.associatedEntity && store.session == this.getProject().session) {
 			// console.log('onAssociationStoreRemove', arguments);
 			this.fireEvent('remove', store, records, index);
 		}
 	},
 
 	onAssociationStoreClear: function(store, records) {
-		if (store.associatedEntity) {
+		if (store.associatedEntity && store.session == this.getProject().session) {
 			// console.log('onAssociationStoreClear', arguments);
 			this.fireEvent('remove', store, records, 0);
 		}

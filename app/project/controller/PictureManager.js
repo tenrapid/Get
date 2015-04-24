@@ -64,7 +64,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		});
 	},
 
-	crop: function(picture, callback, scope) {
+	update: function(picture, callback, scope) {
 		var me = this,
 			async = require('async');
 
@@ -146,7 +146,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 						me.copyPictureData(projectDb, tmpDb, 'insert', dropped, function(err) {
 							if (!err) {
-								changedPictures.D.forEach(function(id) {
+								dropped.forEach(function(id) {
 									me.pictures[id] = true;
 								});
 							}
@@ -270,15 +270,16 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	createPictureDataTable: function(db, callback) {
-		var me = this;
+		var me = this,
+			isTmpDb = db.filename === this.tmpDbFilename;
 
-		if (db.filename === this.tmpDbFilename && this.tmpDbTableExists || this.projectDbTableExists) {
+		if (isTmpDb && this.tmpDbTableExists || this.projectDbTableExists) {
 			callback();
 		}
 		else {
 			db.run('CREATE TABLE IF NOT EXISTS ' + this.tableName + ' (' + this.shemaString + ')', function(err) {
 				if (!err) {
-					me[db.filename === me.tmpDbFilename ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
+					me[isTmpDb ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
 				}
 				callback(err);
 			});
@@ -457,8 +458,9 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	cp: function() {
-		var pic = this.getProject().session.createRecord('Picture', {
-			filename: '/Users/tenrapid/Desktop/IMG_7790.jpg'
+		// var pic = this.getProject().session.createRecord('Picture', {
+		var pic = Ext.create('Get.model.Picture', {
+			filename: '/Users/tenrapid/Desktop/DSC_0147.jpg'
 		});
 		this.add(pic, function() {
 			console.log('add', arguments);

@@ -1,6 +1,10 @@
 Ext.define('Get.view.waypoints.edit.WaypointFields', {
 	extend: 'Ext.form.FieldContainer',
 
+	requires: [
+		'Get.view.waypoints.edit.Pictures'
+	],
+
 	alias: 'widget.edit.waypoint.waypoint-fields',
 
 	layout: {
@@ -17,16 +21,26 @@ Ext.define('Get.view.waypoints.edit.WaypointFields', {
 		},
 		{
 			xtype: 'textarea',
-			fieldLabel: 'Description',
+			fieldLabel: 'Beschreibung',
 			grow: true,
 			bind: '{waypoint.description}'
 		},
 		{
 			xtype: 'geometryfield',
-			fieldLabel: 'Coords',
+			fieldLabel: 'Koordinaten',
 			allowBlank: false,
 			bind: '{waypoint.geometry}',
 			maxWidth: 260,
+		},
+		{
+			xtype: 'fieldcontainer',
+			fieldLabel: 'Bilder',
+			items: [
+				{
+					xtype: 'edit.waypoint.pictures',
+					bind: '{waypoint.pictures}'
+				}
+			]
 		},
 	]
 
