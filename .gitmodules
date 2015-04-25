@@ -4,9 +4,3 @@
 [submodule "libs/jcrop"]
 	path = libs/jcrop
 	url = https://github.com/tapmodo/Jcrop.git
-[submodule "libs/openlayers"]
-	path = libs/openlayers
-	url = https://github.com/openlayers/openlayers
-[submodule "libs/geoext2"]
-	path = libs/geoext2
-	url = https://github.com/geoext/geoext2
