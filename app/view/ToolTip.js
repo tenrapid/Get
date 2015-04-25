@@ -1,6 +1,30 @@
 Ext.define('Get.view.ToolTip', {
 	extend: 'Ext.tip.ToolTip',
 
+	delayShow: function (trackMouse) {
+		// When delaying, cache the XY coords of the mouse when this method was invoked, NOT when the deferred
+		// show is called because the mouse could then be in a completely different location. Only cache the
+		// coords when trackMouse is false.
+		//
+		// Note that the delayShow call could be coming from a caller which would internally be setting trackMouse
+		// (e.g., Ext.chart.Tip:showTip()). Because of this, the caller will pass along the original value for
+		// trackMouse (i.e., the value passed to the component constructor) to the delayShow method.
+		// See EXTJSIV-11292.
+		var me = this;
+
+		if (me.hidden && !me.showTimer) {
+			if (Ext.Date.getElapsed(me.lastActive) < me.quickShowInterval) {
+				me.show();
+			} else {
+				me.showTimer = Ext.defer(me.showFromDelay, me.showDelay, me);
+			}
+		}
+		else if (!me.hidden && me.autoHide !== false) {
+			this.fireEvent('beforeShow', this);
+			me.show();
+		}
+	},
+
 	/**
 	 * Shows this tooltip at the current event target XY position.
 	 * Modified: ignore cached coords xy
@@ -8,10 +32,14 @@ Ext.define('Get.view.ToolTip', {
 	show: function () {
 		var me = this;
 
+		// trigger element already removed
+		if (!this.triggerElement.parentNode) {
+			return;
+		}
+
 		// Show this Component first, so that sizing can be calculated
 		// pre-show it off screen so that the el will have dimensions
 		this.callParent();
-		this.el.setOpacity('1');
 		if (this.hidden === false) {
 			if (me.anchor) {
 				me.anchor = me.origAnchor;
@@ -24,33 +52,28 @@ Ext.define('Get.view.ToolTip', {
 		}
 	},
 
-    delayHide: function() {
-		this.el.setOpacity('0');
-        this.callParent(arguments);
-    },
+	getOffsets: function() {
+		var me = this,
+			offsets,
+			ap = me.getAnchorPosition().charAt(0);
 
-    getOffsets: function() {
-        var me = this,
-            offsets,
-            ap = me.getAnchorPosition().charAt(0);
+		switch (ap) {
+		case 't':
+			offsets = [0, 4];
+			break;
+		case 'b':
+			offsets = [0, -4];
+			break;
+		case 'r':
+			offsets = [-14, 0];
+			break;
+		default:
+			offsets = [14, 0];
+			break;
+		}
 
-        switch (ap) {
-        case 't':
-            offsets = [0, 4];
-            break;
-        case 'b':
-            offsets = [0, -4];
-            break;
-        case 'r':
-            offsets = [-14, 0];
-            break;
-        default:
-            offsets = [14, 0];
-            break;
-        }
-
-        return offsets;
-    },
+		return offsets;
+	},
 
 	getAnchorAlign: function() {
 		switch (this.anchor) {
@@ -95,5 +118,47 @@ Ext.define('Get.view.ToolTip', {
 		me.anchorEl.alignTo(me.el, anchorPos + '-' + targetPos, offset);
 		me.anchorEl.setStyle('z-index', parseInt(me.el.getZIndex(), 10) || 0 + 1).setVisibilityMode(Ext.Element.DISPLAY);
 	},
+
+	onRender: function() {
+		this.callParent(arguments);
+		this.mon(this.anchorEl, {
+			mouseout: this.onTargetOut,
+			scope: this
+		});
+	},
+	
+	onTargetOver: function(e) {
+		var me = this,
+			delegate = me.delegate,
+			t;
+
+		t = delegate ? e.getTarget(delegate) : e.target;
+
+		if (e.target == this.triggerElement && e.relatedTarget == this.anchorEl.dom) {
+			return;
+		}
+		if (me.disabled || e.within(t, true)) {
+			return;
+		}
+		if (t) {
+			me.triggerElement = t;
+			me.triggerEvent = e;
+			me.clearTimer('hide');
+			me.targetXY = e.getXY();
+			me.delayShow();
+		}
+	},
+
+	onTargetOut: function(e) {
+		if (e.target == this.triggerElement && e.relatedTarget == this.anchorEl.dom ||
+			e.target == this.anchorEl.dom && e.relatedTarget == this.triggerElement) {
+			return;
+		}
+		this.callParent(arguments);
+	},
+
+	onMouseMove: function() {
+
+	}
 
 });

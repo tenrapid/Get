@@ -12,6 +12,8 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	pictures: null,
 
+	tmpFileRemoveCallbacks: null,
+
 	tableName: 'PictureData',
 	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, regular BLOB, thumb BLOB',
 	pictureSizes: {
@@ -25,14 +27,15 @@ Ext.define('Get.project.controller.PictureManager', {
 
 		this.initConfig(config);
 		this.pictures = {};
+		this.tmpFileRemoveCallbacks = [];
+
+		// remove tmpDb and temp files when doing a ReloadDev
+		window.addEventListener('unload', function() {
+			me.close();
+		});
 
 		// TODO: getImage() on Picture instance?
-		// Get.model.Picture.prototype.pictureManager = this;
-
-		// remove tmpDb when doing a ReloadDev
-		window.addEventListener('unload', function() {
-			me.removeTmpDatabase();
-		});
+		Get.model.Picture.prototype.pictureManager = this;
 	},
 
 	add: function(picture, callback, scope) {
@@ -211,8 +214,25 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	close: function(callback, scope) {
-		this.removeTmpDatabase(function(err) {
-			Ext.callback(callback, scope, [err]);
+		var me = this,
+			async = require('async'),
+			error;
+
+		async.parallel([
+			function(callback) {
+				me.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
+					removeCallback();
+				});
+				callback();
+			},
+			function(callback) {
+				me.removeTmpDatabase(function(err) {
+					error = err;
+					callback();
+				});
+			}
+		], function() {
+			Ext.callback(callback, scope, [error]);
 		});
 	},
 

@@ -21,9 +21,12 @@
 }
 
 .x-tip-default {
-	border-color: #ddd !important;
+	border-width: 0 !important;
 	background-color: #fff !important;
-	transition: opacity 0.05s;
+	border-radius: 4px !important;
+	/* enable hardware accelaration to use filters*/
+	transform: translateZ(0);
+	-webkit-filter: drop-shadow(1px 1px 4px #777);
 }
 .x-tip-default .x-tip-anchor {
 	border-color: #fff;
@@ -61,7 +64,7 @@
 	float: left;
 	text-align: center;
 	background-position: 50%;
-	background-size: contain;
+	background-size: cover;
 	background-repeat: no-repeat;
 	border: 1px solid #ccc;
 	position: relative;

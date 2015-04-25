@@ -47,7 +47,17 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 			waypoint = isTourWaypoint ? tourWaypoint.getWaypoint() : session.getRecord('Waypoint', id);
 
 		ew = waypoint;
-		// set complete to true to prevent a load of the association store
+
+		// We have to "initialize" the association store. If we don't do this, new pictures aren't
+		// added to it during session.save().
+		if (isTourWaypoint) {
+			waypointParentSession.getWaypoint().pictures();
+		}
+		else {
+			waypointParentSession.pictures();
+		}
+
+		// Set complete to true to prevent a load of the association store.
 		waypoint.pictures().complete = true;
 		viewModel.set('waypoint', waypoint);
 

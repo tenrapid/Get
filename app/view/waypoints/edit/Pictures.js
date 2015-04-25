@@ -1,12 +1,12 @@
 Ext.define('Get.view.waypoints.edit.Pictures', {
 	extend: 'Ext.view.View',
 	requires: [
-		'Get.view.waypoints.edit.PicturesController',
+		'Get.view.ToolTip'
 	],
 
 	alias: 'widget.edit.waypoint.pictures',
 
-	controller: 'edit.waypoint.pictures',
+	// controller: 'edit.waypoint.pictures',
 
 	tpl: [
 		'<tpl for=".">',
@@ -49,8 +49,33 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		}
 	},
 
+	// overide View
 	getNodeContainer: function() {
 		return this.pictures;
+	},
+
+	// overide View
+	refresh: function() {
+		this.callParent();
+		// AbstractView.refresh appends the items to this view's el and ignores getNodeContainer, so we have 
+		// to put them there in the next line.
+		this.all.appendTo(this.pictures);
+	},
+
+	// overide View
+	prepareData: function(data, index, picture) {
+		var me = this,
+			newData = this.callParent(arguments);
+
+		picture.getImageUrl('thumb', function(err, url) {
+			var node = me.getNode(picture);
+
+			if (node) {
+				node.style.backgroundImage = 'url(' + url + ')';
+			}
+			newData.imageUrl = url;
+		});
+		return newData;
 	},
 
 	afterRender: function() {
@@ -64,38 +89,87 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			change: 'onFileInput',
 			scope: this
 		});
+		if (!this.preview) {
+			this.preview = Ext.create('Get.view.ToolTip', {
+				target: this.pictures,
+				delegate: this.itemSelector,
+				maxWidth: 620,
+				anchor: 'bottom',
+				hideDelay: 200,
+				dismissDelay: 0,
+				shadow: null,
+				renderTo: Ext.getBody(),
+				listeners: {
+					beforeshow: 'updatePreview',
+					scope: this
+				}
+			});
+		}
+
+		// DEBUG
+		pv = this;
 	},
 
-	refresh: function() {
-		this.callParent();
-		// AbstractView.refresh appends the items to this view's el and ignores getNodeContainer, so we have 
-		// to put them there in the next line.
-		this.all.appendTo(this.pictures);
-	},
+	updatePreview: function(preview) {
+		var picture = this.getRecord(preview.triggerElement),
+			size;
 
-	prepareData: function(data, index, record) {
-		var newData = this.callParent(arguments);
-		newData.imageUrl = 'file:///Users/tenrapid/Desktop/DSC_0147.jpg';
-		return newData;
+		if (!picture) {
+			return;
+		}
+
+		size = picture.sizeWithin([600, 400]);
+
+		preview.update([
+			'<div style="width: ' + size[0] + 'px;">',
+				'<img src="" width="' + size[0] + '" height="' + size[1] + '"><br>', 
+				'Filename: ' + picture.get('filename'),
+			'</div>'
+		].join(''));
+		picture.getImageUrl('preview', function(err, url) {
+			preview.body.down('img').set({src: url});
+		});
 	},
 
 	onAddButton: function() {
 		this.fileInput.dom.click();
 	},
 
-	onRemoveButton: function(record) {
-		this.fireEvent('removePicture', record);
+	onRemoveButton: function(picture) {
+		this.removePicture(picture);
 	},
 
 	onFileInput: function() {
 		var files = Ext.Array.clone(this.fileInput.dom.files);
 
 		if (files.length) {
-			this.fireEvent('addPicture', files);
+			this.addPicture(files);
 		}
 
 		this.fileInput.dom.files.clear();
 		this.fileInput.dom.files.append(new File('', ''));
-	}
+	},
+
+	addPicture: function(files) {
+		var pictures = this.getStore(),
+			sizeOf = require('image-size');
+
+		files.forEach(function(file) {
+			sizeOf(file.path, function(err, dimensions) {
+				if (!err) {
+					pictures.add(Ext.create('Get.model.Picture', {
+						filename: file.path,
+						width: dimensions.width,
+						height: dimensions.height,
+						db: false
+					}));
+				}
+			});
+		});
+	},
+	
+	removePicture: function(picture) {
+		picture.drop();
+	},
 
 });
