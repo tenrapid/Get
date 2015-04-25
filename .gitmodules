@@ -1,9 +1,12 @@
-[submodule "openlayers"]
-	path = openlayers
-	url = https://github.com/openlayers/openlayers
-[submodule "geoext2"]
-	path = geoext2
-	url = https://github.com/geoext/geoext2
 [submodule "packages/sqlite-proxy"]
 	path = packages/sqlite-proxy
 	url = https://github.com/tenrapid/ExtJS5-SQLite-Proxy.git
+[submodule "libs/jcrop"]
+	path = libs/jcrop
+	url = https://github.com/tapmodo/Jcrop.git
+[submodule "libs/openlayers"]
+	path = libs/openlayers
+	url = https://github.com/openlayers/openlayers
+[submodule "libs/geoext2"]
+	path = libs/geoext2
+	url = https://github.com/geoext/geoext2
