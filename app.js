@@ -16,7 +16,7 @@ Ext.application({
     // of merge conflicts when upgrading to new versions of Sencha Cmd.
     //-------------------------------------------------------------------------
 	paths: {
-		GeoExt: 'geoext2/src/GeoExt'
+		GeoExt: 'libs/geoext2/src/GeoExt'
 	},
 });
 

@@ -81,7 +81,7 @@ module.exports = function(grunt) {
 		var shell = require('shelljs'),
 			done = this.async();
 
-		shell.pushd('openlayers/build');
+		shell.pushd('libs/openlayers/build');
 		shell.exec('python build.py', {silent: true}, function(code, output) {
 			if (code !== 0) {
 				grunt.log.writeln(output);
@@ -89,7 +89,7 @@ module.exports = function(grunt) {
 			}
 			shell.popd();
 			shell.mkdir('-p', 'resources/js/openlayers');
-			shell.cp('-Rf', 'openlayers/build/OpenLayers.js', 'openlayers/img', 'openlayers/theme', 'resources/js/openlayers'); 
+			shell.cp('-Rf', 'libs/openlayers/build/OpenLayers.js', 'libs/openlayers/img', 'libs/openlayers/theme', 'resources/js/openlayers'); 
 			done();
 		});
 	});
