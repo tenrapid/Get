@@ -102,8 +102,11 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 		preview.update([
 			'<div style="width: ' + size[0] + 'px;">',
-				'<img src="" width="' + size[0] + '" height="' + size[1] + '"><br>', 
-				picture.get('name'),
+				'<img width="' + size[0] + '" height="' + size[1] + '">', 
+				picture.isCropped() ? '<div class="waypoint-picture-crop-indicator"><i class="fa fa-crop"></i></div>' : '',
+				'<div style="margin-top: 1px;">',
+					picture.get('name'),
+				'</div>',
 			'</div>'
 		].join(''));
 		picture.getImageUrl('preview', function(err, url) {

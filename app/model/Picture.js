@@ -82,6 +82,13 @@ Ext.define('Get.model.Picture', {
 		height = Math.round(height * scale);
 
 		return [width, height];
+	},
+
+	isCropped: function() {
+		return this.get('cropX') !== 0 || 
+			   this.get('cropY') !== 0 || 
+			   this.get('cropWidth') !== 1 ||
+			   this.get('cropHeight') !== 1;
 	}
 
 });
