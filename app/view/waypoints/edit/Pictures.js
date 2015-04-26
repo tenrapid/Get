@@ -98,7 +98,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			return;
 		}
 
-		size = picture.sizeWithin([600, 400]);
+		size = picture.sizeWithin([600, Math.min(600, Math.round(Ext.Element.getViewportHeight() / 2.25))]);
 
 		preview.update([
 			'<div style="width: ' + size[0] + 'px;">',
@@ -178,7 +178,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	openCropWindow: function(picture) {
 		var me = this,
 			maxWidth = Ext.Element.getViewportWidth() - 80,
-			maxHeight = Ext.Element.getViewportHeight() - 175,
+			maxHeight = Ext.Element.getViewportHeight() - 140,
 			size = picture.sizeWithin([maxWidth, maxHeight], true),
 			image,
 			titleTextfield,

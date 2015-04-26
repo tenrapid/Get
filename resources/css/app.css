@@ -20,6 +20,10 @@
 	background-image: -webkit-linear-gradient(top,#E1F0FA,#BBD2EA);
 }
 
+.x-mask {
+	background-color: rgba(100,100,100,0.3) !important;
+}
+
 .x-tip-default {
 	border-width: 0 !important;
 	background-color: #fff !important;
