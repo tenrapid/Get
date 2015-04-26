@@ -76,7 +76,7 @@ Ext.define('Get.model.Picture', {
 
 		scaleX = maxWidth / width;
 		scaleY = maxHeight / height;
-		scale = (scaleX < 1 || scaleY < 1) ? Math.min(scaleX, scaleY) : Math.max(scaleX, scaleY);
+		scale = (scaleX < 1 || scaleY < 1) ? Math.min(scaleX, scaleY) : 1;
 
 		width = Math.round(width * scale);
 		height = Math.round(height * scale);
