@@ -59,13 +59,13 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 			},
 			buttons: [
 				{
-					text: 'Save',
+					text: 'OK',
 					cls: 'btn-ok',
 					formBind: true,
 					handler: 'onSave',
 				},
 				{
-					text: 'Cancel',
+					text: 'Abbrechen',
 					handler: 'closeView',
 				},
 			]

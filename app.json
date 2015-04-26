@@ -110,6 +110,9 @@
         {
             "path": "node_modules/jquery/dist/jquery.min.js"
         },
+        {
+            "path": "libs/jcrop/js/jquery.Jcrop.min.js"
+        },
         // {
         //     "path": "${framework.dir}/build/ext-all-debug.js"
         // },
@@ -153,6 +156,9 @@
         },
         {
             "path": "node_modules/font-awesome/css/font-awesome.min.css"
+        },
+        {
+            "path": "libs/jcrop/css/jquery.Jcrop.min.css"
         },
         {
             "path": "bootstrap.css",

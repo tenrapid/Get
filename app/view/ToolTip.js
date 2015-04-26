@@ -59,16 +59,16 @@ Ext.define('Get.view.ToolTip', {
 
 		switch (ap) {
 		case 't':
-			offsets = [0, 4];
+			offsets = [0, 6];
 			break;
 		case 'b':
-			offsets = [0, -4];
+			offsets = [0, -6];
 			break;
 		case 'r':
-			offsets = [-14, 0];
+			offsets = [-6, 0];
 			break;
 		default:
-			offsets = [14, 0];
+			offsets = [6, 0];
 			break;
 		}
 
@@ -141,7 +141,7 @@ Ext.define('Get.view.ToolTip', {
 			return;
 		}
 		if (t) {
-			me.triggerElement = t;
+			me.triggerElement = delegate ? t : true;
 			me.triggerEvent = e;
 			me.clearTimer('hide');
 			me.targetXY = e.getXY();

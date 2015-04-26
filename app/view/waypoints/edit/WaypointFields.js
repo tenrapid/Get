@@ -20,17 +20,17 @@ Ext.define('Get.view.waypoints.edit.WaypointFields', {
 			bind: '{waypoint.name}',
 		},
 		{
-			xtype: 'textarea',
-			fieldLabel: 'Beschreibung',
-			grow: true,
-			bind: '{waypoint.description}'
-		},
-		{
 			xtype: 'geometryfield',
 			fieldLabel: 'Koordinaten',
 			allowBlank: false,
 			bind: '{waypoint.geometry}',
 			maxWidth: 260,
+		},
+		{
+			xtype: 'textarea',
+			fieldLabel: 'Beschreibung',
+			grow: true,
+			bind: '{waypoint.description}'
 		},
 		{
 			xtype: 'fieldcontainer',

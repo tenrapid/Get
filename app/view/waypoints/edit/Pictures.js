@@ -1,12 +1,11 @@
 Ext.define('Get.view.waypoints.edit.Pictures', {
 	extend: 'Ext.view.View',
 	requires: [
-		'Get.view.ToolTip'
+		'Get.view.ToolTip',
+		'Ext.window.Window'
 	],
 
 	alias: 'widget.edit.waypoint.pictures',
-
-	// controller: 'edit.waypoint.pictures',
 
 	tpl: [
 		'<tpl for=".">',
@@ -29,25 +28,6 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		'pictures',
 		'fileInput'
 	],
-
-	listeners: {
-		itemmouseenter: function(view, record, el) {
-			var removeButton = Ext.get(el).down('.waypoint-picture-remove-button');
-			removeButton.show();
-			removeButton.on({
-				click: {
-					fn: view.onRemoveButton,
-					scope: view,
-					args: [record]
-				}
-			});
-		},
-		itemmouseleave: function(view, record, el) {
-			var removeButton = Ext.get(el).down('.waypoint-picture-remove-button');
-			removeButton.hide();
-			removeButton.un('click', view.onRemoveButton, view);
-		}
-	},
 
 	// overide View
 	getNodeContainer: function() {
@@ -123,12 +103,34 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		preview.update([
 			'<div style="width: ' + size[0] + 'px;">',
 				'<img src="" width="' + size[0] + '" height="' + size[1] + '"><br>', 
-				'Filename: ' + picture.get('filename'),
+				picture.get('name'),
 			'</div>'
 		].join(''));
 		picture.getImageUrl('preview', function(err, url) {
 			preview.body.down('img').set({src: url});
 		});
+	},
+
+	onItemMouseEnter: function(record, el) {
+		this.callParent(arguments);
+		var removeButton = Ext.get(el).down('.waypoint-picture-remove-button');
+		removeButton.on({
+			click: {
+				fn: this.onRemoveButton,
+				scope: this,
+				args: [record]
+			}
+		});
+	},
+
+	onItemMouseLeave: function(record, el) {
+		this.callParent(arguments);
+		var removeButton = Ext.get(el).down('.waypoint-picture-remove-button');
+		removeButton.un('click', this.onRemoveButton, this);
+	},
+
+	onItemClick: function(picture) {
+		this.openCropWindow(picture);
 	},
 
 	onAddButton: function() {
@@ -159,6 +161,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				if (!err) {
 					pictures.add(Ext.create('Get.model.Picture', {
 						filename: file.path,
+						name: file.name,
 						width: dimensions.width,
 						height: dimensions.height,
 						db: false
@@ -170,6 +173,127 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	
 	removePicture: function(picture) {
 		picture.drop();
+	},
+
+	openCropWindow: function(picture) {
+		var me = this,
+			maxWidth = Ext.Element.getViewportWidth() - 80,
+			maxHeight = Ext.Element.getViewportHeight() - 175,
+			size = picture.sizeWithin([maxWidth, maxHeight], true),
+			image,
+			titleTextfield,
+			jcropApi;
+
+		if (this.preview.showTimer) {
+			this.preview.clearTimer('show');
+		}
+
+		this.cropWindow = Ext.create('Ext.window.Window', {
+			layout: {
+				type: 'vbox',
+				align: 'stretch',
+				padding: 0
+				
+			},
+			items: [
+				{
+					xtype: 'image',
+					width: size[0] + 6,
+					height: size[1] + 6,
+					autoEl: 'div',
+					padding: '3 3 0 3'
+				},
+				{
+					xtype: 'textfield',
+					name: 'title',
+					fieldLabel: 'Titel',
+					labelWidth: 30,
+					labelAlign: 'right',
+					margin: '3 2 0 2'
+				}
+			],
+			buttons: [
+				{
+					text: 'OK',
+					cls: 'btn-ok',
+					handler: function() {
+						var crop = jcropApi.tellSelect(),
+							values = {
+								name: titleTextfield.getValue()	
+							};
+
+ 						if (!(crop.w === 0 || crop.h === 0)) {
+ 							Ext.apply(values, {
+								cropX: crop.x / size[0],
+								cropY: crop.y / size[1],
+								cropWidth: crop.w / size[0],
+								cropHeight: crop.h / size[1]
+ 							});
+ 						}
+ 						else {
+ 							Ext.apply(values, {
+								cropX: 0,
+								cropY: 0,
+								cropWidth: 1,
+								cropHeight: 1
+ 							});
+ 						}
+
+ 						picture.set(values);
+						me.cropWindow.close();
+					},
+				},
+				{
+					text: 'Abbrechen',
+					handler: function() {
+						me.cropWindow.close();
+					},
+				},
+			],
+			listeners: {
+				afterrender: function(form, options) {
+					Ext.create('Ext.util.KeyNav', form.el, {
+						enter: function(e) {
+							me.cropWindow.query('button[cls~=btn-ok]')[0].el.dom.click();
+						}
+					});
+				}, 
+			},
+			title: 'Beschneiden <span style="font-weight: normal; color: #999;">&ndash; ' + picture.get('filename') + '</span>',
+			autoShow: true,
+			modal: true,
+			resizable: false,
+			draggable: false,
+			plain: true,
+			bodyStyle: 'border-width: 0;',
+			bodyPadding: '0 12 12 12',
+			defaultFocus: 'textfield'
+		});
+
+		image = this.cropWindow.query('image')[0];
+		titleTextfield = this.cropWindow.query('textfield')[0];
+		titleTextfield.setValue(picture.get('name'));
+
+		picture.getImageUrl('original', function(err, url) {
+			var $image = $(image.imgEl.dom).first(),
+				cropX1 = Math.round(size[0] * picture.get('cropX')),
+				cropY1 = Math.round(size[1] * picture.get('cropY')),
+				cropX2 = cropX1 + Math.round(size[0] * picture.get('cropWidth')),
+				cropY2 = cropY1 + Math.round(size[1] * picture.get('cropHeight')),
+				options = (cropX1 === 0 && cropY1 === 0 && cropX2 === size[0] && cropY2 === size[1]) ?
+							{} : 
+							{setSelect: [cropX1, cropY1, cropX2, cropY2]};
+
+			$image.width(size[0]);
+			$image.height(size[1]);
+			$image.attr('src', url);
+			$image.Jcrop(options, function() {
+				jcropApi = this;
+			});
+			setTimeout(function() {
+				me.cropWindow.focus();
+			}, 0);
+		});
 	},
 
 });
