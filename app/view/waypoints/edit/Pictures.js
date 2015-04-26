@@ -179,10 +179,10 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	openCropWindow: function(picture) {
-		var me = this,
-			maxWidth = Ext.Element.getViewportWidth() - 80,
+		var maxWidth = Ext.Element.getViewportWidth() - 80,
 			maxHeight = Ext.Element.getViewportHeight() - 140,
 			size = picture.sizeWithin([maxWidth, maxHeight], true),
+			cropWindow,
 			image,
 			titleTextfield,
 			jcropApi;
@@ -191,12 +191,10 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			this.preview.clearTimer('show');
 		}
 
-		this.cropWindow = Ext.create('Ext.window.Window', {
+		cropWindow = Ext.create('Ext.window.Window', {
 			layout: {
 				type: 'vbox',
-				align: 'stretch',
-				padding: 0
-				
+				align: 'stretch'
 			},
 			items: [
 				{
@@ -243,21 +241,21 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
  						}
 
  						picture.set(values);
-						me.cropWindow.close();
+						cropWindow.close();
 					},
 				},
 				{
 					text: 'Abbrechen',
 					handler: function() {
-						me.cropWindow.close();
+						cropWindow.close();
 					},
 				},
 			],
 			listeners: {
-				afterrender: function(form, options) {
-					Ext.create('Ext.util.KeyNav', form.el, {
-						enter: function(e) {
-							me.cropWindow.query('button[cls~=btn-ok]')[0].el.dom.click();
+				afterrender: function(cropWindow, options) {
+					Ext.create('Ext.util.KeyNav', cropWindow.el, {
+						enter: function() {
+							cropWindow.down('button[cls~=btn-ok]').el.dom.click();
 						}
 					});
 				}, 
@@ -273,8 +271,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			defaultFocus: 'textfield'
 		});
 
-		image = this.cropWindow.query('image')[0];
-		titleTextfield = this.cropWindow.query('textfield')[0];
+		image = cropWindow.child('image');
+		titleTextfield = cropWindow.child('textfield');
 		titleTextfield.setValue(picture.get('name'));
 
 		picture.getImageUrl('original', function(err, url) {
@@ -283,9 +281,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				cropY1 = Math.round(size[1] * picture.get('cropY')),
 				cropX2 = cropX1 + Math.round(size[0] * picture.get('cropWidth')),
 				cropY2 = cropY1 + Math.round(size[1] * picture.get('cropHeight')),
-				options = (cropX1 === 0 && cropY1 === 0 && cropX2 === size[0] && cropY2 === size[1]) ?
-							{} : 
-							{setSelect: [cropX1, cropY1, cropX2, cropY2]};
+				options = picture.isCropped() ? {setSelect: [cropX1, cropY1, cropX2, cropY2]} : {};
 
 			$image.width(size[0]);
 			$image.height(size[1]);
@@ -294,7 +290,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				jcropApi = this;
 			});
 			setTimeout(function() {
-				me.cropWindow.focus();
+				cropWindow.focus();
 			}, 0);
 		});
 	},
