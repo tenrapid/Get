@@ -6,6 +6,12 @@ Ext.define('Get.model.Picture', {
 			name: 'waypointId', 
 			reference: {
 				parent: 'Waypoint',
+				inverse: {
+					storeConfig: {
+						// required to be able to listen to association store events
+						type: 'picture',
+					}
+				}
 			}
 		},
 		{
