@@ -252,10 +252,16 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				},
 			],
 			listeners: {
-				afterrender: function(cropWindow, options) {
-					Ext.create('Ext.util.KeyNav', cropWindow.el, {
-						enter: function() {
-							cropWindow.down('button[cls~=btn-ok]').el.dom.click();
+				afterrender: function(component, options) {
+					var okButton = component.down('button[cls~=btn-ok]').el.dom;
+					component.query('textfield').forEach(function(textfield) {
+						if (!textfield.isXType('textarea')) {
+							Ext.create('Ext.util.KeyNav', {
+								target: textfield.el,
+								enter: function() {
+									okButton.click();
+								}
+							});
 						}
 					});
 				}, 

@@ -37,18 +37,17 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 				align: 'stretch'
 			},
 			listeners: {
-				afterrender: function(form, options) {
-					var controller = form.lookupController();
-					Ext.create('Ext.util.KeyNav', form.el, {
-						enter: function(e) {
-							if (e.target.nodeName == 'TEXTAREA') {
-								return true;
-							}
-							if (form.isValid()) {
-								this.onSave();
-							}
-						},
-						scope: controller
+				afterrender: function(component, options) {
+					var okButton = component.down('button[cls~=btn-ok]').el.dom;
+					component.query('textfield').forEach(function(textfield) {
+						if (!textfield.isXType('textarea')) {
+							Ext.create('Ext.util.KeyNav', {
+								target: textfield.el,
+								enter: function() {
+									okButton.click();
+								}
+							});
+						}
 					});
 				}, 
 			},
