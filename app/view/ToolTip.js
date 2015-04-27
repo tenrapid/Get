@@ -59,16 +59,16 @@ Ext.define('Get.view.ToolTip', {
 
 		switch (ap) {
 		case 't':
-			offsets = [0, 6];
+			offsets = [0, 16];
 			break;
 		case 'b':
-			offsets = [0, -6];
+			offsets = [0, -16];
 			break;
 		case 'r':
-			offsets = [-6, 0];
+			offsets = [-16, 0];
 			break;
 		default:
-			offsets = [6, 0];
+			offsets = [16, 0];
 			break;
 		}
 

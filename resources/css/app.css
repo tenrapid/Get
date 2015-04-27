@@ -30,7 +30,7 @@ body > .x-mask {
 	border-radius: 4px !important;
 	/* enable hardware accelaration to use filters*/
 	transform: translateZ(0);
-	-webkit-filter: drop-shadow(1px 1px 4px #777);
+	-webkit-filter: drop-shadow(0px 0px 12px #555);
 }
 .x-tip-default .x-tip-anchor {
 	border-color: #fff;
@@ -61,16 +61,16 @@ body > .x-mask {
 
 
 .waypoint-picture-thumbnail {
-	width: 70px;
-	height: 70px;
-	margin-right: 5px;
-	margin-bottom: 5px;
+	width: 62px;
+	height: 62px;
+	margin-right: 4px;
+	margin-bottom: 4px;
 	float: left;
 	text-align: center;
 	background-position: 50%;
 	background-size: cover;
 	background-repeat: no-repeat;
-	border: 1px solid #ccc;
+	border: 1px solid #b5b8c8;
 	position: relative;
 	cursor: pointer;
 }
@@ -78,17 +78,19 @@ body > .x-mask {
 	outline-width: 0 !important;
 }
 .waypoint-picture-thumbnail:hover {
-	border-color: #999; 
+	border-color: #a1a1a1; 
 }
 
 .waypoint-picture-add-button {
-	font-size: 48px; 
+	font-size: 43px; 
 	font-weight: normal;
-	color: #ccc;
+	color: #aaa;
 	-webkit-user-select: none;
 }
 .waypoint-picture-add-button:hover {
-	color: #999;
+	background-color: #b5b8c8;
+	border-color: #b5b8c8;
+	color: #eee;
 }
 .waypoint-picture-remove-button {
 	display: none;
@@ -96,16 +98,16 @@ body > .x-mask {
 	height: 19px;
 	cursor: pointer;
 	font-size: 14px;
-	color: #777;
-	background-color: #e9e9e9;
 	position: absolute;
 	bottom: -1px;
 	right: -1px;
 	z-index: 1;
+	color: #777;
+	background-color: #e9e9e9;
 }
 .waypoint-picture-remove-button:hover {
 	color: #fff;
-	background-color: #999;
+	background-color: #a1a1a1;
 }
 .waypoint-picture-thumbnail:hover .waypoint-picture-remove-button {
 	display: block;
