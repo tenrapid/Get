@@ -152,23 +152,24 @@ Ext.define('Get.project.controller.UndoManager', {
 	beginUndoGroup: function() {
 		this.groupStack.push(this.currentGroup);
 		this.currentGroup = [];
-		if (this.redoStack.length) {
-			this.redoStack = [];
-			this.updateCanRedo();
-		}
 	},
 	
 	endUndoGroup: function() {
-		var operation;
+		var group = this.currentGroup,
+			operation;
+
 		if (this.groupStack.length === 0) {
 			Ext.Error.raise('No undo group to end');
 		}
-		operation = {
-			type: 'group',
-			group: this.currentGroup
-		};
+
 		this.currentGroup = this.groupStack.pop();
-		this.registerUndoOperation(operation);
+		if (group.length) {
+			operation = {
+				type: 'group',
+				group: group
+			};
+			this.registerUndoOperation(operation);
+		}
 	},
 
 	registerUndoOperation: function(operation) {
