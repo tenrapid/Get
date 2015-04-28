@@ -5,9 +5,6 @@ Ext.define('Get.project.controller.PictureManager', {
 		project: null,
 	},
 
-	tmpDb: null,
-	tmpDbFilename: null,
-	tmpDbTableExists: false,
 	projectDbTableExists: false,
 
 	pictures: null,
@@ -15,11 +12,10 @@ Ext.define('Get.project.controller.PictureManager', {
 	tmpFileRemoveCallbacks: null,
 
 	tableName: 'PictureData',
-	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, regular BLOB, thumb BLOB',
+	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, preview BLOB, thumb BLOB',
 	pictureSizes: {
-		'original': [1200, 1200],
-		'regular': [400, 400],
-		'thumb': [100, 100],
+		'preview': [600, 600],
+		'thumb': [100, 100]
 	},
 
 	constructor: function(config) {
@@ -29,7 +25,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		this.pictures = {};
 		this.tmpFileRemoveCallbacks = [];
 
-		// remove tmpDb and temp files when doing a ReloadDev
+		// remove temp files when doing a ReloadDev
 		window.addEventListener('unload', function() {
 			me.close();
 		});
@@ -38,335 +34,268 @@ Ext.define('Get.project.controller.PictureManager', {
 		Get.model.Picture.prototype.pictureManager = this;
 	},
 
-	add: function(picture, callback, scope) {
+	add: function(picture) {
 		// create pictureData from given file
-		var me = this,
-			async = require('async'),
-			pictureData = {
-				id: picture.getId(),
-				filename: picture.get('filename'),
-				cropX: picture.get('cropX'),
-				cropY: picture.get('cropY'),
-				cropWidth: picture.get('cropWidth'),
-				cropHeight: picture.get('cropHeight'),
-			};
+		var filename = picture.get('filename');
 
-		if (!pictureData.filename) {
+		if (!filename) {
 			Ext.Error.raise("No filename for picture given.");
 		}
 
-		async.waterfall([
-			function(callback) {
-				me.resize(pictureData, callback);
-			},
-			function(pictureData, callback) {
-				me.savePictureData(pictureData, callback);
-			}
-		], function(err) {
-			Ext.callback(callback, scope, [err]);
-		});
+		if (!this.pictures[picture.getId()]) {
+			this.setFilename(picture, 'original', filename, true);
+		}
 	},
 
-	update: function(picture, callback, scope) {
+	getImageUrl: function(picture, size, callback) {
 		var me = this,
+			getUrl = function() {
+				var dontCrop = size === 'original',
+					filename = me.getFilename(picture, size === 'original-cropped' ? 'original' : size, dontCrop);
+				return filename ? encodeURI('file://' + filename) : null;
+			},
+			url = getUrl(),
 			async = require('async');
 
-		async.waterfall([
-			function(callback) {
-				me.loadPictureData(picture, 'original', callback);
-			},
-			function(pictureData, callback) {
-				Ext.apply(pictureData, {
-					cropX: picture.get('cropX'),
-					cropY: picture.get('cropY'),
-					cropWidth: picture.get('cropWidth'),
-					cropHeight: picture.get('cropHeight'),
-				});
-				me.resize(pictureData, callback);
-			},
-			function(pictureData, callback) {
-				me.savePictureData(pictureData, callback);
-			}
-		], function(err) {
-			Ext.callback(callback, scope, [err]);
-		});
-	},
-
-	getImage: function(picture, size, callback, scope) {
-		var me = this,
-			async = require('async');
-
-		async.waterfall([
-			function(callback) {
-				me.loadPictureData(picture, size, callback);
-			},
-			function(pictureData, callback) {
-				var buffer = pictureData[size],
-					blob = me.bufferToBlob(buffer);
-
-				loadImage(blob, function(image) {
-					callback(null, image);
-				});
-			}
-		], function(err, image) {
-			Ext.callback(callback, scope, [err, image]);
-		});
+		if (url) {
+			callback(null, url);
+		}
+		else {
+			async.waterfall([
+				function(callback) {
+					if (!me.pictures[picture.getId()]) {
+						me.loadFromDb(picture, callback);
+					}
+					else {
+						callback();
+					}
+				},
+				function(callback) {
+					url = getUrl();
+					if (!url) {
+						me.resize(picture, callback);
+					}
+					else {
+						callback();
+					}
+				}
+			], function(err, url) {
+				if (!err && !url) {
+					url = getUrl();
+				}
+				callback(err, url);
+			});
+		}
 	},
 
 	save: function(callback, scope) {
 		var me = this,
-			async = require('async'),
-			changedPictures = this.getProject().session.getChanges().Picture;
+			changedPictures = this.getProject().session.getChanges().Picture,
+			session = this.getProject().session,
+			errors = [],
+			async = require('async');
 
 		if (!changedPictures) {
 			Ext.callback(callback, scope);
 			return;
 		}
 
-		async.waterfall([
-			function(callback) {
-				async.parallel({
-					tmp: me.getTmpDatabase.bind(me),
-					project: me.getProjectDatabase.bind(me)
-				}, callback);
-			},
-			function(db, callback) {
-				var tmpDb = db.tmp,
-					projectDb = db.project,
-					errors = [];
-
-				async.parallel([
-					// dropped pictures
-					function(callback) {
-						var dropped;
-
-						if (!changedPictures.D) {
-							callback();
-							return;
-						}
-
-						dropped = Ext.Array.difference(changedPictures.D, me.pictures);
-
-						me.copyPictureData(projectDb, tmpDb, 'insert', dropped, function(err) {
-							if (!err) {
-								dropped.forEach(function(id) {
-									me.pictures[id] = true;
-								});
-							}
-							else {
-								errors.push(err);
-							}
-							callback();
-						});
-					},
-					// updated pictures
-					function(callback) {
-						var updated = [];
-
-						if (!changedPictures.U) {
-							callback();
-							return;
-						}
-
-						changedPictures.U.forEach(function(u) {
-							var cropped = Object.keys(u).some(function(prop) {
-								return prop.substr(0, 4) === 'crop'; 
-							});
-							if (cropped) {
-								updated.push(u.id);
-							}
-						});
-
-						me.copyPictureData(tmpDb, projectDb, 'update', updated, function(err) {
-							if (err) {
-								errors.push(err);
-							}
-							callback();
-						});
-					},
-					// created pictures
-					function(callback) {
-						var created;
-
-						if (!changedPictures.C) {
-							callback();
-							return;
-						}
-
-						created = changedPictures.C.map(function(c) {
-							return c.id;
-						});
-
-						me.copyPictureData(tmpDb, projectDb, 'insert', created, function(err) {
-							if (err) {
-								errors.push(err);
-							}
-							callback();
-						});
-					}
-				], function() {
-					callback(errors.length ? errors : null);
-				});
-			},
-		], function(err) {
-			Ext.callback(callback, scope, [err]);
-		});
-	},
-
-	close: function(callback, scope) {
-		var me = this,
-			async = require('async'),
-			error;
-
 		async.parallel([
+			// dropped pictures
 			function(callback) {
-				me.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
-					removeCallback();
+				var dropped;
+
+				if (!changedPictures.D) {
+					callback();
+					return;
+				}
+
+				dropped = changedPictures.D.map(function(id) {
+					return session.peekRecord('Picture', id);
 				});
-				callback();
+
+				me.deleteFromDb(dropped, function(err) {
+					if (err) {
+						errors.push(err);
+					}
+					callback();
+				});
 			},
+			// updated pictures
 			function(callback) {
-				me.removeTmpDatabase(function(err) {
-					error = err;
+				var updated = [];
+
+				if (!changedPictures.U) {
+					callback();
+					return;
+				}
+
+				changedPictures.U.forEach(function(u) {
+					var cropped = Object.keys(u).some(function(prop) {
+						return prop.substr(0, 4) === 'crop'; 
+					});
+					if (cropped) {
+						updated.push(session.peekRecord('Picture', u.id));
+					}
+				});
+
+				me.saveToDb('update', updated, function(err) {
+					if (err) {
+						errors.push(err);
+					}
+					callback();
+				});
+			},
+			// created pictures
+			function(callback) {
+				var created;
+
+				if (!changedPictures.C) {
+					callback();
+					return;
+				}
+
+				created = changedPictures.C.map(function(c) {
+					return session.peekRecord('Picture', c.id);
+				});
+
+				me.saveToDb('insert', created, function(err) {
+					if (err) {
+						errors.push(err);
+					}
 					callback();
 				});
 			}
 		], function() {
-			Ext.callback(callback, scope, [error]);
+			Ext.callback(callback, scope, errors.length ? [errors] : null);
 		});
 	},
 
-	getTmpDatabase: function(callback) {
-		var me = this,
-			tmp = require('tmp'),
-			sqlite3 = require('sqlite3'),
-			async = require('async'),
-			tmpDb;
+	close: function(callback, scope) {
+		delete Get.model.Picture.prototype.pictureManager;
 
-		if (!this.tmpDb) {
-			async.waterfall([
-				function(callback) {
-					// me.tmpDbFilename = tmp.tmpNameSync();
-					me.tmpDbFilename = '/Users/tenrapid/Desktop/tmpdb';
-					tmpDb = new sqlite3.Database(me.tmpDbFilename, callback);
-				},
-				function(callback) {
-					me.createPictureDataTable(tmpDb, callback);
-				}
-			], function(err) {
-				me.tmpDb = tmpDb;
-				callback(err, tmpDb);
-			});
-		}
-		else {
-			callback(null, this.tmpDb);
-		}
-	},
-
-	removeTmpDatabase: function(callback) {
-		var me = this,
-			fs = require('fs'),
-			filename = this.tmpDb && this.tmpDb.filename;
-
-		if (filename) {
-			this.tmpDb.close(function() {
-				fs.unlinkSync(filename);
-				me.tmpDb = null;
-				me.tmpDbTableExists = false;
-				if (callback) callback();
-			});
-		}
-		else {
-			if (callback) callback();
-		}
+		this.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
+			removeCallback();
+		});
+		Ext.callback(callback, scope);
 	},
 
 	getProjectDatabase: function(callback) {
-		var projectDb = this.getProject().getProxy().getDatabaseObject();
-
-		this.createPictureDataTable(projectDb, function(err) {
-			callback(err, projectDb);
-		});
-	},
-
-	createPictureDataTable: function(db, callback) {
 		var me = this,
-			isTmpDb = db.filename === this.tmpDbFilename;
+			db = this.getProject().getProxy().getDatabaseObject();
 
-		if (isTmpDb && this.tmpDbTableExists || this.projectDbTableExists) {
-			callback();
+		if (this.projectDbTableExists) {
+			callback(null, db);
 		}
 		else {
 			db.run('CREATE TABLE IF NOT EXISTS ' + this.tableName + ' (' + this.shemaString + ')', function(err) {
 				if (!err) {
-					me[isTmpDb ? 'tmpDbTableExists' : 'projectDbTableExists'] = true;
+					me.projectDbTableExists = true;
 				}
-				callback(err);
+				callback(err, db);
 			});
 		}
 	},
 
-	savePictureData: function(pictureData, callback) {
-		var me = this,
-			async = require('async');
+	getFilename: function(picture, size, dontCrop) {
+		var id = picture.getId(),
+			key = this.getPictureHashKey(picture, size, dontCrop);
 
-		async.waterfall([
-			this.getTmpDatabase.bind(this),
-			function(db, callback) {
-				if (me.pictures[pictureData.id]) {
-					db.run('UPDATE ' + me.tableName + ' SET regular = ?, thumb = ? WHERE id = ?', [
-							pictureData.regular,
-							pictureData.thumb,
-							pictureData.id
-						], callback);
-				}
-				else {
-					db.run('INSERT INTO ' + me.tableName + ' (id, original, regular, thumb) VALUES (?, ?, ?, ?)', [
-							pictureData.id,
-							pictureData.original,
-							pictureData.regular,
-							pictureData.thumb
-						], callback);
-				}
-			}
-		], function(err) {
-			if (!err) {
-				me.pictures[pictureData.id] = true;
-			}
-			callback(err);
-		});
+		return this.pictures[id] ? this.pictures[id][key] : null;
 	},
 
-	loadPictureData: function(picture, size, callback) {
+	setFilename: function(picture, size, filename, dontCrop) {
+		var id = picture.getId(),
+			key = this.getPictureHashKey(picture, size, dontCrop);
+
+		if (!this.pictures[id]) {
+			this.pictures[id] = {};
+		}
+		this.pictures[id][key] = filename;
+	},
+
+	getPictureHashKey: function(picture, size, dontCrop) {
+		return dontCrop ? size + '|0|0|1|1' : size + '|' + 
+											  picture.get('cropX') + '|' +
+											  picture.get('cropY') + '|' +
+											  picture.get('cropWidth') + '|' +
+											  picture.get('cropHeight');
+	},
+
+	getTmpFile: function() {
+		var tmp = require('tmp'),
+			file = tmp.fileSync({dir: '/Users/tenrapid/Desktop/tmp/'});
+
+		this.tmpFileRemoveCallbacks.push(file.removeCallback);
+		return file;
+	},
+
+	loadFromDb: function(picture, callback) {
 		var me = this,
 			async = require('async'),
-			id = picture.getId(),
-			getDatabase = this.pictures[id] ? this.getTmpDatabase : this.getProjectDatabase;
+			fs = require('fs');
 
 		async.waterfall([
-			getDatabase.bind(this),
+			this.getProjectDatabase.bind(this),
 			function(db, callback) {
-				db.get('SELECT ' + size + ' FROM ' + me.tableName + ' WHERE id = ?', id, callback);
+				db.get('SELECT * FROM ' + me.tableName + ' WHERE id = ?', picture.getId(), callback);
 			},
 			function(row, callback) {
-				var buffer = row[size],
-					pictureData = {
-						id: id
-					};
+				if (!row) {
+					callback(new Error('Could not load picture from database.'));
+					return;
+				}
+				async.each(['original', 'preview', 'thumb'], function(size, callback) {
+					var buffer = row[size],
+						file = me.getTmpFile();
 
-				pictureData[size] = buffer;
-				callback(null, pictureData);
+					fs.writeFile(file.name, buffer, function(err) {
+						if (!err) {
+							me.setFilename(picture, size, file.name, size === 'original');
+						}
+						callback(err);
+					});
+				}, callback);
 			}
 		], callback);
 	},
 
-	copyPictureData: function(fromDb, toDb, mode, ids, callback) {
-		var async = require('async'),
+	deleteFromDb: function(pictures, callback) {
+		var me = this,
+			async = require('async'),
+			fs = require('fs'), 
+			ids = pictures.map(function(picture) {
+				return picture.getId();
+			}),
+			placeholders = ids.map(function() {
+				return '?';
+			});
+
+		async.waterfall([
+			function(callback) {
+				async.each(pictures, function(picture) {
+					if (!me.pictures[picture.getId()]) {
+						me.loadFromDb(picture, callback);
+					}
+					else {
+						callback();
+					}
+				}, callback);
+			},
+			this.getProjectDatabase.bind(this),
+			function(db, callback) {
+				db.run('DELETE FROM ' + me.tableName + ' WHERE id IN (' + placeholders.join(', ') + ')', ids, callback);
+			},
+		], callback);
+	},
+
+	saveToDb: function(mode, pictures, callback) {
+		var me = this,
+			async = require('async'),
+			fs = require('fs'),
 			tasks = [],
-			selectSql = 'SELECT * FROM ' + this.tableName + ' WHERE id = ?',
-			insertSql = 'INSERT INTO ' + this.tableName + ' (id, original, regular, thumb) VALUES (?, ?, ?, ?)',
-			updateSql = 'UPDATE ' + this.tableName + ' SET original = ?, regular = ?, thumb = ? WHERE id = ?',
-			selectStatement,
+			insertSql = 'INSERT INTO ' + this.tableName + ' (id, original, preview, thumb) VALUES (?, ?, ?, ?)',
+			updateSql = 'UPDATE ' + this.tableName + ' SET preview = ?, thumb = ? WHERE id = ?',
 			insertStatement,
 			updateStatement;
 
@@ -375,40 +304,52 @@ Ext.define('Get.project.controller.PictureManager', {
 		}
 
 		async.waterfall([
-			async.apply(async.parallel, [
-				function(callback) {
-					selectStatement = fromDb.prepare(selectSql, callback);
-				}, 
-				function(callback) {
-					insertStatement = toDb.prepare(insertSql, callback);
-				}, 
-				function(callback) {
-					updateStatement = toDb.prepare(updateSql, callback);
-				}
-			]),
+			this.getProjectDatabase.bind(this),
+			function(db, callback) {
+				async.parallel([
+					function(callback) {
+						insertStatement = db.prepare(insertSql, callback);
+					}, 
+					function(callback) {
+						updateStatement = db.prepare(updateSql, callback);
+					}
+				], callback);
+			},
 			function(_, callback) {
-				ids.forEach(function(id) {
+				pictures.forEach(function(picture) {
+					var id = picture.getId(),
+						buffers = {},
+						sizes = ['preview', 'thumb'].concat(mode === 'insert' ? ['original'] : []);
+
 					tasks.push(function(callback) {
-						selectStatement.get(id, callback);
+						async.each(sizes, function(size, callback) {
+							var filename = me.getFilename(picture, size, size === 'original');
+
+							fs.readFile(filename, function(err, buffer) {
+								if (!err) {
+									buffers[size] = buffer;
+								}
+								callback(err);
+							});
+						}, callback);
 					});
 					switch (mode) {
 						case 'insert':
-							tasks.push(function(row, callback) {
+							tasks.push(function(callback) {
 								insertStatement.run([
-										row.id,
-										row.original,
-										row.regular,
-										row.thumb
+										id,
+										buffers.original,
+										buffers.preview,
+										buffers.thumb
 									], callback);
 							});
 							break;
 						case 'update':
-							tasks.push(function(row, callback) {
+							tasks.push(function(callback) {
 								updateStatement.run([
-										row.original,
-										row.regular,
-										row.thumb,
-										row.id
+										buffers.preview,
+										buffers.thumb,
+										id,
 									], callback);
 							});
 							break;
@@ -419,36 +360,53 @@ Ext.define('Get.project.controller.PictureManager', {
 		], callback);
 	},
 
-	resize: function(pictureData, callback) {
+	resize: function(picture, callback) {
 		var me = this,
-			file = pictureData.original ? this.bufferToBlob(pictureData.original) : ('file://' + pictureData.filename);
+			file = 'file://' + this.getFilename(picture, 'original', true),
+			async = require('async'),
+			fs = require('fs');
 
-		loadImage(file, function(original) {
-			if (original instanceof Event && original.type === 'error') {
-				callback(new Error('Could not load image.'));
-			}
-			else {
-				if (!pictureData.original) {
-					pictureData.original = me.canvasToBuffer(original);
-				}
-				['regular', 'thumb'].forEach(function(size) {
+		async.waterfall([
+			function(callback) {
+				loadImage(file, function(original) {
+					if (original instanceof Event && original.type === 'error') {
+						callback(new Error('Could not load image.'));
+					}
+					else {
+						callback(null, original);
+					}
+				}, {
+					canvas: true
+				});
+			},
+			function(original, callback) {
+				var left = picture.get('cropX') * original.width,
+					top = picture.get('cropY') * original.height,
+					sourceWidth = picture.get('cropWidth') * original.width,
+					sourceHeight = picture.get('cropHeight') * original.height;
+
+				async.each(['preview', 'thumb'], function(size, callback) {
 					var canvas = loadImage.scale(original, {
 							maxWidth: me.pictureSizes[size][0], 
 							maxHeight: me.pictureSizes[size][1],
-							left: pictureData.cropX * original.width,
-							top: pictureData.cropY * original.height,
-							sourceWidth: pictureData.cropWidth * original.width,
-							sourceHeight: pictureData.cropHeight * original.height
-						});
-					pictureData[size] = me.canvasToBuffer(canvas);
-				});
-				callback(null, pictureData);
+							left: left,
+							top: top,
+							sourceWidth: sourceWidth,
+							sourceHeight: sourceHeight
+						}),
+						buffer = me.canvasToBuffer(canvas),
+						file = me.getTmpFile();
+
+					fs.write(file.fd, buffer, 0, buffer.length, 0, function(err) {
+						if (!err) {
+							me.setFilename(picture, size, file.name);
+						}
+						//fs.closeSync(file.fd);
+						callback(err);
+					});
+				}, callback);
 			}
-		}, {
-			canvas: true, 
-			maxWidth: me.pictureSizes.original[0], 
-			maxHeight: me.pictureSizes.original[1]
-		});
+		], callback);
 	},
 
 	canvasToBuffer: function(canvas) {
@@ -473,7 +431,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	statics: {
 		THUMB: 'thumb',
-		REGULAR: 'regular',
+		PREVIEW: 'preview',
 		ORIGINAL: 'original'
 	},
 
@@ -489,7 +447,7 @@ Ext.define('Get.project.controller.PictureManager', {
 	},
 
 	gi: function(pic) {
-		this.getImage(pic, 'regular', function() {
+		this.getImage(pic, 'preview', function() {
 			console.log('getImage', arguments);
 		});
 	},

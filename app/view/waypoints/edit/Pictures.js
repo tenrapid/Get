@@ -9,7 +9,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	tpl: [
 		'<tpl for=".">',
-			'<div class="waypoint-picture-thumbnail waypoint-picture" style="background-image: url({imageUrl});">',
+			'<div class="waypoint-picture-thumbnail waypoint-picture" style="background-image: {backgroundImage};">',
 				'<div class="waypoint-picture-remove-button"><i class="fa fa-trash"></i></div>',
 			'</div>',
 		'</tpl>',
@@ -47,14 +47,17 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		var me = this,
 			newData = this.callParent(arguments);
 
+		newData.backgroundImage = 'none';
+
 		picture.getImageUrl('thumb', function(err, url) {
 			var node = me.getNode(picture);
 
 			if (node) {
 				node.style.backgroundImage = 'url(' + url + ')';
 			}
-			newData.imageUrl = url;
+			newData.backgroundImage = 'url(' + url + ')';
 		});
+
 		return newData;
 	},
 
@@ -90,6 +93,10 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		pv = this;
 	},
 
+	onDestroy: function() {
+		this.preview.hide();
+	},
+
 	updatePreview: function(preview) {
 		var picture = this.getRecord(preview.triggerElement),
 			size;
@@ -102,7 +109,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 		preview.update([
 			'<div style="width: ' + size[0] + 'px;">',
-				'<img width="' + size[0] + '" height="' + size[1] + '">', 
+				'<img width="' + size[0] + '" height="' + size[1] + '" style="background-color: #ccc;">', 
 				picture.isCropped() ? '<div class="waypoint-picture-crop-indicator"><i class="fa fa-crop"></i></div>' : '',
 				'<div style="margin-top: 1px;">',
 					picture.get('name'),
@@ -161,15 +168,15 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 		files.forEach(function(file) {
 			sizeOf(file.path, function(err, dimensions) {
-				if (!err) {
-					pictures.add(Ext.create('Get.model.Picture', {
-						filename: file.path,
-						name: file.name,
-						width: dimensions.width,
-						height: dimensions.height,
-						db: false
-					}));
+				if (err) {
+					throw err;
 				}
+				pictures.add(Ext.create('Get.model.Picture', {
+					filename: file.path,
+					name: file.name,
+					width: dimensions.width,
+					height: dimensions.height
+				}));
 			});
 		});
 	},

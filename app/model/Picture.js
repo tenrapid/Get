@@ -50,22 +50,18 @@ Ext.define('Get.model.Picture', {
 		{
 			name: 'filename',
 			type: 'string'
-		},
-		{
-			name: 'db',
-			type: 'boolean',
-			defaultValue: true,
-			persist: false
-		},
+		}
 	],
 
-	getImageUrl: function(size, callback) {
-		var me = this;
+	constructor: function(data) {
+		this.callParent(arguments);
+		if (this.pictureManager && this.phantom && data[this.clientIdProperty] === undefined) {
+			this.pictureManager.add(this);
+		}
+	},
 
-		callback(null, encodeURI('file://' + me.get('filename')));
-		// setTimeout(function() {
-		// 	callback(null, encodeURI('file://' + me.get('filename')));
-		// }, 0);
+	getImageUrl: function(size, callback) {
+		this.pictureManager.getImageUrl(this, size, callback);
 	},
 
 	sizeWithin: function(maxDimensions, dontCrop) {
