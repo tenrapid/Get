@@ -375,15 +375,13 @@ Ext.define('Get.project.controller.PictureManager', {
 					else {
 						callback(null, original);
 					}
-				}, {
-					canvas: true
 				});
 			},
 			function(original, callback) {
-				var left = picture.get('cropX') * original.width,
-					top = picture.get('cropY') * original.height,
-					sourceWidth = picture.get('cropWidth') * original.width,
-					sourceHeight = picture.get('cropHeight') * original.height;
+				var left = Math.round(picture.get('cropX') * original.width),
+					top = Math.round(picture.get('cropY') * original.height),
+					sourceWidth = Math.round(picture.get('cropWidth') * original.width),
+					sourceHeight = Math.round(picture.get('cropHeight') * original.height);
 
 				async.each(['preview', 'thumb'], function(size, callback) {
 					var canvas = loadImage.scale(original, {
@@ -392,7 +390,8 @@ Ext.define('Get.project.controller.PictureManager', {
 							left: left,
 							top: top,
 							sourceWidth: sourceWidth,
-							sourceHeight: sourceHeight
+							sourceHeight: sourceHeight,
+							canvas: true
 						}),
 						buffer = me.canvasToBuffer(canvas),
 						file = me.getTmpFile();
