@@ -15,21 +15,16 @@ Ext.define('Get.data.Session', {
 	},
 
     privates: {
-	    add: function _add(record) {
+		createEntities: function() {
+			this.createEntitiesCalling = true;
+			this.callParent(arguments);
+			this.createEntitiesCalling = false;
+		},
+
+	    add: function(record) {
 	    	this.callParent(arguments);
-	    	if (_add.caller === Ext.data.Model.prototype.constructor) {
-	    		// Call stack:
-	    		//		Ext.data.Model.prototype.constructor
-	    		//		Ext.data.Model
-	    		//		Ext.data.Session.prototype.createRecord
-	    		//		Ext.data.Session.prototype.createEntities
-	    		//
-	    		// With this call stack the record was created in session.createEntities and
-	    		// the phantom property is set to true right after this call to session.add. 
-	    		// We need the phantom status right now for e.g. ProjectModificationState.
-	    		if (_add.caller.caller.caller.caller === Ext.data.Session.prototype.createEntities) {
-	    			record.phantom = true;
-	    		}
+	    	if (this.createEntitiesCalling) {
+    			record.phantom = true;
     		}
 	    	this.fireEvent('add', record);
 	    },
