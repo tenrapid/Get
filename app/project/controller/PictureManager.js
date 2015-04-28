@@ -275,7 +275,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 		async.waterfall([
 			function(callback) {
-				async.each(pictures, function(picture) {
+				async.each(pictures, function(picture, callback) {
 					if (!me.pictures[picture.getId()]) {
 						me.loadFromDb(picture, callback);
 					}
