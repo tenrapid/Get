@@ -5,12 +5,6 @@ Ext.define('Get.project.controller.PictureManager', {
 		project: null,
 	},
 
-	projectDbTableExists: false,
-
-	pictures: null,
-
-	tmpFileRemoveCallbacks: null,
-
 	tableName: 'PictureData',
 	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, preview BLOB, thumb BLOB',
 	pictureSizes: {
@@ -18,8 +12,15 @@ Ext.define('Get.project.controller.PictureManager', {
 		'thumb': [100, 100]
 	},
 
+	projectDbTableExists: false,
+	pictures: null,
+	tmpFileRemoveCallbacks: null,
+	resizeQueue: null,
+	resizeTasks: null,
+
 	constructor: function(config) {
-		var me = this;
+		var me = this,
+			async = require('async');
 
 		this.initConfig(config);
 		this.pictures = {};
@@ -27,15 +28,16 @@ Ext.define('Get.project.controller.PictureManager', {
 
 		// remove temp files when doing a ReloadDev
 		window.addEventListener('unload', function() {
-			me.close();
+			me.destroy();
 		});
 
-		// TODO: getImage() on Picture instance?
 		Get.model.Picture.prototype.pictureManager = this;
+
+		this.resizeQueue = async.queue(this.resizeWorker.bind(this));
+		this.resizeTasks = {};
 	},
 
 	add: function(picture) {
-		// create pictureData from given file
 		var filename = picture.get('filename');
 
 		if (!filename) {
@@ -79,7 +81,7 @@ Ext.define('Get.project.controller.PictureManager', {
 						callback();
 					}
 				}
-			], function(err, url) {
+			], function(err) {
 				if (!err && !url) {
 					url = getUrl();
 				}
@@ -171,13 +173,13 @@ Ext.define('Get.project.controller.PictureManager', {
 		});
 	},
 
-	close: function(callback, scope) {
+	destroy: function() {
 		delete Get.model.Picture.prototype.pictureManager;
 
 		this.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
 			removeCallback();
 		});
-		Ext.callback(callback, scope);
+		this.callParent(arguments);
 	},
 
 	getProjectDatabase: function(callback) {
@@ -362,6 +364,25 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	resize: function(picture, callback) {
 		var me = this,
+			id = picture.getId(),
+			callbacks = this.resizeTasks[id];
+
+		if (!callbacks) {
+			this.resizeTasks[id] = callbacks = [callback];
+			this.resizeQueue.push(picture, function(err) {
+				delete me.resizeTasks[id];
+				callbacks.forEach(function(callback) {
+					callback(err);
+				});
+			});
+		}
+		else {
+			callbacks.push(callback);
+		}
+	},
+
+	resizeWorker: function(picture, callback) {
+		var me = this,
 			file = 'file://' + this.getFilename(picture, 'original', true),
 			async = require('async'),
 			fs = require('fs');
@@ -370,7 +391,7 @@ Ext.define('Get.project.controller.PictureManager', {
 			function(callback) {
 				loadImage(file, function(original) {
 					if (original instanceof Event && original.type === 'error') {
-						callback(new Error('Could not load image.'));
+						callback(new Error('Could not load image:' + file));
 					}
 					else {
 						callback(null, original);
@@ -383,7 +404,7 @@ Ext.define('Get.project.controller.PictureManager', {
 					sourceWidth = Math.round(picture.get('cropWidth') * original.width),
 					sourceHeight = Math.round(picture.get('cropHeight') * original.height);
 
-				async.each(['preview', 'thumb'], function(size, callback) {
+				async.eachSeries(['thumb', 'preview'], function(size, callback) {
 					var canvas = loadImage.scale(original, {
 							maxWidth: me.pictureSizes[size][0], 
 							maxHeight: me.pictureSizes[size][1],
@@ -396,11 +417,10 @@ Ext.define('Get.project.controller.PictureManager', {
 						buffer = me.canvasToBuffer(canvas),
 						file = me.getTmpFile();
 
-					fs.write(file.fd, buffer, 0, buffer.length, 0, function(err) {
+					fs.writeFile(file.name, buffer, function(err) {
 						if (!err) {
 							me.setFilename(picture, size, file.name);
 						}
-						//fs.closeSync(file.fd);
 						callback(err);
 					});
 				}, callback);
@@ -434,35 +454,4 @@ Ext.define('Get.project.controller.PictureManager', {
 		ORIGINAL: 'original'
 	},
 
-	cp: function() {
-		// var pic = this.getProject().session.createRecord('Picture', {
-		var pic = Ext.create('Get.model.Picture', {
-			filename: '/Users/tenrapid/Desktop/DSC_0147.jpg'
-		});
-		this.add(pic, function() {
-			console.log('add', arguments);
-		});
-		return pic;
-	},
-
-	gi: function(pic) {
-		this.getImage(pic, 'preview', function() {
-			console.log('getImage', arguments);
-		});
-	},
-
-	s: function() {
-		this.getProject().getProxy().setFilename('/Users/tenrapid/Desktop/picmantest.get');
-		this.save(function(err) {
-			console.log('save', arguments);
-			if (err) {
-				console.log(err);
-			}
-		});
-	}
-
 });
-
-// pic=Ext.create('Get.model.Picture', {filename:'/Users/tenrapid/Desktop/IMG_7790.jpg'})
-// p.pictureManager.add(pic, function() {console.log('add', arguments);})
-// p.pictureManager.getImage(pic, 'thumb', function() {console.log('image', arguments);})
