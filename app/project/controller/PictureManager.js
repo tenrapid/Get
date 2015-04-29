@@ -1,5 +1,5 @@
 Ext.define('Get.project.controller.PictureManager', {
-	extend: 'Ext.Base',
+	extend: 'Ext.app.Controller',
 
 	config: {
 		project: null,
@@ -22,14 +22,12 @@ Ext.define('Get.project.controller.PictureManager', {
 		var me = this,
 			async = require('async');
 
-		this.initConfig(config);
+		this.callParent(arguments);
 		this.pictures = {};
 		this.tmpFileRemoveCallbacks = [];
 
 		// remove temp files when doing a ReloadDev
-		window.addEventListener('unload', function() {
-			me.destroy();
-		});
+		window.addEventListener('unload', this.destroy.bind(this));
 
 		Get.model.Picture.prototype.pictureManager = this;
 
@@ -93,81 +91,86 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	save: function(callback, scope) {
 		var me = this,
-			changedPictures = this.getProject().session.getChanges().Picture,
+			changes = this.getProject().session.getChanges().Picture,
 			session = this.getProject().session,
 			errors = [],
-			async = require('async');
+			async = require('async'),
+			dropped,
+			updated,
+			created,
+			numberOfChanges,
+			done = 0;
 
-		if (!changedPictures) {
+		if (!changes) {
 			Ext.callback(callback, scope);
 			return;
 		}
 
+		dropped = changes.D && changes.D.map(function(id) {
+			return session.peekRecord('Picture', id);
+		});
+
+		created = changes.C && changes.C.map(function(c) {
+			return session.peekRecord('Picture', c.id);
+		});
+
+		updated = changes.U && changes.U.filter(function(u) {
+			return Object.keys(u).some(function(prop) {
+				return prop.substr(0, 4) === 'crop'; 
+			});
+		}).map(function(u) {
+			return session.peekRecord('Picture', u.id);
+		});
+
+		numberOfChanges = (dropped || []).concat(created || []).concat(updated || []).length;
+
+		function progress() {
+			done++;
+			me.fireEvent('progress', done / numberOfChanges);
+		} 
+
 		async.parallel([
 			// dropped pictures
 			function(callback) {
-				var dropped;
-
-				if (!changedPictures.D) {
-					callback();
-					return;
+				if (dropped) {
+					me.deleteFromDb(dropped, progress, function(err) {
+						if (err) {
+							errors.push(err);
+						}
+						callback();
+					});
 				}
-
-				dropped = changedPictures.D.map(function(id) {
-					return session.peekRecord('Picture', id);
-				});
-
-				me.deleteFromDb(dropped, function(err) {
-					if (err) {
-						errors.push(err);
-					}
+				else {
 					callback();
-				});
+				}
 			},
 			// updated pictures
 			function(callback) {
-				var updated = [];
-
-				if (!changedPictures.U) {
-					callback();
-					return;
-				}
-
-				changedPictures.U.forEach(function(u) {
-					var cropped = Object.keys(u).some(function(prop) {
-						return prop.substr(0, 4) === 'crop'; 
+				if (updated) {
+					me.saveToDb('update', updated, progress, function(err) {
+						if (err) {
+							errors.push(err);
+						}
+						callback();
 					});
-					if (cropped) {
-						updated.push(session.peekRecord('Picture', u.id));
-					}
-				});
-
-				me.saveToDb('update', updated, function(err) {
-					if (err) {
-						errors.push(err);
-					}
+				}
+				else {
 					callback();
-				});
+				}
 			},
 			// created pictures
 			function(callback) {
-				var created;
-
-				if (!changedPictures.C) {
-					callback();
-					return;
+				if (created) {
+					me.saveToDb('insert', created, progress, function(err) {
+						if (err) {
+							errors.push(err);
+						}
+						callback();
+					});
 				}
-
-				created = changedPictures.C.map(function(c) {
-					return session.peekRecord('Picture', c.id);
-				});
-
-				me.saveToDb('insert', created, function(err) {
-					if (err) {
-						errors.push(err);
-					}
+				else {
 					callback();
-				});
+				}
 			}
 		], function() {
 			Ext.callback(callback, scope, errors.length ? [errors] : null);
@@ -263,7 +266,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		], callback);
 	},
 
-	deleteFromDb: function(pictures, callback) {
+	deleteFromDb: function(pictures, progress, callback) {
 		var me = this,
 			async = require('async'),
 			fs = require('fs'), 
@@ -278,9 +281,13 @@ Ext.define('Get.project.controller.PictureManager', {
 			function(callback) {
 				async.each(pictures, function(picture, callback) {
 					if (!me.pictures[picture.getId()]) {
-						me.loadFromDb(picture, callback);
+						me.loadFromDb(picture, function(err) {
+							progress();
+							callback(err);
+						});
 					}
 					else {
+						progress();
 						callback();
 					}
 				}, callback);
@@ -292,7 +299,7 @@ Ext.define('Get.project.controller.PictureManager', {
 		], callback);
 	},
 
-	saveToDb: function(mode, pictures, callback) {
+	saveToDb: function(mode, pictures, progress, callback) {
 		var me = this,
 			async = require('async'),
 			fs = require('fs'),
@@ -344,7 +351,10 @@ Ext.define('Get.project.controller.PictureManager', {
 										buffers.original,
 										buffers.preview,
 										buffers.thumb
-									], callback);
+									], function(err) {
+										progress();
+										callback(err);
+									});
 							});
 							break;
 						case 'update':
@@ -353,7 +363,10 @@ Ext.define('Get.project.controller.PictureManager', {
 										buffers.preview,
 										buffers.thumb,
 										id,
-									], callback);
+									], function(err) {
+										progress();
+										callback(err);
+									});
 							});
 							break;
 					}

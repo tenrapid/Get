@@ -151,6 +151,8 @@ Ext.define('Get.project.Project', {
 
 						me.set('layers', me.layerStore);
 						me.set('waypoints', me.waypointStore);
+
+						me.pictureManager.on('progress', me.updateSaveProgress);
 					}
 					Ext.callback(callback, scope, [me, errors.length ? errors : null]);
 				} 
@@ -184,6 +186,13 @@ Ext.define('Get.project.Project', {
 			saveBatch = this.session.getSaveBatch();
 
 		if (saveBatch) {
+			Ext.Msg.show({
+				progress: true,
+				closable: false,
+				title: 'Speichern', 
+				message: me.get('name') + '.get wird gespeichert…', 
+				progressText: '0 %'
+			});
 			async.waterfall([
 				function(callback) {
 					me.pictureManager.save(callback);
@@ -214,9 +223,12 @@ Ext.define('Get.project.Project', {
 						me.modificationStateController.afterSave();
 						callback(errors);
 					});
+					Ext.Msg.updateProgress(0.9, '90 %');
 					saveBatch.start();
 				}
 			], function(err) {
+				Ext.Msg.updateProgress(1, '100 %');
+				Ext.Msg.close();
 				Ext.callback(callback, scope, [me, err]);
 			});
 		}
@@ -225,6 +237,10 @@ Ext.define('Get.project.Project', {
 			me.updateName();
 			Ext.callback(callback, scope, [me, null]);
 		}
+	},
+
+	updateSaveProgress: function(progress) {
+		Ext.Msg.updateProgress(0.9 * progress, Math.round(90 * progress) + ' %');
 	},
 
 	close: function(callback, scope) {
