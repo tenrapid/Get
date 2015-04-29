@@ -288,6 +288,8 @@ Ext.define('Get.view.main.MainController', {
 			this.projectManager.projectClosed(this.project.get('filename'));
 			this.fireEvent('close');
 			this.project.close(function() {
+				this.win.hide();
+				this.project.destroy();
 				this.win.close(true);
 			}, this);
 		}, this);
