@@ -33,7 +33,8 @@ Ext.define('Get.project.controller.PictureManager', {
 
 		Get.model.Picture.prototype.pictureManager = this;
 
-		this.resizeQueue = async.queue(this.resizeWorker.bind(this));
+		this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
+		// this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
 		this.resizeTasks = {};
 	},
 
@@ -226,7 +227,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	getTmpFile: function() {
 		var tmp = require('tmp'),
-			file = tmp.fileSync({dir: '/Users/tenrapid/Desktop/tmp/'});
+			file = tmp.fileSync({dir: '/Users/tenrapid/Desktop/tmp/', postfix: '.jpg'});
 
 		this.tmpFileRemoveCallbacks.push(file.removeCallback);
 		return file;
@@ -428,8 +429,59 @@ Ext.define('Get.project.controller.PictureManager', {
 		], callback);
 	},
 
+	resizeWorkerImageMagick: function(picture, callback) {
+		var me = this,
+			filename = this.getFilename(picture, 'original', true),
+			async = require('async'),
+			shell = require('shelljs');
+
+		async.waterfall([
+			function(callback) {
+				var file = me.getTmpFile(),
+					left = Math.round(picture.get('cropX') * picture.get('width')),
+					top = Math.round(picture.get('cropY') * picture.get('height')),
+					sourceWidth = Math.round(picture.get('cropWidth') * picture.get('width')),
+					sourceHeight = Math.round(picture.get('cropHeight') * picture.get('height'));
+
+				shell.exec([
+						'convert',
+						'"' + filename + '"',
+						'-crop ' + sourceWidth + 'x' + sourceHeight + '+' + left + '+' + top,
+						'-resize ' + me.pictureSizes.preview[0] + 'x' + me.pictureSizes.preview[1] +'\\>',
+						'-strip',
+						'-quality 75',
+						file.name
+					].join(' '), 
+					function(code, output) {
+						if (!code) {
+							me.setFilename(picture, 'preview', file.name);
+						}
+						callback(code, file);
+					}
+				);
+			},
+			function(preview, callback) {
+				var file = me.getTmpFile();
+				shell.exec([
+						'convert',
+						'"' + preview.name + '"',
+						'-resize ' + me.pictureSizes.thumb[0] + 'x' + me.pictureSizes.thumb[1] +'\\>',
+						'-quality 85',
+						file.name
+					].join(' '), 
+					function(code, output) {
+						if (!code) {
+							me.setFilename(picture, 'thumb', file.name);
+						}
+						callback(code);
+					}
+				);
+			},
+		], callback);
+	},
+
 	canvasToBuffer: function(canvas) {
-		var dataURI = canvas.toDataURL('image/jpeg'),
+		var dataURI = canvas.toDataURL('image/jpeg', 0.75),
 			bytes = atob(dataURI.split(',')[1]),
 			buffer = new Buffer(bytes.length);
 
