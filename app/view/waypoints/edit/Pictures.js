@@ -120,7 +120,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			'</div>'
 		].join(''));
 		picture.getImageUrl('preview', function(err, url) {
-			preview.body.down('img').set({src: url});
+			// Waypoint edit window could be closed already
+			preview.body && preview.body.down('img').set({src: url});
 		});
 	},
 
