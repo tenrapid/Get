@@ -11,7 +11,11 @@ Ext.define('Get.view.main.MainModel', {
 			return get('project') ? false : true;
 		},
 		windowTitle: function (get) {
-			return (get('project.name') || 'Get') + (get('project.isModified') ? '*' : '');
+			var project = get('project'),
+				name = get('project.name'),
+				isModified = get('project.isModified'),
+				phantom = project && project.phantom;
+			return project ? name + (phantom ? '' : '.get') + (isModified ? '*' : '') : 'Get';
 		},
 	},
 	
