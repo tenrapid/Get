@@ -119,14 +119,6 @@ Ext.define('Get.view.ToolTip', {
 		me.anchorEl.setStyle('z-index', parseInt(me.el.getZIndex(), 10) || 0 + 1).setVisibilityMode(Ext.Element.DISPLAY);
 	},
 
-	onRender: function() {
-		this.callParent(arguments);
-		this.mon(this.anchorEl, {
-			mouseout: this.onTargetOut,
-			scope: this
-		});
-	},
-	
 	onTargetOver: function(e) {
 		var me = this,
 			delegate = me.delegate,
@@ -134,9 +126,6 @@ Ext.define('Get.view.ToolTip', {
 
 		t = delegate ? e.getTarget(delegate) : e.target;
 
-		if (e.target == this.triggerElement && e.relatedTarget == this.anchorEl.dom) {
-			return;
-		}
 		if (me.disabled || e.within(t, true)) {
 			return;
 		}
@@ -148,17 +137,5 @@ Ext.define('Get.view.ToolTip', {
 			me.delayShow();
 		}
 	},
-
-	onTargetOut: function(e) {
-		if (e.target == this.triggerElement && e.relatedTarget == this.anchorEl.dom ||
-			e.target == this.anchorEl.dom && e.relatedTarget == this.triggerElement) {
-			return;
-		}
-		this.callParent(arguments);
-	},
-
-	onMouseMove: function() {
-
-	}
 
 });
