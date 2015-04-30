@@ -32,8 +32,8 @@ Ext.define('Get.project.controller.PictureManager', {
 		// Inject a reference to me in all Picture instances.
 		Get.model.Picture.prototype.pictureManager = this;
 
-		// this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
-		this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
+		this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
+		// this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
 		this.resizeTasks = {};
 	},
 
@@ -231,7 +231,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	getTmpFile: function() {
 		var tmp = require('tmp'),
-			file = tmp.fileSync({dir: '/Users/tenrapid/Desktop/tmp/', postfix: '.jpg'});
+			file = tmp.fileSync({prefix: 'get-tmp-image', postfix: '.jpg'});
 
 		this.tmpFileRemoveCallbacks.push(file.removeCallback);
 		return file;
