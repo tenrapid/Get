@@ -24,6 +24,14 @@ body > .x-mask {
 	background-color: rgba(100,100,100,0.3);
 }
 
+.x-css-shadow {
+	transform: translateZ(0);
+	-webkit-filter: drop-shadow(0px 0px 6px #999);
+	box-shadow: none !important;
+	background-color: white;
+}
+
+
 .x-tip-default {
 	border-width: 0 !important;
 	background-color: #fff !important;
