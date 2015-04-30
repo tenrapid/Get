@@ -47,6 +47,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		var me = this,
 			newData = this.callParent(arguments);
 
+		// newData.backgroundImage = 'url(resources/images/loader.gif); background-size: initial';
 		newData.backgroundImage = 'none';
 
 		picture.getImageUrl('thumb', function(err, url) {
