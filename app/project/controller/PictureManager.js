@@ -29,21 +29,22 @@ Ext.define('Get.project.controller.PictureManager', {
 		// remove temp files when doing a ReloadDev
 		window.addEventListener('unload', this.destroy.bind(this));
 
+		// Inject a reference to me in all Picture instances.
 		Get.model.Picture.prototype.pictureManager = this;
 
-		this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
-		// this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
+		// this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
+		this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
 		this.resizeTasks = {};
 	},
 
 	add: function(picture) {
-		var filename = picture.get('filename');
-
-		if (!filename) {
-			Ext.Error.raise("No filename for picture given.");
-		}
+		var filename;
 
 		if (!this.pictures[picture.getId()]) {
+			filename = picture.get('filename');
+			if (!filename) {
+				Ext.Error.raise("No filename for picture given.");
+			}
 			this.setFilename(picture, 'original', filename, true);
 		}
 	},
@@ -91,10 +92,10 @@ Ext.define('Get.project.controller.PictureManager', {
 
 	save: function(callback, scope) {
 		var me = this,
-			changes = this.getProject().session.getChanges().Picture,
-			session = this.getProject().session,
-			errors = [],
 			async = require('async'),
+			session = this.getProject().session,
+			changes = session.getChanges().Picture,
+			errors = [],
 			dropped,
 			updated,
 			created,

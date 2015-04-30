@@ -56,6 +56,10 @@ Ext.define('Get.model.Picture', {
 	constructor: function(data) {
 		this.callParent(arguments);
 		if (this.pictureManager && this.phantom && data[this.clientIdProperty] === undefined) {
+			// Let the PictureManager manage this instance. Only phantom records need to be added, so that
+			// the PictureManager knows where to look for the original image file. The last condition
+			// prevents instances to be added, that got created in Ext.data.Reader while executing a 
+			// destroy operation.
 			this.pictureManager.add(this);
 		}
 	},
