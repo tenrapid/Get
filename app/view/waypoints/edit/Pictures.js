@@ -90,11 +90,13 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		}
 
 		// DEBUG
-		pv = this;
+		// pv = this;
 	},
 
 	onDestroy: function() {
-		this.preview.hide();
+		this.preview.destroy();
+		this.preview = null;
+		this.callParent();
 	},
 
 	updatePreview: function(preview) {
@@ -186,6 +188,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	openCropWindow: function(picture) {
+		// TODO: memory leak?
 		var maxWidth = Ext.Element.getViewportWidth() - 80,
 			maxHeight = Ext.Element.getViewportHeight() - 140,
 			size = picture.sizeWithin([maxWidth, maxHeight], true),
@@ -249,12 +252,14 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
  						picture.set(values);
 						cropWindow.close();
+						cropWindow = null;
 					},
 				},
 				{
 					text: 'Abbrechen',
 					handler: function() {
 						cropWindow.close();
+						cropWindow = null;
 					},
 				},
 			],
