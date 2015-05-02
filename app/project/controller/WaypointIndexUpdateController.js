@@ -50,7 +50,7 @@ Ext.define('Get.project.controller.WaypointIndexUpdateController', {
 			indexField = store.associatedEntity ? store.getIndexField() : 'index';
 
 		store.each(function(record) {
-			prop[indexField] = store.indexOf(record);
+			prop[indexField] = store.indexOf(record) + 1;
 			record.set(prop);
 		});
 	}

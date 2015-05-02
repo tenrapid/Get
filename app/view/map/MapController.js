@@ -38,10 +38,8 @@ Ext.define('Get.view.map.MapController', {
 			map = this.getView().map;
 		
 		Ext.iterate(this.waypointStores, function(key, waypointStore) {
-			var layer = waypointStore.layer;
-			waypointStore.unbindLayer();
-			waypointStore.un('beforeDestroy', me.onWaypointStoreBeforeDestroy, me);
-			map.removeLayer(layer);
+			me.removeLayerFromWaypointStore(waypointStore);
+			waypointStore.un('beforeDestroy', me.removeLayerFromWaypointStore, me);
 		});
 		this.waypointStores = {};
 		this.visibleVectorLayer = null;
@@ -97,16 +95,16 @@ Ext.define('Get.view.map.MapController', {
 	
 	addLayerToWaypointStore: function(waypointStore) {
 		var map = this.getView().map,
-			layer;
+			styleMap = this.createLayerStyleMap(waypointStore),
+			layer = new OpenLayers.Layer.Vector('', {
+				styleMap: styleMap,
+				rendererOptions: {yOrdering: true},
+			});
 			
-		layer = new OpenLayers.Layer.Vector('', {
-			styleMap: this.styleMap,
-			rendererOptions: {yOrdering: true},
-		});
 		map.addLayer(layer);
 		waypointStore.bindLayer(layer);
 		waypointStore.on({
-			beforeDestroy: this.onWaypointStoreBeforeDestroy,
+			beforeDestroy: this.removeLayerFromWaypointStore,
 			scope: this
 		});
 		this.waypointStores[layer.id] = waypointStore;
@@ -114,7 +112,7 @@ Ext.define('Get.view.map.MapController', {
 		return layer;
 	},
 	
-	onWaypointStoreBeforeDestroy: function(waypointStore) {
+	removeLayerFromWaypointStore: function(waypointStore) {
 		var layer = waypointStore.layer,
 			map = this.getView().map;
 			
@@ -125,49 +123,60 @@ Ext.define('Get.view.map.MapController', {
 		}
 	},
 	
-	styleMap: new OpenLayers.StyleMap({
-		'default': new OpenLayers.Style(Ext.applyIf({
-// 			fillColor: 'red',
-// 			strokeColor: 'red',
-			cursor: "inherit",
-			fill: false,
-			stroke: false,
-			fillOpacity: 0.6,
-			pointRadius: 9,
-			strokeOpacity: 1,
-			strokeWidth: 2,
-// 			externalGraphic: 'resources/images/pin-edgy_.png',
-// 			graphicWidth: 25,
-// 			graphicHeight: 39,
-// 			graphicYOffset: -30,
-			externalGraphic: 'resources/images/pin-square.png',
-			graphicWidth: 26,
-			graphicHeight: 37,
-			graphicYOffset: -30,
-			graphicOpacity: 1,
-// 			backgroundGraphic: 'resources/images/markerShadow.png',
-// 			backgroundYOffset: 2,
-// 			backgroundWidth: 26,
-// 			backgroundHeight: 15,
-			label: '${id}', //●⬤
-			labelYOffset: 17,
-			fontColor: 'white',
-			fontWeight: 'bold',
-			fontFamily: 'Tahoma',
-			fontSize: 11,
-			labelOutlineWidth: 0,
-		}, OpenLayers.Feature.Vector.style['default'])),
-		'select': new OpenLayers.Style(Ext.applyIf({
-			cursor: "inherit",
-			pointRadius: 9,
-			fillOpacity: 0.6,
-			fontColor: 'white',
-			labelOutlineWidth: 0,
-			externalGraphic: 'resources/images/pin-square-selected.png',
-// 			graphicWidth: 30,
-// 			graphicHeight: 70,
-// 			graphicOpacity: 1,
-		}, OpenLayers.Feature.Vector.style['select']))
-	}),
+	createLayerStyleMap: function(waypointStore) {
+		var label;
+
+		if (waypointStore.model.entityName === 'Waypoint') {
+			label = '${index}';
+		}
+		else {
+			label = '${' + waypointStore.getIndexField() + '}';
+		}
+
+		return new OpenLayers.StyleMap({
+			'default': new OpenLayers.Style(Ext.applyIf({
+	// 			fillColor: 'red',
+	// 			strokeColor: 'red',
+				cursor: "inherit",
+				fill: false,
+				stroke: false,
+				fillOpacity: 0.6,
+				pointRadius: 9,
+				strokeOpacity: 1,
+				strokeWidth: 2,
+	// 			externalGraphic: 'resources/images/pin-edgy_.png',
+	// 			graphicWidth: 25,
+	// 			graphicHeight: 39,
+	// 			graphicYOffset: -30,
+				externalGraphic: 'resources/images/pin-square.png',
+				graphicWidth: 26,
+				graphicHeight: 37,
+				graphicYOffset: -30,
+				graphicOpacity: 1,
+	// 			backgroundGraphic: 'resources/images/markerShadow.png',
+	// 			backgroundYOffset: 2,
+	// 			backgroundWidth: 26,
+	// 			backgroundHeight: 15,
+				label: label, //●⬤
+				labelYOffset: 17,
+				fontColor: 'white',
+				fontWeight: 'bold',
+				fontFamily: 'Tahoma',
+				fontSize: 11,
+				labelOutlineWidth: 0,
+			}, OpenLayers.Feature.Vector.style['default'])),
+			'select': new OpenLayers.Style(Ext.applyIf({
+				cursor: "inherit",
+				pointRadius: 9,
+				fillOpacity: 0.6,
+				fontColor: 'white',
+				labelOutlineWidth: 0,
+				externalGraphic: 'resources/images/pin-square-selected.png',
+	// 			graphicWidth: 30,
+	// 			graphicHeight: 70,
+	// 			graphicOpacity: 1,
+			}, OpenLayers.Feature.Vector.style['select']))
+		});
+	}
 
 });

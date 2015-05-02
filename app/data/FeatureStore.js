@@ -372,7 +372,6 @@ Ext.define('Get.data.FeatureStore', {
 					if (featureGeometryId) {
 						feature.geometry.id = featureGeometryId;
 					}
-					me.layer.drawFeature(feature);
 					
 					// update geometry in tourWaypoints if this record is a waypoint
 					if (me.geometryPropertyUsersGetter) {
@@ -382,6 +381,8 @@ Ext.define('Get.data.FeatureStore', {
 						});
 					}
 				}
+				me.layer.drawFeature(feature);
+
 				me._updating = true;
 				me.layer.events.triggerEvent('featuremodified', {
 					feature: feature

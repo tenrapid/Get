@@ -61,9 +61,11 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 	
 	onGridReconfigure: function(grid, store) {
 		if (store) {
-			var storeId = store.getStoreId(),
-				waypointColumn = grid.columns[2];
-			waypointColumn.setHidden(storeId === 'waypoints');
+			var storeId = store.getStoreId();
+
+			grid.columns[1].setHidden(storeId !== 'waypoints');
+			grid.columns[2].setHidden(storeId === 'waypoints');
+			grid.columns[3].setHidden(storeId === 'waypoints');
 		}
 	},
 

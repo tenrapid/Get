@@ -39,14 +39,23 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	columns: [
 		{
 			text: '',
-			dataIndex: 'id',
 			width: 35,
 			align: 'right',
 			menuDisabled: true,
+			renderer: function(value, meta, record, rowIndex) {
+				return rowIndex + 1;
+			}
 		},
 		{
 			text: 'Name',
 			dataIndex: 'name',
+			menuDisabled: true,
+			flex: 1
+		},
+		{
+			text: 'Name',
+			dataIndex: 'name',
+			hidden: true,
 			menuDisabled: true,
 			flex: 3
 		},
@@ -58,8 +67,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 				var waypoint = record.getWaypoint && record.getWaypoint();
 				return waypoint ? waypoint.get('name') : '';
 			},
-			flex: 8,
-			itemId: 'waypointColumn'
+			flex: 8
 		},
 	],
 	listeners: {
