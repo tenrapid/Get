@@ -32,8 +32,8 @@ Ext.define('Get.project.controller.PictureManager', {
 		// Inject a reference to me in all Picture instances.
 		Get.model.Picture.prototype.pictureManager = this;
 
-		this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
-		// this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
+		// this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
+		this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
 		this.resizeTasks = {};
 	},
 
@@ -330,23 +330,44 @@ Ext.define('Get.project.controller.PictureManager', {
 				pictures.forEach(function(picture) {
 					var id = picture.getId(),
 						buffers = {},
-						sizes = ['preview', 'thumb'].concat(mode === 'insert' ? ['original'] : []);
+						sizes = ['preview', 'thumb'].concat(mode === 'insert' ? ['original'] : []),
+						readTask,
+						writeTask;
 
-					tasks.push(function(callback) {
-						async.each(sizes, function(size, callback) {
-							var filename = me.getFilename(picture, size, size === 'original');
+					readTask = function(callback) {
+						async.waterfall([
+							function(callback) {
+								// Check if there are tmp files for all sizes and if not create them.
+								var needsResize = sizes.some(function(size) {
+										return !me.getFilename(picture, size, size === 'original');
+									});
 
-							fs.readFile(filename, function(err, buffer) {
-								if (!err) {
-									buffers[size] = buffer;
+								if (needsResize) {
+									me.resize(picture, callback);
 								}
-								callback(err);
-							});
-						}, callback);
-					});
+								else {
+									callback();
+								}
+							},
+							function(callback) {
+								// Read tmp files into buffers.
+								async.each(sizes, function(size, callback) {
+									var filename = me.getFilename(picture, size, size === 'original');
+
+									fs.readFile(filename, function(err, buffer) {
+										if (!err) {
+											buffers[size] = buffer;
+										}
+										callback(err);
+									});
+								}, callback);
+							}
+						], callback);
+					};
+
 					switch (mode) {
 						case 'insert':
-							tasks.push(function(callback) {
+							writeTask = function(callback) {
 								insertStatement.run([
 										id,
 										buffers.original,
@@ -356,10 +377,10 @@ Ext.define('Get.project.controller.PictureManager', {
 										progress();
 										callback(err);
 									});
-							});
+							};
 							break;
 						case 'update':
-							tasks.push(function(callback) {
+							 writeTask = function(callback) {
 								updateStatement.run([
 										buffers.preview,
 										buffers.thumb,
@@ -368,9 +389,12 @@ Ext.define('Get.project.controller.PictureManager', {
 										progress();
 										callback(err);
 									});
-							});
+							};
 							break;
 					}
+
+					tasks.push(readTask);
+					tasks.push(writeTask);
 				});
 				async.waterfall(tasks, callback);
 			}
@@ -409,6 +433,9 @@ Ext.define('Get.project.controller.PictureManager', {
 						callback(new Error('Could not load image:' + file));
 					}
 					else {
+						if (!(picture.get('width') && picture.get('width'))) {
+							picture.set({width: original.width, height: original.height});
+						}
 						callback(null, original);
 					}
 				});
@@ -447,9 +474,24 @@ Ext.define('Get.project.controller.PictureManager', {
 		var me = this,
 			filename = this.getFilename(picture, 'original', true),
 			async = require('async'),
-			shell = require('shelljs');
+			shell = require('shelljs'),
+			sizeOf = require('image-size');
 
 		async.waterfall([
+			function(callback) {
+				if (!(picture.get('width') && picture.get('width'))) {
+					sizeOf(filename, function(err, dimensions) {
+						if (err) {
+							throw err;
+						}
+						picture.set({width: dimensions.width, height: dimensions.height});
+						callback();
+					});
+				}
+				else {
+					callback();
+				}
+			},
 			function(callback) {
 				var file = me.getTmpFile(),
 					left = Math.round(picture.get('cropX') * picture.get('width')),
