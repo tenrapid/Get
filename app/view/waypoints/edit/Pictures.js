@@ -2,6 +2,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	extend: 'Ext.view.View',
 	requires: [
 		'Get.view.ToolTip',
+		'Get.view.FileDialog',
 		'Ext.window.Window'
 	],
 
@@ -18,16 +19,25 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	itemSelector: 'div.waypoint-picture',
 
 	renderTpl: [
-		'<input style="display:none;" type="file" multiple id="{id}-fileInput" data-ref="fileInput" />',
 		'<div id="{id}-pictures" data-ref="pictures"></div>',
 		'<div class="waypoint-picture-thumbnail waypoint-picture-add-button" id="{id}-addButton" data-ref="addButton">+</div>',
 	],
 
 	childEls: [
 		'addButton',
-		'pictures',
-		'fileInput'
+		'pictures'
 	],
+
+	initComponent: function() {
+		this.callParent();
+		this.fileDialog = Ext.create('Get.view.FileDialog', {
+			multiple: true,
+			listeners: {
+				change: this.addPicture,
+				scope: this
+			}
+		});
+	},
 
 	// overide View
 	getNodeContainer: function() {
@@ -68,11 +78,6 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			click: 'onAddButton',
 			scope: this
 		});
-		this.fileInput.dom.files.append(new File('', ''));
-		this.fileInput.on({
-			change: 'onFileInput',
-			scope: this
-		});
 		if (!this.preview) {
 			this.preview = Ext.create('Get.view.ToolTip', {
 				target: this.pictures,
@@ -97,6 +102,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	onDestroy: function() {
 		this.preview.destroy();
 		this.preview = null;
+		this.fileDialog.destroy();
+		this.fileDialog = null;
 		this.callParent();
 	},
 
@@ -148,22 +155,11 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	onAddButton: function() {
-		this.fileInput.dom.click();
+		this.fileDialog.show();
 	},
 
 	onRemoveButton: function(picture) {
 		this.removePicture(picture);
-	},
-
-	onFileInput: function() {
-		var files = Ext.Array.clone(this.fileInput.dom.files);
-
-		if (files.length) {
-			this.addPicture(files);
-		}
-
-		this.fileInput.dom.files.clear();
-		this.fileInput.dom.files.append(new File('', ''));
 	},
 
 	addPicture: function(files) {
