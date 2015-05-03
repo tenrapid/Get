@@ -50,7 +50,7 @@ Ext.define('Get.controller.MenuBar', {
 		this.gui = require('nw.gui');
 		this.win = this.gui.Window.get();
 
-		this.win.on('close', this.fireEvent.bind(this, 'closeMenuItem'));
+		this.win.on('close', Ext.GlobalEvents.fireEvent.bind(Ext.GlobalEvents, 'closeMenuItem'));
 
 		if (process.platform === 'darwin') {
 			this.menuBarManager = require('menubarmanager');
@@ -89,8 +89,8 @@ Ext.define('Get.controller.MenuBar', {
 			win = this.win,
 			isMac = process.platform === 'darwin',
 			cmd = isMac ? 'cmd' : 'ctrl',
-			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
-			fireEventScope = isMac ? this.menuBarManager : this,
+			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : Ext.GlobalEvents.fireEvent,
+			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents,
 			menuBar,
 			fileMenu,
 			editMenu,
@@ -242,8 +242,8 @@ Ext.define('Get.controller.MenuBar', {
 		var gui = this.gui,
 			isMac = process.platform === 'darwin',
 			cmd = isMac ? 'cmd' : 'ctrl',
-			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
-			fireEventScope = isMac ? this.menuBarManager : this;
+			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : Ext.GlobalEvents.fireEvent,
+			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents;
 
 		if (dialogVisible) {
 			if (isMac) {
@@ -300,8 +300,8 @@ Ext.define('Get.controller.MenuBar', {
 			gui = this.gui,
 			path = require('path'),
 			isMac = process.platform === 'darwin',
-			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : this.fireEvent,
-			fireEventScope = isMac ? this.menuBarManager : this,
+			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : Ext.GlobalEvents.fireEvent,
+			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents,
 			menu,
 			menuBar;
 

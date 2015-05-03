@@ -10,15 +10,13 @@ Ext.define('Get.view.main.MainController', {
 
 	config: {
 		listen: {
-			controller: {
-				'#menubar': {
-					newMenuItem: 'onNewMenuItem',
-					openMenuItem: 'onOpenMenuItem',
-					recentProjectsMenuItem: 'onRecentProjectsMenuItem',
-					saveMenuItem: 'onSaveMenuItem',
-					saveAsMenuItem: 'onSaveAsMenuItem',
-					closeMenuItem: 'onCloseMenuItem',
-				},
+			global: {
+				newMenuItem: 'onNewMenuItem',
+				openMenuItem: 'onOpenMenuItem',
+				recentProjectsMenuItem: 'onRecentProjectsMenuItem',
+				saveMenuItem: 'onSaveMenuItem',
+				saveAsMenuItem: 'onSaveAsMenuItem',
+				closeMenuItem: 'onCloseMenuItem',
 			},
 		}
 	},

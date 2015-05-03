@@ -6,11 +6,11 @@ Ext.define('Get.project.controller.UndoManager', {
 	config: {
 		project: null,
 		listen: {
+			global: {
+				undoMenuItem: 'undo',
+				redoMenuItem: 'redo'
+			},
 			controller: {
-				'#menubar': {
-					undoMenuItem: 'undo',
-					redoMenuItem: 'redo'
-				},
 				'#projectstoreeventnormalization': {
 					add: {
 						fn: 'onStoreOperation',
