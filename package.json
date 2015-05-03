@@ -17,7 +17,8 @@
     "nodewebkit": "0.11.5",
     "shelljs": "~0.3.0",
     "sqlite3": "mapbox/node-sqlite3#78a134bd6a4b32baa393b43883058ac6c5063ea0",
-    "tmp": "~0.0.25"
+    "tmp": "~0.0.25",
+    "togeojson": "~0.11.1"
   },
   "devDependencies": {
     "download": "^3.3.0",

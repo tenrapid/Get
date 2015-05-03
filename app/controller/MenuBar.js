@@ -137,6 +137,19 @@ Ext.define('Get.controller.MenuBar', {
 		}));
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
+			label: 'Importiere Wegpunkte …',
+			click: fireEvent.bind(fireEventScope, 'importWaypointsMenuItem') 
+		}));
+		fileMenu.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Importiere Bilder …',
+			click: fireEvent.bind(fireEventScope, 'importPicturesMenuItem') 
+		}));
+		fileMenu.submenu.append(new gui.MenuItem({
+			type: 'separator'
+		}));
+		fileMenu.submenu.append(new gui.MenuItem({
+			type: 'normal',
 			label: 'Schließen',
 			key: 'w',
 			modifiers: cmd,
