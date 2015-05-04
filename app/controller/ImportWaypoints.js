@@ -61,16 +61,18 @@ Ext.define('Get.controller.ImportWaypoints', {
 			throw new Error('Kein unterstützter Dateityp: "' + file.name + '"');
 		}
 
+		project.undoManager.beginUndoGroup();
 		geojson.features.forEach(function(feature) {
-			waypoints.push(Ext.create('Get.model.Waypoint', {
+			waypoints.push(project.session.createRecord('Waypoint', {
 				name: feature.properties.name,
 				geometry: feature.geometry,
 				description: feature.properties.desc
 			}));
 		});
-		project.undoManager.beginUndoGroup();
 		waypointStore.add(waypoints);
 		project.undoManager.endUndoGroup();
+
+		Ext.GlobalEvents.fireEvent('zoomToWaypoints', waypoints);
 	}
 
 });

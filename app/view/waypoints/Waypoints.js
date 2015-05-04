@@ -86,6 +86,14 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			bind: {
 				disabled: '{removeWaypointButtonDisabled}'
 			}
+		},
+		'->',
+		{
+			html: '◊',
+			handler: 'onZoomToWaypoints',
+			bind: {
+				disabled: '{removeWaypointButtonDisabled}'
+			}
 		}
 	],
 

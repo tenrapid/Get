@@ -90,6 +90,10 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		Ext.resumeLayouts(true);
 	},
 
+	onZoomToWaypoints: function() {
+		Ext.GlobalEvents.fireEvent('zoomToWaypoints', this.getView().getSelection());
+	},
+
 	onWaypointUpdate: function(store, waypoint, operation, modifiedFieldNames) {
 		var view = this.getView().getView(),
 			gridStore = view.getStore();

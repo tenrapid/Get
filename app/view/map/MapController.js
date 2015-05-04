@@ -19,7 +19,10 @@ Ext.define('Get.view.map.MapController', {
 					projectUnload: 'onProjectUnload',
 				}
 			},
-		},
+			global: {
+				zoomToWaypoints: 'zoomToWaypoints'
+			}
+		}
 	},
 
 	visibleVectorLayer: null,
@@ -123,6 +126,23 @@ Ext.define('Get.view.map.MapController', {
 		}
 	},
 	
+	zoomToWaypoints: function(waypoints) {
+		var geometries = (Ext.isArray(waypoints) ? waypoints : [waypoints]).map(function(waypoint) {
+				return waypoint.get('geometry').geometry.clone();
+			}),
+			collection = new OpenLayers.Geometry.Collection(geometries),
+			map = this.getView().map;
+
+		if (collection.components.length) {
+			if (collection.components.length === 1) {
+				map.setCenter([geometries[0].getCentroid().x, geometries[0].getCentroid().y]);
+			}
+			else {
+				map.zoomToExtent(collection.getBounds());
+			}
+		}
+	},
+
 	createLayerStyleMap: function(waypointStore) {
 		var label;
 
