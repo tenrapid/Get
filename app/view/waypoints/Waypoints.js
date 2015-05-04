@@ -89,7 +89,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 		},
 		'->',
 		{
-			html: '◊',
+			html: '<i class="fa fa-lg fa-crosshairs"></i>',
 			handler: 'onZoomToWaypoints',
 			bind: {
 				disabled: '{removeWaypointButtonDisabled}'

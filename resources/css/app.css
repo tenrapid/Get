@@ -129,6 +129,17 @@ body > .x-mask {
 }
 
 	/*
+	 *	FontAwesome
+	 */
+
+.fa-lg {
+	font-size: 1.3em;
+	line-height: .75em;
+	vertical-align: -6%;
+}
+
+
+	/*
 	 *	OpenLayers
 	 */
  
