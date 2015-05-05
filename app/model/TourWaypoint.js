@@ -48,6 +48,9 @@ Ext.define('Get.model.TourWaypoint', {
 			}
 		},
 		{
+			name: 'description',
+		},
+		{
 			name: 'geometry',
 			type: 'geometry',
 			persist: false,
