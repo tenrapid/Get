@@ -203,9 +203,11 @@ Ext.define('Get.project.controller.UndoManager', {
 			return;
 		}
 
+		Ext.suspendLayouts();
 		this.listenersSuspended = true;
 		this.undoOperation(operation);
 		this.listenersSuspended = false;
+		Ext.resumeLayouts(true);
 		
 		this.redoStack.push(operation);
 		this.updateCanUndo();
@@ -218,9 +220,11 @@ Ext.define('Get.project.controller.UndoManager', {
 			return;
 		}
 
+		Ext.suspendLayouts();
 		this.listenersSuspended = true;
 		this.redoOperation(operation);
 		this.listenersSuspended = false;
+		Ext.resumeLayouts(true);
 
 		this.undoStack.push(operation);
 		this.updateCanUndo();
