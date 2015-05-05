@@ -14,20 +14,12 @@ Ext.define('Get.controller.ImportWaypoints', {
 		}
 	},
 
-	fileDialog: null,
-
-	init: function() {
-		this.fileDialog = Ext.create('Get.view.FileDialog', {
-			accept: '.kml,.gpx',
-			listeners: {
-				change: this.importFile,
-				scope: this
-			}
-		});
-	},
-
 	onImportMenuItem: function() {
-		this.fileDialog.show();
+		Get.FileDialog.show({
+			accept: '.kml,.gpx',
+			handler: this.importFile,
+			scope: this
+		});
 	},
 
 	importFile: function(file) {
@@ -40,8 +32,6 @@ Ext.define('Get.controller.ImportWaypoints', {
 			type,
 			geojson,
 			waypoints = [];
-
-		if (!file) return;
 
 		xml = new DOMParser().parseFromString(fs.readFileSync(file.path), 'text/xml');
 

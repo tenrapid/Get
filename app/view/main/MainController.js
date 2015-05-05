@@ -4,6 +4,7 @@ Ext.define('Get.view.main.MainController', {
 
 	requires: [
 		'Get.project.Project',
+		'Get.view.FileDialog'
 	],
 
 	id: 'main', 
@@ -34,8 +35,6 @@ Ext.define('Get.view.main.MainController', {
 	win: null,
 	projectManager: null,
 	isDialogVisible: false,
-	openFileDialogInputEl: null,
-	saveFileDialogInputEl: null,
 
 	init: function() {
 		var me = this,
@@ -44,16 +43,12 @@ Ext.define('Get.view.main.MainController', {
 		this.win = gui.Window.get();
 		this.projectManager = require('projectmanager');
 
-		['openFileDialog', 'saveFileDialog'].forEach(function(elementId) {
-			var input = Ext.get(elementId).dom;
-			input.files.append(new File('', ''));
-			input.addEventListener('change', me.onFileInputElChange.bind(me));
-			input.addEventListener('click', me.onDialogShow.bind(me));
-			// openFileDialogInputEl, saveFileDialogInputEl, ...
-			me[elementId + 'InputEl'] = input;
-		});
-
 		Ext.Msg.on({
+			show: this.onDialogShow,
+			hide: this.onDialogHide,
+			scope: this
+		});
+		Get.FileDialog.on({
 			show: this.onDialogShow,
 			hide: this.onDialogHide,
 			scope: this
@@ -128,23 +123,6 @@ Ext.define('Get.view.main.MainController', {
 		Ext.Msg.down('toolbar').setLayout({pack: 'center'});
 	},
 
-	onFileInputElChange: function(e) {
-		var input = e.target,
-			files = input.files;
-
-		this.onDialogHide();
-
-		if (files.length) {
-			// onOpenFileDialog or onSaveFileDialog
-			this['on' + Ext.String.capitalize(input.id)](files[0].path);
-		}
-
-		// Reset so that the change event can fire if the same file is selected again.
-		input.files.clear();
-		// Append unnamed file so that the change event fires if the file dialog is canceled.
-		input.files.append(new File('', ''));
-	},
-
 	onDialogShow: function() {
 		this.isDialogVisible = true;
 		this.fireEvent('dialogVisibleChanged', this.isDialogVisible);
@@ -192,11 +170,17 @@ Ext.define('Get.view.main.MainController', {
 			return;
 		}
 		this.checkForUnsavedChanges(function() {
-			me.openFileDialogInputEl.click();
+			Get.FileDialog.show({
+				accept: '.get',
+				handler: me.onOpenFileDialog,
+				scope: me
+			});
 		});
 	},
-	onOpenFileDialog: function(filename) {
-		var project,
+
+	onOpenFileDialog: function(file) {
+		var filename = file.path,
+			project,
 			win;
 
 		if (this.projectManager.isOpen(filename)) {
@@ -224,6 +208,7 @@ Ext.define('Get.view.main.MainController', {
 			this.onSaveAsMenuItem();
 		}
 	},
+
 	onSaveAsMenuItem: function() {
 		var input = this.saveFileDialogInputEl,
 			path = require('path'),
@@ -233,17 +218,21 @@ Ext.define('Get.view.main.MainController', {
 		if (this.isDialogVisible) {
 			return;
 		}
-		input.files.clear();
-		input.files.append(new File(name, ''));
-		if (filename) {
-			input.setAttribute('nwworkingdir', path.dirname(filename));
-		}
-		input.click();
+
+		Get.FileDialog.show({
+			saveAs: true,
+			directory: filename ? path.dirname(filename) : undefined,
+			file: name,
+			handler: this.onSaveFileDialog,
+			scope: this
+		});
 	},
-	onSaveFileDialog: function(filename) {
+
+	onSaveFileDialog: function(file) {
 		var me = this,
 			fs = require('fs'),
 			shell = require('shelljs'),
+			filename = file.path,
 			currentFilename = me.project.get('filename'),
 			save = function() {
 				me.project.set('filename', filename);

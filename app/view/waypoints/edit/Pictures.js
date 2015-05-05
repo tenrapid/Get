@@ -8,6 +8,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	alias: 'widget.edit.waypoint.pictures',
 
+	baseCls: Ext.baseCSSPrefix + 'waypoint-pictures',
+
 	tpl: [
 		'<tpl for=".">',
 			'<div class="waypoint-picture-thumbnail waypoint-picture" style="background-image: {backgroundImage};">',
@@ -27,17 +29,6 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		'addButton',
 		'pictures'
 	],
-
-	initComponent: function() {
-		this.callParent();
-		this.fileDialog = Ext.create('Get.view.FileDialog', {
-			multiple: true,
-			listeners: {
-				change: this.addPicture,
-				scope: this
-			}
-		});
-	},
 
 	// overide View
 	getNodeContainer: function() {
@@ -72,38 +63,31 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		return newData;
 	},
 
-	afterRender: function() {
+	onRender: function() {
 		this.callParent(arguments);
 		this.addButton.on({
 			click: 'onAddButton',
 			scope: this
 		});
-		if (!this.preview) {
-			this.preview = Ext.create('Get.view.ToolTip', {
-				target: this.pictures,
-				delegate: this.itemSelector,
-				maxWidth: 620,
-				anchor: 'bottom',
-				hideDelay: 200,
-				dismissDelay: 0,
-				shadow: null,
-				renderTo: Ext.getBody(),
-				listeners: {
-					beforeshow: 'updatePreview',
-					scope: this
-				}
-			});
-		}
-
-		// DEBUG
-		// pv = this;
+		this.preview = Ext.create('Get.view.ToolTip', {
+			target: this.pictures,
+			delegate: this.itemSelector,
+			maxWidth: 620,
+			anchor: 'bottom',
+			hideDelay: 200,
+			dismissDelay: 0,
+			shadow: null,
+			renderTo: Ext.getBody(),
+			listeners: {
+				beforeshow: 'updatePreview',
+				scope: this
+			}
+		});
 	},
 
 	onDestroy: function() {
 		this.preview.destroy();
 		this.preview = null;
-		this.fileDialog.destroy();
-		this.fileDialog = null;
 		this.callParent();
 	},
 
@@ -155,7 +139,11 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	onAddButton: function() {
-		this.fileDialog.show();
+		Get.FileDialog.show({
+			multiple: true,
+			handler: this.addPicture,
+			scope: this
+		});
 	},
 
 	onRemoveButton: function(picture) {
