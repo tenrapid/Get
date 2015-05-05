@@ -9,13 +9,9 @@ Ext.define('Get.view.map.Map', {
 	controller: 'map',
 	viewModel: 'map',
 
-	title: 'Map',
+	title: '<i class="fa fa-lg fa-map-marker"></i> Karte',
 	layout: 'fit',
 	border: false,
-	
-	bind: {
-		title: '{panelTitle}',
-	},
 	
 	map: {
 		allOverlays: false,

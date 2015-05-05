@@ -12,7 +12,7 @@ Ext.define('Get.view.map.MapModel', {
 			if (item.parentNode && !item.parentNode.isRoot()) {
 				name = item.parentNode.get('name') + '&ensp;–&ensp;' + name; // ›
 			}
-			return 'Map<span style="font-weight: normal;">&ensp;–&ensp;' + name + '</span>';
+			return '<i class="fa fa-lg fa-map-marker"></i> Karte<span style="font-weight: normal;">&ensp;–&ensp;' + name + '</span>';
 		}
 	}
 

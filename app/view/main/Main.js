@@ -6,6 +6,7 @@ Ext.define('Get.view.main.Main', {
 		'Get.view.layers.Layers',
 		'Get.view.waypoints.Waypoints',
 		'Get.view.map.Map',
+		'Ext.tab.Panel'
 	],
 
 	xtype: 'app-main',
@@ -18,16 +19,6 @@ Ext.define('Get.view.main.Main', {
 	},
 	
 	items: [
-//     	{
-// 			region: 'north',
-//     		xtype: 'box',
-// 			dock: 'top',
-// 			baseCls: 'get-header',
-// 			html: 'GET',
-// 			bind: {
-// 				html: 'GET <span style="font-weight: normal;">{projectName}</span>',
-// 			}
-// 		},
 		{
 			region: 'west',
 			layout: {
@@ -51,7 +42,16 @@ Ext.define('Get.view.main.Main', {
 		},
 		{
 			region: 'center',
-			xtype: 'get-mappanel',
+			xtype: 'tabpanel',
+			plain: true,
+			items: [
+				{
+					xtype: 'get-mappanel',
+				},
+				{
+					title: '<i class="fa fa-lg fa-list-ul"></i> Liste'
+				}
+			]
 		}
 	],
 });
