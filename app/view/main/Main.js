@@ -5,6 +5,7 @@ Ext.define('Get.view.main.Main', {
 		'Get.view.main.MainModel',
 		'Get.view.layers.Layers',
 		'Get.view.waypoints.Waypoints',
+		'Get.view.list.List',
 		'Get.view.map.Map',
 		'Ext.tab.Panel'
 	],
@@ -49,7 +50,7 @@ Ext.define('Get.view.main.Main', {
 					xtype: 'get-mappanel',
 				},
 				{
-					title: '<i class="fa fa-lg fa-list-ul"></i> Liste'
+					xtype: 'get-list'
 				}
 			]
 		}

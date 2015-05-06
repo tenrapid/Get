@@ -121,6 +121,16 @@ body > .x-mask {
 	display: block;
 }
 
+.x-grid-cell .waypoint-picture-thumbnail {
+	width: 40px;
+	height: 40px;
+}
+.x-grid-cell .waypoint-picture-add-button {
+	font-size: 20px; 
+	line-height: 34px;
+}
+
+
 .waypoint-picture-crop-indicator {
 	float: right; 
 	color: #999; 
