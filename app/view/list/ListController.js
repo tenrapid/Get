@@ -41,7 +41,6 @@ Ext.define('Get.view.list.ListController', {
 	onProjectUnload: function() {
 		var selectionModel = this.getView().getSelectionModel();
 		selectionModel.deselectAll();
-		selectionModel.unbindLayer();
 	},
 
 	onLayerItemSelect: function(item, waypointStore) {

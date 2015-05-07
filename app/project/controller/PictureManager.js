@@ -479,7 +479,7 @@ Ext.define('Get.project.controller.PictureManager', {
 
 		async.waterfall([
 			function(callback) {
-				if (!(picture.get('width') && picture.get('width'))) {
+				if (!(picture.get('width') && picture.get('height'))) {
 					sizeOf(filename, function(err, dimensions) {
 						if (err) {
 							throw err;
