@@ -59,26 +59,10 @@ Ext.define('Get.controller.ImportPictures', {
 					]
 				},
 				{
-					xtype: 'box',
-					margin: '0 0 12 0',
-					reference: 'filesSelectedText',
-					hidden: true,
-				},
-				{
-					xtype: 'textarea',
-					fieldLabel: 'Nicht zugeordnete Bilder',
-					labelAlign: 'top',
-					height: 148,
-					editable: false,
-					focusable: false,
-					reference: 'notMatchedTextarea',
-					hidden: true,
-				},
-				{
 					xtype: 'fieldset',
 					title: 'Optionen',
 					reference: 'options',
-					margin: '6 0 -6 0',
+					margin: '0 0 12 0',
 					hidden: true,
 					items: [
 						{
@@ -88,15 +72,15 @@ Ext.define('Get.controller.ImportPictures', {
 								{
 									xtype: 'textfield',
 									name: 'radius',
-									fieldLabel: 'Radius um Wegpunkte',
-									labelWidth: 180,
+									fieldLabel: 'max. Entfernung von Wegpunkten',
+									labelWidth: 200,
 									labelAlign: 'right',
-									width: 225,
+									width: 245,
 									fieldStyle: {'textAlign': 'right'},
 									value: this.radius,
 									reference: 'radiusField',
 									listeners: {
-										change: this.matchImages,
+										change: this.matchImagesToWaypoints,
 										scope: this
 									}
 								},
@@ -108,6 +92,23 @@ Ext.define('Get.controller.ImportPictures', {
 							]
 						}
 					]
+				},
+				{
+					xtype: 'box',
+					margin: '0 0 10 0',
+					reference: 'matchText',
+					hidden: true,
+				},
+				{
+					xtype: 'textarea',
+					fieldLabel: 'Nicht zugeordnete Bilder',
+					labelAlign: 'top',
+					height: 128,
+					editable: false,
+					focusable: false,
+					reference: 'noMatchTextarea',
+					hidden: true,
+					margin: '0 0 0 0',		
 				},
 			],
 			buttons: [
@@ -161,8 +162,8 @@ Ext.define('Get.controller.ImportPictures', {
 		this.files = null;
 		this.images = null;
 		this.waypoints = null;
-		this.matchedImages = null;
-		this.notMatchedImages = null;
+		this.matchImages = null;
+		this.noGpsImages = null;
 	},
 
 	loadGpsData: function() {
@@ -172,6 +173,7 @@ Ext.define('Get.controller.ImportPictures', {
 			async = require('async'),
 			turf = require('turf'),
 			images = this.images = [],
+			noGpsImages = this.noGpsImages = [],
 			progressBarContainer = this.window.lookupReference('progressBar'),
 			progressBar = progressBarContainer.down('progressbar'),
 			filesSelectedText = this.window.lookupReference('filesSelectedText'),
@@ -206,6 +208,12 @@ Ext.define('Get.controller.ImportPictures', {
 							height: size.height
 						}));
 					}
+					else {
+						noGpsImages.push(file.path);
+					}
+				}
+				else {
+					noGpsImages.push(file.path);
 				}
 				if (fd) {
 					fs.closeSync(fd);
@@ -215,22 +223,15 @@ Ext.define('Get.controller.ImportPictures', {
 			});	
 		}, function(err) {
 			progressBarContainer.hide();
-			me.window.lookupReference('filesSelectedText')
-				.show()
-				.setHtml((images.length === 1 ? '1 Datei enthält' : images.length + ' Dateien enthalten') + ' GPS-Daten.');
-			me.window.lookupReference('notMatchedTextarea')
-				.show();
-			me.window.lookupReference('options')
-				.setVisible(images.length > 0);
-			me.window.lookupReference('importButton')
-				.show()
-				.setDisabled(images.length === 0);
-			me.window.lookupReference('cancelButton')
-				.show();
+			me.window.lookupReference('matchText').show();
+			me.window.lookupReference('noMatchTextarea').show();
+			me.window.lookupReference('options').setVisible(images.length > 0);
+			me.window.lookupReference('importButton').show();
+			me.window.lookupReference('cancelButton').show();
 			me.window.focus();
 			me.window.center();
 			me.createWaypointFeatures();
-			me.matchImages();
+			me.matchImagesToWaypoints();
 		});
 	},
 
@@ -251,12 +252,16 @@ Ext.define('Get.controller.ImportPictures', {
 		}));		
 	},
 
-	matchImages: function() {
+	matchImagesToWaypoints: function() {
 		var me = this,
 			turf = require('turf'),
-			matchedImages = this.matchedImages = [],
-			notMatchedImages = [];
-			notMatchedTextarea = this.window.lookupReference('notMatchedTextarea');
+			matchImages = this.matchImages = [],
+			noMatchImages = [],
+			matchText = this.window.lookupReference('matchText'),
+			noMatchTextarea = this.window.lookupReference('noMatchTextarea'),
+			matchTextValue,
+			noMatchTextareaValue,
+			noMatchTextareaLabel;
 
 		this.radius = this.window.lookupReference('radiusField').getValue();
 
@@ -264,23 +269,43 @@ Ext.define('Get.controller.ImportPictures', {
 			var nearest = turf.nearest(image, me.waypoints);
 			if (turf.distance(image, nearest) * 1000 < me.radius) {
 				image.properties.waypoint = nearest.properties.waypoint;
-				matchedImages.push(image);
+				matchImages.push(image);
 			}
 			else {
-				notMatchedImages.push(image.properties.path);
+				noMatchImages.push(image.properties.path);
 			}
 		});
 
-		notMatchedTextarea.setValue(notMatchedImages.join('\n'));
-		notMatchedTextarea.setFieldLabel(notMatchedImages.length + ' nicht zugeordnete Bilder');
+		matchTextValue = [
+			matchImages.length ? matchImages.length : 'Keine',
+			matchImages.length === 1 ? ' Bild ' : ' Bilder ',
+			'Wegpunkten zugeordnet.'
+		].join('');
+		matchText.setHtml(matchTextValue);
+
+		noMatchTextareaValue = noMatchImages.concat(this.noGpsImages.length ? ['Keine GPS-Daten:'].concat(this.noGpsImages) : []);
+		noMatchTextarea.setValue(noMatchTextareaValue.join('\n'));
+
+		var len = noMatchImages.length + this.noGpsImages.length;
+		noMatchTextareaLabel = len ? 
+			[
+				len,
+				' nicht',
+				len === 1 ? ' zugeordnetes' : ' zugeordnete',
+				len === 1 ? ' Bild' : ' Bilder'
+			].join('') :
+			'Nicht zugeordnete Bilder';
+		noMatchTextarea.setFieldLabel(noMatchTextareaLabel);
+
+		this.window.lookupReference('importButton').setDisabled(matchImages.length === 0);
 	},
 
 	addImagesToWaypoints: function() {
 		var project = this.getApplication().getMainView().getViewModel().get('project');
 
-		if (this.matchedImages.length) {
+		if (this.matchImages.length) {
 			project.undoManager.beginUndoGroup();
-			this.matchedImages.forEach(function(image) {
+			this.matchImages.forEach(function(image) {
 				image.properties.waypoint.pictures().add({
 					filename: image.properties.path,
 					name: image.properties.name,
