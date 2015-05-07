@@ -67,13 +67,16 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 				},
 				{
 					xtype: 'fieldset',
-					title: 'Waypoint',
+					title: 'Wegpunkt',
 					layout: {
 						type: 'vbox',
 						align: 'stretch'
 					},
 					padding: '1 8 0', //'0 7 1'
-					margin: '0 0 8',
+					margin: '0 1 8',
+					fieldDefaults: {
+						labelWidth: 79,	
+					},
 					items: [
 						{
 							xtype: 'edit.waypoint.waypoint-fields',
