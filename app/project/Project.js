@@ -404,11 +404,11 @@ Ext.define('Get.project.Project', {
 			"loaded": true
 		});
 		var area1 = tour1.appendChild({
-			"name": "Area 1",
+			"name": "Gebiet 1",
 			"leaf": true,
 		});
 		var area2 = tour1.appendChild({
-			"name": "Area 2",
+			"name": "Gebiet 2",
 			"leaf": true,
 		});
 		
@@ -461,11 +461,11 @@ Ext.define('Get.project.Project', {
 			"loaded": true
 		});
 		var area1 = tour1.appendChild({
-			"name": "Area 1",
+			"name": "Gebiet 1",
 			"leaf": true,
 		});
 		var area2 = tour1.appendChild({
-			"name": "Area 2",
+			"name": "Gebiet 2",
 			"leaf": true,
 		});
 		

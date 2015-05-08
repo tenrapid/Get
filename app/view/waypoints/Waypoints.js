@@ -14,7 +14,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 
 	reference: 'waypointGrid',
 
-	title: 'Waypoints',
+	title: 'Wegpunkte',
 	border: false,
 	sortableColumns: false,
 	reserveScrollbar: true,
@@ -60,7 +60,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			flex: 3
 		},
 		{
-			text: 'Waypoint',
+			text: 'Wegpunkt',
 			hidden: true,
 			menuDisabled: true,
 			renderer: function(value, meta, record) {

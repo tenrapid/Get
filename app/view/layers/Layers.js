@@ -11,7 +11,7 @@ Ext.define('Get.view.layers.Layers', {
 	controller: 'layers',
 	viewModel: 'layers',
 
-	title: 'Layers',
+	title: 'Ebenen',
 	border: false,
 	// reserveScrollbar: true,
 	useArrows: true,
@@ -50,7 +50,7 @@ Ext.define('Get.view.layers.Layers', {
 	root: {
 		expanded: false,
 		expandable: false,
-		name: 'All Waypoints',
+		name: 'Alle Wegpunkte',
 	},
 	bind: {
 		store: '{project.layers}',

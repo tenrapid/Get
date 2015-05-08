@@ -8,7 +8,7 @@ Ext.define('Get.store.Layer', {
 	root: {
 		expanded: false,
 		expandable: false,
-		name: 'All Waypoints',
+		name: 'Alle Wegpunkte',
 	}
 
 });
