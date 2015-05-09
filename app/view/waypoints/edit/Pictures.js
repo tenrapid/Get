@@ -159,12 +159,12 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				if (err) {
 					throw err;
 				}
-				pictures.add(Ext.create('Get.model.Picture', {
+				pictures.add({
 					filename: file.path,
 					name: file.name,
 					width: dimensions.width,
 					height: dimensions.height
-				}));
+				});
 			});
 		});
 	},
