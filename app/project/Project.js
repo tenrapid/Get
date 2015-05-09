@@ -189,6 +189,7 @@ Ext.define('Get.project.Project', {
 			Ext.Msg.show({
 				progress: true,
 				closable: false,
+				width: 350,
 				title: 'Speichern', 
 				message: '"' + me.get('name') + '.get" wird gespeichert…', 
 				progressText: '0 %'
