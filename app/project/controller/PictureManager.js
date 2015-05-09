@@ -393,10 +393,9 @@ Ext.define('Get.project.controller.PictureManager', {
 							break;
 					}
 
-					tasks.push(readTask);
-					tasks.push(writeTask);
+					tasks.push(async.apply(async.waterfall, [readTask, writeTask]));
 				});
-				async.waterfall(tasks, callback);
+				async.parallelLimit(tasks, 4, callback);
 			}
 		], callback);
 	},
@@ -482,6 +481,7 @@ Ext.define('Get.project.controller.PictureManager', {
 				if (!(picture.get('width') && picture.get('height'))) {
 					sizeOf(filename, function(err, dimensions) {
 						if (err) {
+							// TODO: best way to handle this error? or should the size be determined earlier?
 							throw err;
 						}
 						picture.set({width: dimensions.width, height: dimensions.height});
