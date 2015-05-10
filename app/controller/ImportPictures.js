@@ -168,59 +168,32 @@ Ext.define('Get.controller.ImportPictures', {
 
 	loadGpsData: function() {
 		var me = this,
-			exifParser = require('exif-parser'),
-			fs = require('fs'),
+			imageInfo = require('imageinfo'),
 			async = require('async'),
 			turf = require('turf'),
 			images = this.images = [],
 			noGpsImages = this.noGpsImages = [],
 			progressBarContainer = this.window.lookupReference('progressBar'),
 			progressBar = progressBarContainer.down('progressbar'),
-			filesSelectedText = this.window.lookupReference('filesSelectedText'),
 			done = 0;
 
 		async.eachSeries(this.files, function(file, callback) {
-			var buffer = new Buffer(66536),
-				parser = exifParser.create(buffer),
-				exif,
-				size;
-
-			async.waterfall([
-				function(callback) {
-					fs.open(file.path, 'r', callback);
-				},
-				function(fd, callback) {
-					fs.read(fd, buffer, 0, 66536, 0, function(err) {
-						callback(err, fd);
-					});
-				}
-			], function(err, fd) {
-				if (!err) {
-					exif = parser.parse();
-					
-					if (exif.tags.GPSLatitude && Math.abs(exif.tags.GPSLatitude) <= 90 &&
-						exif.tags.GPSLongitude && Math.abs(exif.tags.GPSLongitude) <= 180) {
-						size = exif.getImageSize();
-						images.push(turf.point([exif.tags.GPSLongitude, exif.tags.GPSLatitude], {
-							path: file.path,
-							name: file.name,
-							width: size.width,
-							height: size.height
-						}));
-					}
-					else {
-						noGpsImages.push(file.path);
-					}
+			imageInfo(file.path, function(err, info) {
+				if (!err && info.latitude !== undefined && info.longitude !== undefined) {
+					images.push(turf.point([info.longitude, info.latitude], {
+						path: file.path,
+						name: file.name,
+						width: info.width,
+						height: info.height,
+						orientation: info.orientation
+					}));
 				}
 				else {
 					noGpsImages.push(file.path);
 				}
-				if (fd) {
-					fs.closeSync(fd);
-				}
 				progressBar.setValue(++done / me.files.length);
 				callback();
-			});	
+			});
 		}, function(err) {
 			progressBarContainer.hide();
 			me.window.lookupReference('matchText').show();
@@ -310,7 +283,8 @@ Ext.define('Get.controller.ImportPictures', {
 					filename: image.properties.path,
 					name: image.properties.name,
 					width: image.properties.width,
-					height: image.properties.height
+					height: image.properties.height,
+					orientation: image.properties.orientation
 				});
 			});
 			project.undoManager.endUndoGroup();

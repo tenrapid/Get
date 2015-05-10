@@ -28,6 +28,10 @@ Ext.define('Get.model.Picture', {
 			type: 'int',
 		},
 		{
+			name: 'orientation',
+			type: 'int',
+		},
+		{
 			name: 'cropX',
 			type: 'float',
 			defaultValue: 0

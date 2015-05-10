@@ -152,18 +152,19 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	addPicture: function(files) {
 		var pictures = this.getStore(),
-			sizeOf = require('image-size');
+			imageInfo = require('imageinfo');
 
 		files.forEach(function(file) {
-			sizeOf(file.path, function(err, dimensions) {
+			imageInfo(file.path, function(err, info) {
 				if (err) {
 					throw err;
 				}
 				pictures.add({
 					filename: file.path,
 					name: file.name,
-					width: dimensions.width,
-					height: dimensions.height
+					width: info.width,
+					height: info.height,
+					orientation: info.orientation
 				});
 			});
 		});
