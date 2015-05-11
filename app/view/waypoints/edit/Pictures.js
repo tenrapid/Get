@@ -3,6 +3,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	requires: [
 		'Get.view.ToolTip',
 		'Get.view.FileDialog',
+		'Get.view.PictureCropper',
 		'Ext.window.Window'
 	],
 
@@ -12,7 +13,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	tpl: [
 		'<tpl for=".">',
-			'<div class="waypoint-picture-thumbnail waypoint-picture" style="background-image: {backgroundImage};">',
+			'<div class="waypoint-picture-thumbnail waypoint-picture">',
+				'<div class="waypoint-picture-holder" style="background-image: {backgroundImage}; {transformStyle}"></div>',
 				'<div class="waypoint-picture-remove-button"><i class="fa fa-trash"></i></div>',
 			'</div>',
 		'</tpl>',
@@ -50,12 +52,22 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 		// newData.backgroundImage = 'url(resources/images/loader.gif); background-size: initial';
 		newData.backgroundImage = 'none';
+		newData.transformStyle = {
+			1: '',
+			2: 'transform: scaleX(-1);',
+			3: 'transform: rotate(180deg);', 
+			4: 'transform: scaleY(-1);',
+			5: 'transform: rotate(90deg); scaleY(-1)', 
+			6: 'transform: rotate(90deg);', 
+			7: 'transform: rotate(-90deg); scaleY(-1)', 
+			8: 'transform: rotate(-90deg);', 
+		}[picture.get('orientation')];
 
 		picture.getImageUrl('thumb', function(err, url) {
 			var node = me.getNode(picture);
 
 			if (node) {
-				node.style.backgroundImage = 'url(' + url + ')';
+				Ext.fly(node).down('.waypoint-picture-holder', true).style.backgroundImage = 'url(' + url + ')';
 			}
 			newData.backgroundImage = 'url(' + url + ')';
 		});
@@ -102,13 +114,15 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		size = picture.sizeWithin([600, Math.min(600, Math.round(Ext.Element.getViewportHeight() / 2.25))]);
 
 		preview.update([
-			'<div style="width: ' + size[0] + 'px;">',
-				'<img width="' + size[0] + '" height="' + size[1] + '" style="background-color: #ccc;">', 
-				picture.isCropped() ? '<div class="waypoint-picture-crop-indicator"><i class="fa fa-crop"></i></div>' : '',
-				'<div style="margin-top: 1px;">',
-					picture.get('name'),
-				'</div>',
-			'</div>'
+			'<div style="width: ' + size.container[0] + 'px; height: ' + size.container[1] + 'px;">',
+				'<img width="' + size.image[0] + '" height="' + size.image[1] + '" style="background-color: #ccc;',
+				size.transformStyle,
+				'">', 
+			'</div>',
+			picture.isCropped() ? '<div class="waypoint-picture-crop-indicator"><i class="fa fa-crop"></i></div>' : '',
+			'<div style="margin-top: 1px;">',
+				picture.get('name'),
+			'</div>',
 		].join(''));
 		picture.getImageUrl('preview', function(err, url) {
 			// Waypoint edit window could be closed already
@@ -178,11 +192,9 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		// TODO: memory leak?
 		var maxWidth = Ext.Element.getViewportWidth() - 80,
 			maxHeight = Ext.Element.getViewportHeight() - 140,
-			size = picture.sizeWithin([maxWidth, maxHeight], true),
 			cropWindow,
-			image,
 			titleTextfield,
-			jcropApi;
+			pictureCropper;
 
 		if (this.preview.showTimer) {
 			this.preview.clearTimer('show');
@@ -195,11 +207,10 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			},
 			items: [
 				{
-					xtype: 'image',
-					width: size[0] + 6,
-					height: size[1] + 6,
-					autoEl: 'div',
-					padding: '3 3 0 3'
+					xtype: 'picturecropper',
+					picture: picture,
+					maxWidth: maxWidth,
+					maxHeight: maxHeight
 				},
 				{
 					xtype: 'textfield',
@@ -215,29 +226,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 					text: 'OK',
 					cls: 'btn-ok',
 					handler: function() {
-						var crop = jcropApi.tellSelect(),
-							values = {
-								name: titleTextfield.getValue()	
-							};
-
- 						if (!(crop.w === 0 || crop.h === 0)) {
- 							Ext.apply(values, {
-								cropX: crop.x / size[0],
-								cropY: crop.y / size[1],
-								cropWidth: crop.w / size[0],
-								cropHeight: crop.h / size[1]
- 							});
- 						}
- 						else {
- 							Ext.apply(values, {
-								cropX: 0,
-								cropY: 0,
-								cropWidth: 1,
-								cropHeight: 1
- 							});
- 						}
-
- 						picture.set(values);
+						pictureCropper.save();
+ 						picture.set('name', titleTextfield.getValue());
 						cropWindow.close();
 						cropWindow = null;
 					},
@@ -276,28 +266,13 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			defaultFocus: 'textfield'
 		});
 
-		image = cropWindow.child('image');
+		pictureCropper = cropWindow.child('picturecropper');
 		titleTextfield = cropWindow.child('textfield');
 		titleTextfield.setValue(picture.get('name'));
 
-		picture.getImageUrl('original', function(err, url) {
-			var $image = $(image.imgEl.dom).first(),
-				cropX1 = Math.round(size[0] * picture.get('cropX')),
-				cropY1 = Math.round(size[1] * picture.get('cropY')),
-				cropX2 = cropX1 + Math.round(size[0] * picture.get('cropWidth')),
-				cropY2 = cropY1 + Math.round(size[1] * picture.get('cropHeight')),
-				options = picture.isCropped() ? {setSelect: [cropX1, cropY1, cropX2, cropY2]} : {};
-
-			$image.width(size[0]);
-			$image.height(size[1]);
-			$image.attr('src', url);
-			$image.Jcrop(options, function() {
-				jcropApi = this;
-			});
-			setTimeout(function() {
-				cropWindow.focus();
-			}, 0);
-		});
+		setTimeout(function() {
+			cropWindow.focus();
+		}, 0);
 	},
 
 });

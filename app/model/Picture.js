@@ -73,11 +73,28 @@ Ext.define('Get.model.Picture', {
 	},
 
 	sizeWithin: function(maxDimensions, dontCrop) {
-		var width = this.get('width'),
-			height = this.get('height'),
+		var orientation = this.get('orientation'),
 			maxWidth = maxDimensions[0],
 			maxHeight = maxDimensions[1],
-			scaleX, scaleY, scale;
+			rotate90deg = {
+				5: true,
+				6: true,
+				7: true,
+				8: true
+			},
+			width, height,
+			scaleX, scaleY, scale,
+			transformStyle,
+			image;
+
+		if (orientation in rotate90deg) {
+			width = this.get('height');
+			height = this.get('width');
+		}
+		else {
+			width = this.get('width');
+			height = this.get('height');
+		}
 
 		if (!dontCrop) {
 			width *= this.get('cropWidth');
@@ -91,7 +108,43 @@ Ext.define('Get.model.Picture', {
 		width = Math.round(width * scale);
 		height = Math.round(height * scale);
 
-		return [width, height];
+		if (orientation in rotate90deg) {
+			image = [height, width];
+		}
+		else {
+			image = [width, height];
+		}
+
+		transformStyle = {
+			1: '',
+			3: 'transform: rotate(180deg);',
+			6: 'transform: matrix(0,1,-1,0,' + image[1] + ',0); transform-origin: 0 0;',
+			8: 'transform: matrix(0,-1,1,0,0,' + image[0] + '); transform-origin: 0 0;',
+		};
+
+		return {
+			container: [width, height],
+			image: image,
+			transformStyle: transformStyle[orientation]
+		};
+	},
+
+	getCrop: function() {
+		return {
+			x: this.get('cropX'),
+			y: this.get('cropY'),
+			width: this.get('cropWidth'),
+			height: this.get('cropHeight'),
+		};
+	},
+
+	setCrop: function(crop) {
+		this.set({
+			cropX: crop.x,
+			cropY: crop.y,
+			cropWidth: crop.width,
+			cropHeight: crop.height,
+		});
 	},
 
 	isCropped: function() {
