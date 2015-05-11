@@ -15,24 +15,36 @@ Ext.define('Get.view.PictureCropper', {
 	padding: 3,
 
     onDestroy: function () {
-        this.jcropApi = null;
+    	if (this.jcropApi) {
+    		this.jcropApi.destroy();
+        	this.jcropApi = null;
+    	}
         this.callParent();
     },
 
 	onRender: function() {
+		this.callParent(arguments);
+		this.update();
+	},
+
+	update: function() {
 		var me = this,
 			picture = this.picture,
 			size = this.size = picture.sizeWithin([this.maxWidth - this.padding * 2, this.maxHeight - this.padding * 2], true);
 
-		this.callParent(arguments);
+		if (this.jcropApi) {
+			// JCrop moves the imgWrapper into its own element and attaches some styles
+			this.imgWrapper.appendTo(this.el);
+			this.imgWrapper.dom.removeAttribute('style');
+			this.jcropApi.destroy();
+		}
 
-		$(me.img.dom)
-			.attr('width', size.image[0])
-			.attr('height', size.image[1])
-			.attr('style', size.transformStyle);
-		$(me.imgWrapper.dom)
-			.width(size.container[0])
-			.height(size.container[1]);
+		this.img.set({
+			width: size.image[0],
+			height: size.image[1],
+			style: size.transformStyle
+		});
+		this.imgWrapper.setSize(size.container[0], size.container[1]);
 
 		picture.getImageUrl('original', function(err, url) {
 			var crop = picture.getCrop(),
@@ -42,15 +54,30 @@ Ext.define('Get.view.PictureCropper', {
 				cropY2 = cropY1 + Math.round(size.container[1] * crop.height),
 				options = picture.isCropped() ? {setSelect: [cropX1, cropY1, cropX2, cropY2]} : {};
 
-			$(me.img.dom).attr('src', url);
-			$(me.imgWrapper.dom).Jcrop(options, function() {
-				me.jcropApi = this;
-			});
+			if (me.img.getAttribute('src') === url) {
+				me.initJCrop(options);
+			}
+			else {
+				me.img
+					.on({
+						load: {
+							fn: function() {
+								me.initJCrop(options);
+							},
+							single: true
+						}
+					})
+					.set({src: url});
+			}
 		});
 	},
 
-	save: function() {
-		this.picture.setCrop(this.getCrop());
+	initJCrop: function(options) {
+		var me = this;
+
+		$(this.imgWrapper.dom).Jcrop(options, function() {
+			me.jcropApi = this;
+		});
 	},
 
 	getCrop: function() {

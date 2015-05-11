@@ -82,6 +82,7 @@ Ext.define('Get.model.Picture', {
 				7: true,
 				8: true
 			},
+			crop = this.getCrop(),
 			width, height,
 			scaleX, scaleY, scale,
 			transformStyle,
@@ -97,8 +98,8 @@ Ext.define('Get.model.Picture', {
 		}
 
 		if (!dontCrop) {
-			width *= this.get('cropWidth');
-			height *= this.get('cropHeight');
+			width *= Math.abs(crop.width);
+			height *= Math.abs(crop.height);
 		}
 
 		scaleX = maxWidth / width;
@@ -116,9 +117,13 @@ Ext.define('Get.model.Picture', {
 		}
 
 		transformStyle = {
-			1: '',
-			3: 'transform: rotate(180deg);',
+			1: 'transform: none; transform-origin: center center;',
+			2: 'transform: scaleX(-1); transform-origin: center center;',
+			3: 'transform: rotate(180deg); transform-origin: center center;',
+			4: 'transform: rotate(180deg) scaleX(-1); transform-origin: center center;',
+			5: 'transform: none; transform-origin: center center;',
 			6: 'transform: matrix(0,1,-1,0,' + image[1] + ',0); transform-origin: 0 0;',
+			7: 'transform: none; transform-origin: center center;',
 			8: 'transform: matrix(0,-1,1,0,0,' + image[0] + '); transform-origin: 0 0;',
 		};
 
@@ -130,20 +135,55 @@ Ext.define('Get.model.Picture', {
 	},
 
 	getCrop: function() {
+		var M = require('matrixmath').Matrix,
+			x1 = this.get('cropX'),
+			x2 = x1 + this.get('cropWidth'),
+			y1 = this.get('cropY'),
+			y2 = y1 + this.get('cropHeight'),
+			v1 = new M().setData([x1, y1, 1], 3, 1),
+			v2 = new M().setData([x2, y2, 1], 3, 1),
+			transformationMatrix = this.self.transformationMatrix[this.get('orientation')],
+			v1t = M.multiply(transformationMatrix, v1).toArray(),
+			v2t = M.multiply(transformationMatrix, v2).toArray();
+
 		return {
-			x: this.get('cropX'),
-			y: this.get('cropY'),
-			width: this.get('cropWidth'),
-			height: this.get('cropHeight'),
+			x: v1t[0],
+			y: v1t[1],
+			width: v2t[0] - v1t[0],
+			height: v2t[1] - v1t[1]
 		};
 	},
 
 	setCrop: function(crop) {
+		var M = require('matrixmath').Matrix,
+			x1 = crop.x,
+			x2 = x1 + crop.width,
+			y1 = crop.y,
+			y2 = y1 + crop.height,
+			v1 = new M().setData([x1, y1, 1], 3, 1),
+			v2 = new M().setData([x2, y2, 1], 3, 1),
+			transformationMatrix = this.self.transformationMatrix[this.get('orientation')].clone().invert(),
+			v1t = M.multiply(transformationMatrix, v1).toArray(),
+			v2t = M.multiply(transformationMatrix, v2).toArray(),
+			x = v1t[0],
+			y = v1t[1],
+			width = v2t[0] - v1t[0],
+			height = v2t[1] - v1t[1];
+
+		if (width < 0) {
+			x += width;
+			width *= -1;
+		}
+		if (height < 0) {
+			y += height;
+			height *= -1;
+		}
+
 		this.set({
-			cropX: crop.x,
-			cropY: crop.y,
-			cropWidth: crop.width,
-			cropHeight: crop.height,
+			cropX: x,
+			cropY: y,
+			cropWidth: width,
+			cropHeight: height,
 		});
 	},
 
@@ -154,4 +194,13 @@ Ext.define('Get.model.Picture', {
 			   this.get('cropHeight') !== 1;
 	}
 
+}, function() {
+	var M = require('matrixmath').Matrix;
+
+	this.transformationMatrix = {
+		1: new M().setIdentityData(),
+		3: new M().setData([-1,0,1,0,-1,1,0,0,1], 3, 3),
+		6: new M().setData([0,-1,1,1,0,0,0,0,1], 3, 3),
+		8: new M().setData([0,1,0,-1,0,1,0,0,1], 3, 3),
+	};
 });

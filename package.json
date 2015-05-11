@@ -16,6 +16,7 @@
     "font-awesome": "~4.3.0",
     "image-size": "~0.3.5",
     "jquery": "2.1.3",
+    "matrixmath": "~2.2.0",
     "nodewebkit": "0.11.5",
     "shelljs": "~0.3.0",
     "sqlite3": "mapbox/node-sqlite3#78a134bd6a4b32baa393b43883058ac6c5063ea0",

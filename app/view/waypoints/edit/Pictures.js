@@ -57,9 +57,9 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			2: 'transform: scaleX(-1);',
 			3: 'transform: rotate(180deg);', 
 			4: 'transform: scaleY(-1);',
-			5: 'transform: rotate(90deg); scaleY(-1)', 
+			5: 'transform: rotate(90deg) scaleX(-1);', 
 			6: 'transform: rotate(90deg);', 
-			7: 'transform: rotate(-90deg); scaleY(-1)', 
+			7: 'transform: rotate(-90deg) scaleX(-1);', 
 			8: 'transform: rotate(-90deg);', 
 		}[picture.get('orientation')];
 
@@ -222,11 +222,27 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				}
 			],
 			buttons: [
+				// {
+				// 	text: 'Drehen',
+				// 	handler: function() {
+				// 		// picture.set('orientation', picture.get('orientation') % 8 + 1);
+				// 		picture.set('orientation', {
+				// 			1: 6,
+				// 			6: 3,
+				// 			3: 8,
+				// 			8: 1
+				// 		}[picture.get('orientation')]);
+				// 		// console.log(picture.get('orientation'));
+				// 		pictureCropper.update();
+				// 		cropWindow.updateLayout();
+				// 		cropWindow.center();
+				// 	},
+				// },
 				{
 					text: 'OK',
 					cls: 'btn-ok',
 					handler: function() {
-						pictureCropper.save();
+						picture.setCrop(pictureCropper.getCrop());
  						picture.set('name', titleTextfield.getValue());
 						cropWindow.close();
 						cropWindow = null;
