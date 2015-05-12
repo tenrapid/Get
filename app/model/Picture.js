@@ -30,6 +30,7 @@ Ext.define('Get.model.Picture', {
 		{
 			name: 'orientation',
 			type: 'int',
+			defaultValue: 1
 		},
 		{
 			name: 'cropX',
@@ -98,8 +99,8 @@ Ext.define('Get.model.Picture', {
 		}
 
 		if (!dontCrop) {
-			width *= Math.abs(crop.width);
-			height *= Math.abs(crop.height);
+			width *= crop.width;
+			height *= crop.height;
 		}
 
 		scaleX = maxWidth / width;
@@ -121,9 +122,9 @@ Ext.define('Get.model.Picture', {
 			2: 'transform: scaleX(-1); transform-origin: center center;',
 			3: 'transform: rotate(180deg); transform-origin: center center;',
 			4: 'transform: rotate(180deg) scaleX(-1); transform-origin: center center;',
-			5: 'transform: none; transform-origin: center center;',
+			5: 'transform: matrix(0,-1,-1,0,' + image[1] + ',' + image[0] + '); transform-origin: 0 0;',
 			6: 'transform: matrix(0,1,-1,0,' + image[1] + ',0); transform-origin: 0 0;',
-			7: 'transform: none; transform-origin: center center;',
+			7: 'transform: matrix(0,1,1,0,0,0); transform-origin: 0 0;',
 			8: 'transform: matrix(0,-1,1,0,0,' + image[0] + '); transform-origin: 0 0;',
 		};
 
@@ -135,26 +136,30 @@ Ext.define('Get.model.Picture', {
 	},
 
 	getCrop: function() {
-		var M = require('matrixmath').Matrix,
-			x1 = this.get('cropX'),
-			x2 = x1 + this.get('cropWidth'),
-			y1 = this.get('cropY'),
-			y2 = y1 + this.get('cropHeight'),
-			v1 = new M().setData([x1, y1, 1], 3, 1),
-			v2 = new M().setData([x2, y2, 1], 3, 1),
-			transformationMatrix = this.self.transformationMatrix[this.get('orientation')],
-			v1t = M.multiply(transformationMatrix, v1).toArray(),
-			v2t = M.multiply(transformationMatrix, v2).toArray();
+		var transformationMatrix = this.self.transformationMatrix[this.get('orientation')],
+			crop = {
+				x: this.get('cropX'),
+				y: this.get('cropY'),
+				width: this.get('cropWidth'),
+				height: this.get('cropHeight')
+			};
 
-		return {
-			x: v1t[0],
-			y: v1t[1],
-			width: v2t[0] - v1t[0],
-			height: v2t[1] - v1t[1]
-		};
+		return this.transformCrop(crop, transformationMatrix);
 	},
 
 	setCrop: function(crop) {
+		var transformationMatrix = this.self.inverseTransformationMatrix[this.get('orientation')],
+			cropTransformed = this.transformCrop(crop, transformationMatrix);
+
+		this.set({
+			cropX: cropTransformed.x,
+			cropY: cropTransformed.y,
+			cropWidth: cropTransformed.width,
+			cropHeight: cropTransformed.height,
+		});
+	},
+
+	transformCrop: function(crop, transformationMatrix) {
 		var M = require('matrixmath').Matrix,
 			x1 = crop.x,
 			x2 = x1 + crop.width,
@@ -162,7 +167,6 @@ Ext.define('Get.model.Picture', {
 			y2 = y1 + crop.height,
 			v1 = new M().setData([x1, y1, 1], 3, 1),
 			v2 = new M().setData([x2, y2, 1], 3, 1),
-			transformationMatrix = this.self.transformationMatrix[this.get('orientation')].clone().invert(),
 			v1t = M.multiply(transformationMatrix, v1).toArray(),
 			v2t = M.multiply(transformationMatrix, v2).toArray(),
 			x = v1t[0],
@@ -179,12 +183,12 @@ Ext.define('Get.model.Picture', {
 			height *= -1;
 		}
 
-		this.set({
-			cropX: x,
-			cropY: y,
-			cropWidth: width,
-			cropHeight: height,
-		});
+		return {
+			x: x,
+			y: y,
+			width: width,
+			height: height
+		};
 	},
 
 	isCropped: function() {
@@ -195,12 +199,21 @@ Ext.define('Get.model.Picture', {
 	}
 
 }, function() {
-	var M = require('matrixmath').Matrix;
+	var me = this,
+		M = require('matrixmath').Matrix;
 
 	this.transformationMatrix = {
 		1: new M().setIdentityData(),
+		2: new M().setData([-1,0,1,0,1,0,0,0,1], 3, 3),
 		3: new M().setData([-1,0,1,0,-1,1,0,0,1], 3, 3),
+		4: new M().setData([1,0,0,0,-1,1,0,0,1], 3, 3),
+		5: new M().setData([0,-1,1,-1,0,1,0,0,1], 3, 3),
 		6: new M().setData([0,-1,1,1,0,0,0,0,1], 3, 3),
-		8: new M().setData([0,1,0,-1,0,1,0,0,1], 3, 3),
+		7: new M().setData([0,1,0,1,0,0,0,0,1], 3, 3),
+		8: new M().setData([0,1,0,-1,0,1,0,0,1], 3, 3)
 	};
+	this.inverseTransformationMatrix = {};
+	Object.keys(this.transformationMatrix).forEach(function(orientation) {
+		me.inverseTransformationMatrix[orientation] = me.transformationMatrix[orientation].clone().invert();
+	});
 });
