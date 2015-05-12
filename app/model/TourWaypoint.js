@@ -45,6 +45,11 @@ Ext.define('Get.model.TourWaypoint', {
 			type: 'int', 
 			reference: {
 				parent: 'Waypoint',
+				inverse: {
+					storeConfig: {
+						type: 'waypointTourWaypoint',
+					}
+				}
 			}
 		},
 		{

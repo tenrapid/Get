@@ -5,6 +5,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 
 	requires: [
 		'Get.view.waypoints.edit.Waypoint',
+		'Get.store.WaypointTourWaypoint',
 		'Ext.data.Model'
 	],
 
@@ -24,6 +25,9 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			store: {
 				'waypoint': {
 					update: 'onWaypointUpdate'
+				},
+				'waypointTourWaypoint': {
+					datachanged: 'onWaypointTourWaypointsDataChanged'
 				}
 			}
 		},
@@ -64,8 +68,9 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			var storeId = store.getStoreId();
 
 			grid.columns[1].setHidden(storeId !== 'waypoints');
-			grid.columns[2].setHidden(storeId === 'waypoints');
+			grid.columns[2].setHidden(storeId !== 'waypoints');
 			grid.columns[3].setHidden(storeId === 'waypoints');
+			grid.columns[4].setHidden(storeId === 'waypoints');
 		}
 	},
 
@@ -102,10 +107,20 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		if (gridStore.getModel().entityName === 'TourWaypoint' && operation === Ext.data.Model.EDIT && modifiedFieldNames) {
 			waypoint.tourWaypoints().each(function(tourWaypoint) {
 				if (gridStore.contains(tourWaypoint)) {
-					// calling private method of Ext.view.Table
-					view.onUpdate(gridStore, tourWaypoint);
+					view.refreshNode(tourWaypoint);
 				}
 			});
+		}
+	},
+
+	onWaypointTourWaypointsDataChanged: function(store) {
+		var view = this.getView().getView(),
+			gridStore = view.getStore(),
+			waypoint = store.associatedEntity;
+
+		// update the 'waypoint used' cell of a waypoint if tour waypoints were added/removed
+		if (gridStore.getModel().entityName === 'Waypoint') {
+			view.refreshNode(waypoint);
 		}
 	},
 

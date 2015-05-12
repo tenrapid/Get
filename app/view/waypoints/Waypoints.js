@@ -53,6 +53,14 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			flex: 1
 		},
 		{
+			text: '<i class="fa fa-lg fa-level-up" style="color: #555;"></i>',
+			menuDisabled: true,
+			renderer: function(value, meta, record) {
+				return record.tourWaypoints && record.tourWaypoints().count() ? '<span style="color: #444;">&#x25CF;</span>' : '';
+			},
+			width: 20
+		},
+		{
 			text: 'Name',
 			dataIndex: 'name',
 			hidden: true,
