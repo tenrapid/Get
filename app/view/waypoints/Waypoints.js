@@ -34,6 +34,35 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			ptype: 'gridviewdragdrop',
 			dragText: 'Drag and drop to reorganize',
 			containerScroll: true,
+			ddGroup: 'ddLayersWaypoints',
+			dragZone: {
+				animRepair: false,
+				repairHighlightColor: '#fff'
+			},
+			dropZone: {
+				onNodeOver: function(node, dragZone, e, data) {
+					var record = data.records[0];
+
+					if (record.entityName === 'Tour' || record.entityName === 'Area') {
+						this.valid = false;
+						return this.dropNotAllowed;
+					}
+					else {
+						return Object.getPrototypeOf(this).onNodeOver.apply(this, arguments);
+					}
+				},
+				onContainerOver : function(dd, e, data) {
+					var record = data.records[0];
+
+					if (record.entityName === 'Tour' || record.entityName === 'Area') {
+						this.valid = false;
+						return this.dropNotAllowed;
+					}
+					else {
+						return Object.getPrototypeOf(this).onNodeOver.apply(this, arguments);
+					}
+				}
+			}
 		}
 	},
 	columns: [

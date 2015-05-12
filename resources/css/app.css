@@ -86,6 +86,9 @@ body > .x-mask {
 	border-right-color: transparent;
 }
 
+.x-grid-item.valid-waypoint-drop-target {
+	background-color: #C2DCF5;
+}
 
 .waypoint-picture-thumbnail {
 	width: 62px;

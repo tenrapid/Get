@@ -24,27 +24,31 @@ Ext.define('Get.view.layers.Layers', {
 			ptype: 'treeviewdragdrop',
 			containerScroll: true,
 			nodeHighlightOnDrop: false,
+			ddGroup: 'ddLayersWaypoints',
 			dropZone: {
-				isValidDropPoint: function(node, position, dragZone, e, data) {
-					var view = this.view,
-            			targetRecord = view.getRecord(node),
-            			record = data.records[0];
+				onNodeOver: function(node, dragZone, e, data) {
+					var record = data.records[0],
+						returnCls = Object.getPrototypeOf(this).onNodeOver.apply(this, arguments);
 
-            		if (position === 'append') {
-            			return false;
-            		}
-            		if (record.entityName === 'Area') {
-            			if (targetRecord.entityName !== 'Area') {
-            				return false;
-            			}
-            			if (record.parentNode != targetRecord.parentNode) {
-            				return false;
-            			}
-            		}
-					return Object.getPrototypeOf(this).isValidDropPoint.apply(this, arguments);
+					if (record.entityName === 'Waypoint' || record.entityName === 'TourWaypoint') {
+						if (this.valid) {
+							Ext.fly(node).addCls('valid-waypoint-drop-target');
+							returnCls = Ext.baseCSSPrefix + 'tree-drop-ok-append';
+							this.getIndicator().hide();
+							this.currentCls = returnCls;
+						}
+					}
+					return returnCls;
+				},
+				onNodeOut: function(node, dragZone, e, data) {
+					Ext.fly(node).removeCls('valid-waypoint-drop-target');
+					Object.getPrototypeOf(this).onNodeOut.apply(this, arguments);
 				}
 			}
-		}
+		},
+		listeners: {
+			nodedragover: 'onNodeDragOver'
+		},
 	},
 	rootVisible: true,
 	root: {

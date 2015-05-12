@@ -156,20 +156,63 @@ Ext.define('Get.view.layers.LayersController', {
 		}
 	},
 
-	onBeforeDrop: function(node, data) {
+	onNodeDragOver: function(targetNode, position, data, e) {
+		var view = this.view.getView(),
+			targetRecord = view.getRecord(targetNode),
+			record = data.records[0];
+
+		if (record.entityName === 'Tour' || record.entityName === 'Area') {
+			if (position === 'append') {
+				return false;
+			}
+			if (record.entityName === 'Area') {
+				if (targetRecord.entityName !== 'Area') {
+					return false;
+				}
+				if (record.parentNode !== targetRecord.parentNode) {
+					return false;
+				}
+			}
+		}
+		else if (record.entityName === 'Waypoint') {
+			if (targetRecord.entityName === 'LayerTreeRoot' || targetRecord.entityName === 'Area') {
+				return false;
+			}
+		}
+		else if (record.entityName === 'TourWaypoint') {
+			if (targetRecord.entityName === 'LayerTreeRoot' || targetRecord.entityName === 'Tour') {
+				return false;
+			}
+			if (record.getTour() !== targetRecord.parentNode) {
+				return false;
+			}
+		}
+	},
+
+	onBeforeDrop: function(targetNode, data) {
 		var view = this.getView(),
 			project = view.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel(),
 			record = data.records[0];
 
-		project.undoManager.beginUndoGroup();
-		project.undoManager.registerUndoOperation({
-			type: 'fn',
-			undo: function() {
-				selectionModel.select(record);
-			}
-		});
-		project.undoManager.onStoreOperation('remove', null, data.records);
+		if (record.entityName === 'Tour' || record.entityName === 'Area') {
+			project.undoManager.beginUndoGroup();
+			project.undoManager.registerUndoOperation({
+				type: 'fn',
+				undo: function() {
+					selectionModel.select(record);
+				}
+			});
+			project.undoManager.onStoreOperation('remove', null, data.records);
+		}
+		else if (record.entityName === 'Waypoint') {
+			this.addWaypointsToTour(view.getView().getRecord(targetNode), data.records);
+			return false;
+		}
+		else if (record.entityName === 'TourWaypoint') {
+			this.addTourWaypointsToArea(view.getView().getRecord(targetNode), data.records);
+			return false;
+		}
 	},
 
 	onDrop: function(node, data) {
@@ -187,6 +230,48 @@ Ext.define('Get.view.layers.LayersController', {
 		project.undoManager.endUndoGroup();
 
 		selectionModel.select(record);
+	},
+
+	addWaypointsToTour: function(tour, waypoints) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			waypointsToAdd = waypoints.filter(function(waypoint) {
+				return !waypoint.tourWaypoints().getRange().some(function(tourWaypoint) {
+					return tourWaypoint.getTour() === tour;
+				});
+			}),
+			tourWaypoints;
+
+		if (waypointsToAdd.length) {
+			project.undoManager.beginUndoGroup();
+			tourWaypoints = waypointsToAdd.map(function(waypoint) {
+				return waypoint.tourWaypoints().add({
+					name: waypoint.get('name')
+				})[0];
+			});
+			tour.tourWaypoints().add(tourWaypoints);
+			project.undoManager.endUndoGroup();
+		}
+	},
+
+	addTourWaypointsToArea: function(area, tourWaypoints) {
+		var view = this.getView(),
+			project = view.getViewModel().get('project'),
+			tourWaypointsToAdd = tourWaypoints.filter(function(tourWaypoint) {
+				return tourWaypoint.getArea() !== area;
+			}),
+			tourWaypointsToRemove = tourWaypointsToAdd.filter(function(tourWaypoint) {
+				return tourWaypoint.getArea();
+			});
+
+		if (tourWaypointsToAdd.length) {
+			project.undoManager.beginUndoGroup();
+			tourWaypointsToRemove.forEach(function(tourWaypoint) {
+				tourWaypoint.setArea(null);
+			});
+			area.tourWaypoints().add(tourWaypointsToAdd);
+			project.undoManager.endUndoGroup();
+		}
 	}
 		
 });
