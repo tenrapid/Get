@@ -76,8 +76,10 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 
 	onRemoveWaypoint: function() {
 		var me = this,
-			waypoints = this.getView().getSelection(),
-			project = this.getView().getViewModel().get('project');
+			view = this.getView(),
+			waypoints = view.getSelection(),
+			store = view.getStore(),
+			project = view.getViewModel().get('project');
 
 		Ext.suspendLayouts();
 		project.undoManager.beginUndoGroup();
@@ -85,11 +87,16 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			type: 'fn',
 			undo: function() {
 				// TODO: only select waypoints that are visible in grid
-				me.getView().getSelectionModel().select(waypoints);
+				view.getSelectionModel().select(waypoints);
 			}
 		});
 		waypoints.forEach(function(waypoint) {
-			waypoint.drop();
+			if (store.associatedEntity.entityName === 'Area') {
+				waypoint.setArea(null);
+			}
+			else {
+				waypoint.drop();
+			}
 		});
 		project.undoManager.endUndoGroup();
 		Ext.resumeLayouts(true);
