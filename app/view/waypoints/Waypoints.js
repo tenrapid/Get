@@ -59,7 +59,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 						return this.dropNotAllowed;
 					}
 					else {
-						return Object.getPrototypeOf(this).onNodeOver.apply(this, arguments);
+						return Object.getPrototypeOf(this).onContainerOver.apply(this, arguments);
 					}
 				}
 			}

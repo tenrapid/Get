@@ -25,6 +25,9 @@ Ext.define('Get.view.layers.Layers', {
 			containerScroll: true,
 			nodeHighlightOnDrop: false,
 			ddGroup: 'ddLayersWaypoints',
+			dragZone: {
+				animRepair: false
+			},
 			dropZone: {
 				onNodeOver: function(node, dragZone, e, data) {
 					var record = data.records[0],
