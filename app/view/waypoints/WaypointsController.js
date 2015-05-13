@@ -67,10 +67,14 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		if (store) {
 			var storeId = store.getStoreId();
 
+			// waypoint.name
 			grid.columns[1].setHidden(storeId !== 'waypoints');
-			grid.columns[2].setHidden(storeId !== 'waypoints');
+			// tourWaypoint.name
+			grid.columns[2].setHidden(storeId === 'waypoints');
+			// tourWaypoint.waypoint.name
 			grid.columns[3].setHidden(storeId === 'waypoints');
-			grid.columns[4].setHidden(storeId === 'waypoints');
+			// waypoint/tourWaypoint used
+			grid.columns[4].setHidden(storeId !== 'waypoints' && store.associatedEntity.entityName === 'Area');
 		}
 	},
 
