@@ -102,8 +102,9 @@ Ext.define('Get.view.waypoints.Waypoints', {
 			text: '<i class="fa fa-lg fa-level-up" style="color: #555;"></i>',
 			menuDisabled: true,
 			renderer: function(value, meta, record) {
-				return record.entityName === 'Waypoint' && record.tourWaypoints().count() ||
-					   record.entityName === 'TourWaypoint' && record.getArea() ? '<span style="color: #444;">&#x25CF;</span>' : '';
+				var used = record.entityName === 'Waypoint' && record.tourWaypoints().count() ||
+						   record.entityName === 'TourWaypoint' && record.get('areaId');
+				return used ? '<span style="color: #444;">&#x25CF;</span>' : '';
 			},
 			width: 20
 		},
