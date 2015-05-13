@@ -95,7 +95,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			}
 		});
 		waypoints.forEach(function(waypoint) {
-			if (store.associatedEntity.entityName === 'Area') {
+			if (store.associatedEntity && store.associatedEntity.entityName === 'Area') {
 				waypoint.setArea(null);
 			}
 			else {
