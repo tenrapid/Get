@@ -175,6 +175,9 @@ body > .x-mask {
 	background-color: #e8e8e8;
 }
 
+.picture-combobox .x-form-trigger {
+	width: 17px;
+}
 .picture-combobox .x-form-clear-trigger {
 	width: 17px;
 	height: 18px;
