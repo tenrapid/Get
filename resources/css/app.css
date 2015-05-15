@@ -5,7 +5,7 @@
 }
 
 .x-webkit .x-form-text {
-	height: calc(100% + 5px);
+	height: calc(100% - -5px);
 }
 
 .x-form-trigger-wrap {
@@ -185,7 +185,7 @@ body > .x-mask {
 }
 .picture-combobox .x-form-arrow-trigger {
 	width: 17px;
-	height: calc(100% + 1px);
+	height: calc(100% - -1px);
 }
 .picture-combobox .x-form-trigger-clear-enabled .x-form-clear-trigger {
 	display: block;
