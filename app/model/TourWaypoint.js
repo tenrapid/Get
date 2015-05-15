@@ -53,7 +53,29 @@ Ext.define('Get.model.TourWaypoint', {
 			}
 		},
 		{
-			name: 'description',
+			name: 'task',
+		},
+		{
+			name: 'hint',
+		},
+		{
+			name: 'taskPictureId',
+			type: 'int',
+			defaultValue: null,
+			reference: {
+				type: 'Picture',
+			}
+		},
+		{
+			name: 'setup',
+		},
+		{
+			name: 'setupPictureId',
+			type: 'int',
+			defaultValue: null,
+			reference: {
+				type: 'Picture',
+			}
 		},
 		{
 			name: 'geometry',

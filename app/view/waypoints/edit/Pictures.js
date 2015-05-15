@@ -52,16 +52,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 		// newData.backgroundImage = 'url(resources/images/loader.gif); background-size: initial';
 		newData.backgroundImage = 'none';
-		newData.transformStyle = {
-			1: '',
-			2: 'transform: scaleX(-1);',
-			3: 'transform: rotate(180deg);', 
-			4: 'transform: scaleY(-1);',
-			5: 'transform: rotate(90deg) scaleX(-1);', 
-			6: 'transform: rotate(90deg);', 
-			7: 'transform: rotate(-90deg) scaleX(-1);', 
-			8: 'transform: rotate(-90deg);', 
-		}[picture.get('orientation')];
+		newData.transformStyle = picture.getTransformCenteredStyle();
 
 		picture.getImageUrl('thumb', function(err, url) {
 			var node = me.getNode(picture);
@@ -185,7 +176,11 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 	
 	removePicture: function(picture) {
-		picture.drop();
+		// Due to a bug in role's Left.onDrop we have to prevent the cascade of the drop so
+		// that the tourWaypoint is not dropped too. Left.onDrop checks for ownership only 
+		// if an association store is created. While getting associated records from the session
+		// ownership is not checked.
+		picture.drop(false);
 	},
 
 	openCropWindow: function(picture) {

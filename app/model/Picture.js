@@ -135,6 +135,19 @@ Ext.define('Get.model.Picture', {
 		};
 	},
 
+	getTransformCenteredStyle: function() {
+		return {
+			1: '',
+			2: 'transform: scaleX(-1);',
+			3: 'transform: rotate(180deg);', 
+			4: 'transform: scaleY(-1);',
+			5: 'transform: rotate(90deg) scaleX(-1);', 
+			6: 'transform: rotate(90deg);', 
+			7: 'transform: rotate(-90deg) scaleX(-1);', 
+			8: 'transform: rotate(-90deg);', 
+		}[this.get('orientation')];
+	},
+
 	getCrop: function() {
 		var transformationMatrix = this.self.transformationMatrix[this.get('orientation')],
 			crop = {

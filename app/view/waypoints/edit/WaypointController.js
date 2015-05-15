@@ -57,10 +57,13 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 
 		// Set complete to true to prevent a load of the association store.
 		waypoint.pictures().complete = true;
+		waypoint.pictures().setProxy('memory');
+		
 		viewModel.set('waypoint', waypoint);
 
 		if (isTourWaypoint) {
 			viewModel.set('tourWaypoint', tourWaypoint);
+			viewModel.set('pictures', waypoint.pictures());
 			form.add([
 				{
 					xtype: 'edit.waypoint.tour-waypoint-fields'
@@ -85,6 +88,9 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 				}
 			]);
 			this.getView().setBind({title: 'Edit: {tourWaypoint.name}'});
+
+			//DEBUG:
+			cb = form.down('combobox');
 		}
 		else {
 			form.add({
