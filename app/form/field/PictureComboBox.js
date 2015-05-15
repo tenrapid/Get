@@ -1,9 +1,20 @@
 Ext.define('Get.form.field.PictureComboBox', {
 	extend: 'Ext.form.field.ComboBox',
+	requires: [
+		'Get.form.trigger.ClearPicker'
+	],
 
 	xtype: 'picturecombobox',
 
 	cls: 'picture-combobox',
+
+	triggers: {
+		picker: {
+			type: 'clearpicker',
+			clearHandler: 'onClearClick'
+		}
+	},
+	triggerCls: null,
 	
 	listConfig: {
 		tpl: [
@@ -20,6 +31,7 @@ Ext.define('Get.form.field.PictureComboBox', {
 		itemCls: 'waypoint-picture',
 
 		minWidth: 200,
+		maxHeight: 330,
 
 		prepareData: function(_data, index, picture) {
 			var me = this,
@@ -63,6 +75,7 @@ Ext.define('Get.form.field.PictureComboBox', {
 		else {
 			this.inputEl.setStyle('background-image', 'none');
 		}
+		this.triggers.picker.setClearEnabled(!!picture);
 	},
 
 	checkValueOnChange: function() {
@@ -81,6 +94,10 @@ Ext.define('Get.form.field.PictureComboBox', {
 	onDataChanged: function() {
 		this.callParent(arguments);
 		this.setDisabled(!this.store.count());
+	},
+
+	onClearClick: function() {
+		this.setValue(null);
 	}
 
 });

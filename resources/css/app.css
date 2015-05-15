@@ -166,12 +166,29 @@ body > .x-mask {
 	font-family: FontAwesome;
 	text-align: center;
 	background-color: transparent;
+	-webkit-font-smoothing: antialiased;
 }
 .picture-combobox input::-webkit-input-placeholder {
 	color: #bbb;
 }
 .picture-combobox .x-form-trigger-wrap {
 	background-color: #e8e8e8;
+}
+
+.picture-combobox .x-form-clear-trigger {
+	width: 17px;
+	height: 18px;
+	display: none;
+}
+.picture-combobox .x-form-arrow-trigger {
+	width: 17px;
+	height: calc(100% + 1px);
+}
+.picture-combobox .x-form-trigger-clear-enabled .x-form-clear-trigger {
+	display: block;
+}
+.picture-combobox .x-form-trigger-clear-enabled .x-form-arrow-trigger {
+	height: calc(100% - 17px);
 }
 
 .x-boundlist li.waypoint-picture {
