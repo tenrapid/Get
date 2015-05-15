@@ -326,12 +326,12 @@ Ext.define('Get.project.Project', {
 				maxId;
 
 			if (model.entityName === 'Tour') {
-				maxId = Math.max(store.max('id'), me.areaStore.max('id'));
+				maxId = Math.max(store.max('id') || 0, me.areaStore.max('id') || 0);
 			}
 			else {
-				maxId = store.max('id');
+				maxId = store.max('id') || 0;
 			}
-			seed = (maxId || 0) + 1;
+			seed = maxId + 1;
 			model.identifier.setSeed(seed);
 			if (!model.prototype.isNode) {
 				// Session uses an identifier cache which holds cloned model identifiers. Models that are 
