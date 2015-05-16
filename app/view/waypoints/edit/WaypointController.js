@@ -75,10 +75,9 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 						type: 'vbox',
 						align: 'stretch'
 					},
-					padding: '1 8 0', //'0 7 1'
-					margin: '0 1 8',
+					margin: '0 0 -5',
 					fieldDefaults: {
-						labelWidth: 79,	
+						labelWidth: 80,	
 					},
 					items: [
 						{

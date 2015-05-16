@@ -35,10 +35,12 @@ Ext.define('Get.view.waypoints.edit.WaypointFields', {
 		{
 			xtype: 'fieldcontainer',
 			fieldLabel: 'Bilder',
+			margin: 0,
 			items: [
 				{
 					xtype: 'edit.waypoint.pictures',
-					bind: '{waypoint.pictures}'
+					bind: '{waypoint.pictures}',
+					margin: 0
 				}
 			]
 		},

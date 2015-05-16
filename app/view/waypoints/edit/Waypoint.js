@@ -27,7 +27,7 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 		{
 			xtype: 'form',
 			reference: 'form',
-			bodyPadding: '8 14 2', // '8 10'
+			bodyPadding: '8 14 0',
 			bodyStyle: 'background-color: transparent;',
 // 			bodyStyle: 'background-color: #e4e4e4;',
 			border: false,

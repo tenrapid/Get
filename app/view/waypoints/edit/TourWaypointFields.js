@@ -20,10 +20,10 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 		{
 			xtype: 'fieldcontainer',
 			layout: 'hbox',
-			fieldLabel: 'Aufgabe',
 			items: [
 				{
 					xtype: 'textarea',
+					fieldLabel: 'Aufgabe',
 					grow: true,
 					flex: 1,
 					minHeight: 61,
@@ -41,7 +41,7 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 						store: '{pictures}',
 						selection: '{tourWaypoint.taskPicture}',
 					},
-					margin: '0 0 0 8'
+					margin: '0 0 0 6'
 				},
 			]
 		},
@@ -53,10 +53,10 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 		{
 			xtype: 'fieldcontainer',
 			layout: 'hbox',
-			fieldLabel: 'Aufbau',
 			items: [
 				{
 					xtype: 'textarea',
+					fieldLabel: 'Aufbau',
 					grow: true,
 					flex: 1,
 					minHeight: 61,
@@ -74,7 +74,7 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 						store: '{pictures}',
 						selection: '{tourWaypoint.setupPicture}',
 					},
-					margin: '0 0 0 8'
+					margin: '0 0 0 6'
 				},
 			]
 		},

@@ -62,7 +62,6 @@ Ext.define('Get.controller.ImportPictures', {
 					xtype: 'fieldset',
 					title: 'Optionen',
 					reference: 'options',
-					margin: '0 0 12 0',
 					hidden: true,
 					items: [
 						{
