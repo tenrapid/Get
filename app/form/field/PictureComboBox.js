@@ -73,7 +73,10 @@ Ext.define('Get.form.field.PictureComboBox', {
 			});
 		}
 		else {
-			this.inputEl.setStyle('background-image', 'none');
+			this.inputEl.setStyle({
+				'background-image': 'none',
+				'transform': 'none'
+			});
 		}
 		this.triggers.picker.setClearEnabled(!!picture);
 	},

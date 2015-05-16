@@ -137,7 +137,7 @@ Ext.define('Get.model.Picture', {
 
 	getTransformCenteredStyle: function() {
 		return {
-			1: '',
+			1: 'transform: none;',
 			2: 'transform: scaleX(-1);',
 			3: 'transform: rotate(180deg);', 
 			4: 'transform: scaleY(-1);',
