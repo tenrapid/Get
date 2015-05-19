@@ -13,6 +13,7 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 
 	autoShow: true,
 	width: 600,
+	constrain: true,
 	plain: true,
 	bodyStyle: 'border-width: 0;',
 	layout: {
