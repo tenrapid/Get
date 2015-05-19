@@ -1,5 +1,5 @@
 Ext.define('Get.view.waypoints.Waypoints', {
-	extend: 'Ext.grid.Panel',
+	extend: 'Get.view.StatefulGrid',
 	xtype: 'get-waypoints',
 
 	requires: [
@@ -13,6 +13,9 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	viewModel: 'waypoints',
 
 	reference: 'waypointGrid',
+
+	id: 'waypoints-panel',
+	stateId: 'waypoints-panel',
 
 	title: 'Wegpunkte',
 	border: false,
@@ -68,9 +71,11 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	columns: [
 		{
 			text: '',
+			stateId: 'waypoint-index',
 			width: 35,
 			align: 'right',
 			menuDisabled: true,
+			resizable: false,
 			renderer: function(value, meta, record, rowIndex) {
 				return rowIndex + 1;
 			}
@@ -78,20 +83,25 @@ Ext.define('Get.view.waypoints.Waypoints', {
 		{
 			text: 'Name',
 			dataIndex: 'name',
+			stateId: 'waypoint-name',
 			menuDisabled: true,
+			resizable: false,
 			flex: 1
 		},
 		{
 			text: 'Name',
 			dataIndex: 'name',
+			stateId: 'tourwaypoint-name',
 			hidden: true,
 			menuDisabled: true,
 			flex: 3
 		},
 		{
 			text: 'Wegpunkt',
+			stateId: 'tourwaypoint-waypoint-name',
 			hidden: true,
 			menuDisabled: true,
+			resizable: false,
 			renderer: function(value, meta, record) {
 				var waypoint = record.getWaypoint && record.getWaypoint();
 				return waypoint ? waypoint.get('name') : '';
@@ -100,7 +110,9 @@ Ext.define('Get.view.waypoints.Waypoints', {
 		},
 		{
 			text: '<i class="fa fa-lg fa-level-up" style="color: #555;"></i>',
+			stateId: 'waypoint-used',
 			menuDisabled: true,
+			resizable: false,
 			renderer: function(value, meta, record) {
 				var used = record.entityName === 'Waypoint' && record.tourWaypoints().count() ||
 						   record.entityName === 'TourWaypoint' && record.get('areaId');

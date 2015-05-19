@@ -52,7 +52,13 @@ Ext.define('Get.project.Project', {
 		},
 		{
 			name: 'state',
-			// TODO: field "state"
+			defaultValue: null,
+			serialize: function(value) {
+				return JSON.stringify(value);
+			},
+			convert: function(value) {
+				return Ext.isString(value) ? JSON.parse(value) : value;
+			}
 		},
 		{
 			name: 'waypoints',
@@ -153,6 +159,8 @@ Ext.define('Get.project.Project', {
 						me.set('waypoints', me.waypointStore);
 
 						me.pictureManager.on('progress', me.updateSaveProgress);
+
+						me.restoreState();
 					}
 					Ext.callback(callback, scope, [me, errors.length ? errors : null]);
 				} 
@@ -183,8 +191,11 @@ Ext.define('Get.project.Project', {
 	save: function(callback, scope) {
 		var me = this,
 			async = require('async'),
-			saveBatch = this.session.getSaveBatch();
+			saveBatch;
 
+		this.saveState();
+
+		saveBatch = this.session.getSaveBatch();
 		if (saveBatch) {
 			Ext.Msg.show({
 				progress: true,
@@ -349,6 +360,28 @@ Ext.define('Get.project.Project', {
 			var store = layer.tourWaypoints();
 			store.sort(store.getIndexField(), 'ASC');
 			store.data.getSorters().removeAll();
+		});
+	},
+
+	saveState: function() {
+		var state = Ext.clone(Ext.state.Manager.getProvider().state);
+
+		delete state.recentProjects;
+		this.set('state', state);
+	},
+
+	restoreState: function() {
+		var state = this.get('state'),
+			components = ['left-pane', 'layers-panel', 'waypoints-panel', 'map-panel'];
+
+		if (!Ext.isObject(state)) return;
+
+		Object.keys(state).forEach(function(key) {
+			Ext.state.Manager.set(key, state[key]);
+		});
+
+		components.forEach(function(id) {
+			Ext.getCmp(id).initState();
 		});
 	},
 	

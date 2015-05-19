@@ -3,6 +3,7 @@ Ext.define('Get.view.main.Main', {
 	requires: [
 		'Get.view.main.MainController',
 		'Get.view.main.MainModel',
+		'Get.view.main.LeftPane',
 		'Get.view.layers.Layers',
 		'Get.view.waypoints.Waypoints',
 		'Get.view.list.List',
@@ -22,12 +23,10 @@ Ext.define('Get.view.main.Main', {
 	items: [
 		{
 			region: 'west',
-			layout: {
-				type: 'border',
-			},
+			xtype: 'get-left-pane',
 			width: 300,
 			split: true,
-			border: false,
+
 			items: [
 				{
 					region: 'north',
@@ -37,9 +36,9 @@ Ext.define('Get.view.main.Main', {
 				},
 				{
 					region: 'center',
-					xtype: 'get-waypoints'
+					xtype: 'get-waypoints',
 				}
-			]
+			],
 		},
 		{
 			region: 'center',
@@ -47,7 +46,7 @@ Ext.define('Get.view.main.Main', {
 			plain: true,
 			items: [
 				{
-					xtype: 'get-mappanel',
+					xtype: 'get-map',
 				},
 				{
 					xtype: 'get-list'

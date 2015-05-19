@@ -1,5 +1,5 @@
 Ext.define('Get.view.list.List', {
-	extend: 'Ext.grid.Panel',
+	extend: 'Get.view.StatefulGrid',
 	xtype: 'get-list',
 
 	requires: [

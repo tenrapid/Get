@@ -11,6 +11,10 @@ Ext.define('Get.view.layers.Layers', {
 	controller: 'layers',
 	viewModel: 'layers',
 
+	id: 'layers-panel',
+	stateful: true,
+	stateId: 'layers-panel',
+
 	title: 'Ebenen',
 	border: false,
 	// reserveScrollbar: true,
@@ -123,5 +127,12 @@ Ext.define('Get.view.layers.Layers', {
 			}
 		}
 	],
+
+	applyState: function(state) {
+		this.callParent(arguments);
+		if (this.rendered) {
+			this.setHeight(this.height);
+		}
+	}
 
 });
