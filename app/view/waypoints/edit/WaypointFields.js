@@ -40,7 +40,7 @@ Ext.define('Get.view.waypoints.edit.WaypointFields', {
 				{
 					xtype: 'edit.waypoint.pictures',
 					bind: '{waypoint.pictures}',
-					margin: 0
+					margin: '0 0 1'
 				}
 			]
 		},

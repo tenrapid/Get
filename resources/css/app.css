@@ -210,6 +210,10 @@ body > .x-mask {
 	font-size: 11px;
 	max-width: 250px;
 }
+.x-boundlist-selected .waypoint-picture-name,
+.x-boundlist-item-over .waypoint-picture-name {
+	color: #333;
+}
 
 
 .x-grid-cell .waypoint-picture-thumbnail {
