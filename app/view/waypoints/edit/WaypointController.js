@@ -41,22 +41,45 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 			session = this.getSession(),
 			form = this.lookupReference('form'),
 			waypointParentSession = viewModel.get('waypoint'),
+			id,
+			isTourWaypoint,
+			tourWaypoint,
+			waypoint,
+			map,
+			latLon;
+
+		if (waypointParentSession) {
 			id = waypointParentSession.getId(),
 			isTourWaypoint = waypointParentSession.entityName === 'TourWaypoint',
 			tourWaypoint = isTourWaypoint ? session.getRecord('TourWaypoint', id) : null,
 			waypoint = isTourWaypoint ? tourWaypoint.getWaypoint() : session.getRecord('Waypoint', id);
 
-		// We have to "initialize" the association store. If we don't do this, new pictures aren't
-		// added to it during session.save().
-		if (isTourWaypoint) {
-			waypointParentSession.getWaypoint().pictures();
+			// We have to "initialize" the association store. If we don't do this, new pictures aren't
+			// added to it during session.save().
+			if (isTourWaypoint) {
+				waypointParentSession.getWaypoint().pictures();
+			}
+			else {
+				waypointParentSession.pictures();
+			}
 		}
 		else {
-			waypointParentSession.pictures();
+			// Create new waypoint.
+			map = Ext.getCmp('map-panel').map,
+			latLon = map.getCenter();
+			waypoint = session.createRecord('Waypoint', {
+				geometry: Ext.create('Get.data.Geometry', {
+					geometry: new OpenLayers.Geometry.Point(latLon.lon, latLon.lat),
+					projection: map.getProjection()
+				})
+			});
+			isTourWaypoint = false;
+			this.isNewWaypoint = true;
 		}
 
 		// Set complete to true to prevent a load of the association store.
 		waypoint.pictures().complete = true;
+		// Set association store proxy as memory proxy to prevent an ajax load from PictureCombobox.
 		waypoint.pictures().setProxy('memory');
 		
 		viewModel.set('waypoint', waypoint);
@@ -87,9 +110,6 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 				}
 			]);
 			this.getView().setBind({title: 'Edit: {tourWaypoint.name}'});
-
-			//DEBUG:
-			cb = form.down('combobox');
 		}
 		else {
 			form.add({
@@ -101,10 +121,17 @@ Ext.define('Get.view.waypoints.edit.WaypointController', {
 	},
 
 	onSave: function() {
-		var project = this.getViewModel().get('project');
+		var viewModel = this.getViewModel(),
+			project = viewModel.get('project'),
+			waypoint;
+
 		this.eventbus.unlisten(this);
 		project.undoManager.beginUndoGroup();
 		this.getSession().save();
+		if (this.isNewWaypoint) {
+			waypoint = project.session.getRecord('Waypoint', viewModel.get('waypoint').getId());
+			project.getStore('waypoint').add(waypoint);
+		}
 		project.undoManager.endUndoGroup();
 		this.closeView();
 	},

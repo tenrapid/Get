@@ -10,6 +10,7 @@ Ext.define('Get.view.waypoints.edit.Waypoint', {
 	controller: 'edit.waypoint',
 	
 	session: true,
+	viewModel: true,
 
 	autoShow: true,
 	width: 600,

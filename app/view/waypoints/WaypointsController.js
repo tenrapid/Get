@@ -53,16 +53,6 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		this.getView().setStore(waypointStore);
 	},
 
-	onWaypointDoubleClick: function(view, record) {
-		Ext.widget('edit.waypoint', {
-			viewModel: {
-				data: {
-					waypoint: record,
-				},
-			},
-		});
-	},
-	
 	onGridReconfigure: function(grid, store) {
 		if (store) {
 			var storeId = store.getStoreId();
@@ -75,7 +65,23 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			grid.columns[3].setHidden(storeId === 'waypoints');
 			// waypoint/tourWaypoint used
 			grid.columns[4].setHidden(storeId !== 'waypoints' && store.associatedEntity.entityName === 'Area');
+
+			this.lookupReference('addWaypointButton').setDisabled(storeId !== 'waypoints');
 		}
+	},
+
+	onWaypointDoubleClick: function(view, record) {
+		Ext.widget('edit.waypoint', {
+			viewModel: {
+				data: {
+					waypoint: record
+				}
+			},
+		});
+	},
+	
+	onAddWaypoint: function() {
+		Ext.widget('edit.waypoint');
 	},
 
 	onRemoveWaypoint: function() {

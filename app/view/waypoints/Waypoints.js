@@ -129,7 +129,8 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	tbar: [
 		{
 			html: '<b>+</b>',
-			handler: 'onClickButton',
+			handler: 'onAddWaypoint',
+			reference: 'addWaypointButton'
 		},
 		{
 			html: '<b>–</b>',
