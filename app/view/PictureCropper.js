@@ -7,6 +7,8 @@ Ext.define('Get.view.PictureCropper', {
 		'<div id="{id}-imgWrapper" data-ref="imgWrapper"><img  id="{id}-img" data-ref="img"></div>',
 	],
 
+	cls: 'picture-cropper',
+
 	childEls: [
 		'imgWrapper',
 		'img'
@@ -14,13 +16,13 @@ Ext.define('Get.view.PictureCropper', {
 
 	padding: 3,
 
-    onDestroy: function () {
-    	if (this.jcropApi) {
-    		this.jcropApi.destroy();
-        	this.jcropApi = null;
-    	}
-        this.callParent();
-    },
+	onDestroy: function () {
+		if (this.jcropApi) {
+			this.jcropApi.destroy();
+			this.jcropApi = null;
+		}
+		this.callParent();
+	},
 
 	onRender: function() {
 		this.callParent(arguments);
@@ -77,13 +79,34 @@ Ext.define('Get.view.PictureCropper', {
 
 		$(this.imgWrapper.dom).Jcrop(options, function() {
 			me.jcropApi = this;
+			$('.jcrop-keymgr', me.el.dom).keydown(function(e) {
+				var keyboardEvent,
+					keyCode;
+
+				if (e.keyCode === 13) {
+					keyCode = e.keyCode;
+				}
+
+				if (keyCode) {
+					keyboardEvent = new KeyboardEvent('keydown', {
+						bubbles: true
+					});
+					keyboardEvent.keyCodeVal = keyCode;
+					Object.defineProperty(keyboardEvent, 'keyCode', {
+						get : function() {
+							return this.keyCodeVal;
+						}
+					});
+					me.el.dom.dispatchEvent(keyboardEvent);
+				}
+			});
 		});
 	},
 
 	getCrop: function() {
 		var crop = this.jcropApi.tellSelect();
 
-		if (!(crop.w === 0 || crop.h === 0)) {
+		if (this.jcropApi.ui.selection.is(':visible')) {
 			crop = {
 				x: crop.x / this.size.container[0],
 				y: crop.y / this.size.container[1],

@@ -216,6 +216,18 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 					margin: '3 2 0 2'
 				}
 			],
+			keys: {
+				binding: [
+					{
+						key: Ext.event.Event.ENTER,
+						fn: function(key, e) { 
+							if (e.getTarget('input[type=text], .picture-cropper')) {
+								this.target.component.down('button[cls~=btn-ok]').el.dom.click();
+							}							
+						}
+					}
+				]
+			},
 			buttons: [
 				// {
 				// 	text: 'Drehen',
@@ -251,21 +263,6 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 					},
 				},
 			],
-			listeners: {
-				afterrender: function(component, options) {
-					var okButton = component.down('button[cls~=btn-ok]').el.dom;
-					component.query('textfield').forEach(function(textfield) {
-						if (!textfield.isXType('textarea')) {
-							Ext.create('Ext.util.KeyNav', {
-								target: textfield.el,
-								enter: function() {
-									okButton.click();
-								}
-							});
-						}
-					});
-				}, 
-			},
 			title: 'Beschneiden <span style="font-weight: normal; color: #999;">&ndash; ' + picture.get('filename') + '</span>',
 			autoShow: true,
 			modal: true,
