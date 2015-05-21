@@ -25,10 +25,11 @@ Ext.define('Get.view.map.MapController', {
 	waypointStores: null,
 
 	init: function() {
-		this.mon(this.getView().layers, {
-			datachanged: this.updateBaseLayerMenuItems,
-			scope: this
-		});
+		var view = this.getView();
+
+		view.on('show', this.onShow, this);
+		view.layers.on('datachanged', this.updateBaseLayerMenuItems, this);
+
 		this.waypointStores = {};
 	},
 	
@@ -76,20 +77,27 @@ Ext.define('Get.view.map.MapController', {
 	
 	onBeforeLayerItemSelect: function(item, waypointStore) {
 		var layer = waypointStore && waypointStore.layer;
+
 		if (!layer && waypointStore) {
 			this.addLayerToWaypointStore(waypointStore);
 		}
 	},
 
 	onLayerItemSelect: function(item, waypointStore) {
-		var layer = waypointStore && waypointStore.layer;
-		if (this.visibleVectorLayer) {
-			this.visibleVectorLayer.setVisibility(false);
-		}
-		if (layer) {
+		var view = this.getView(),
+			layer = waypointStore && waypointStore.layer;
+
+		this.visibleVectorLayer && this.visibleVectorLayer.setVisibility(false);
+
+		if (layer && view.isVisible()) {
 			layer.setVisibility(true);
 		}
+
 		this.visibleVectorLayer = layer;
+	},
+
+	onShow: function() {
+		this.visibleVectorLayer && this.visibleVectorLayer.setVisibility(true);
 	},
 	
 	addLayerToWaypointStore: function(waypointStore) {

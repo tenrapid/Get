@@ -24,7 +24,10 @@ Ext.define('Get.view.list.ListController', {
 	},
 
 	init: function() {
-		var gridView = this.getView().getView();
+		var view = this.getView(),
+			gridView = view.getView();
+
+		view.on('show', this.onShow, this);
 		gridView.on('beforedrop', this.onBeforeDrop, this);
 		gridView.on('drop', this.onDrop, this);
 	},
@@ -39,19 +42,20 @@ Ext.define('Get.view.list.ListController', {
 	},
 
 	onLayerItemSelect: function(item, waypointStore) {
-		this.getView().setStore(waypointStore);
+		var view = this.getView();
+
+		this.waypointStore = waypointStore;
+		if (view.isVisible()) {
+			view.setStore(waypointStore);
+		}
 	},
 
-	onWaypointDoubleClick: function(view, record) {
-		Ext.widget('edit.waypoint', {
-			viewModel: {
-				data: {
-					waypoint: record,
-				},
-			},
-		});
+	onShow: function(view) {
+		if (this.waypointStore && view.getStore() !== this.waypointStore) {
+			view.setStore(this.waypointStore);
+		}
 	},
-	
+
 	onGridReconfigure: function(grid, store) {
 		if (store) {
 			var storeId = store.getStoreId();
