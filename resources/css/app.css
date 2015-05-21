@@ -2,6 +2,12 @@
 .x-webkit .x-form-text {
 	height: calc(100% - -7px);
 }
+.x-form-field.x-form-text {
+	background-position-y: -4px;
+}
+.x-form-text.x-form-focus {
+	background-position-y: 0;
+}
 
 .x-fieldset-default {
 	box-shadow: inset 0 1px 3px #959CA8;
@@ -145,7 +151,7 @@ body > .x-mask {
  * Picture ComboBox
  */
 
-.picture-combobox input {
+.picture-combobox .x-form-text {
 	background-position: 50%;
 	background-size: cover;
 	background-image: none;
