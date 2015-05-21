@@ -2,9 +2,6 @@ Ext.define('Get.view.map.MapController', {
 	extend: 'Ext.app.ViewController',
 	alias: 'controller.map',
 
-	requires: [
-	],
-
 	id: 'map', // IMPORTANT if using 'listen', ansonsten wird der Listener von anderem Controller bei destroy gelöscht
 
 	config: {
@@ -15,7 +12,6 @@ Ext.define('Get.view.map.MapController', {
 					layerItemSelect: 'onLayerItemSelect',
 				},
 				'#main': {
-// 					projectLoad: Ext.emptyFn,
 					projectUnload: 'onProjectUnload',
 				}
 			},

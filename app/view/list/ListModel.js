@@ -9,8 +9,5 @@ Ext.define('Get.view.list.ListModel', {
 	},
 
 	formulas: {
-		removeWaypointButtonDisabled: function(get) {
-			return !get('waypointList.selection');
-		},
 	}
 });
