@@ -29,6 +29,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	selModel: {
 		type: 'featuremodel',
 		mode: 'MULTI',
+		deselectOnContainerClick: true
 	},
 	viewConfig: {
 		overItemCls: null,

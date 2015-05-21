@@ -25,6 +25,7 @@ Ext.define('Get.view.list.List', {
 	selModel: {
 		type: 'rowmodel',
 		mode: 'MULTI',
+		deselectOnContainerClick: true
 	},
 	viewConfig: {
 		overItemCls: null,
@@ -33,6 +34,10 @@ Ext.define('Get.view.list.List', {
 			ptype: 'gridviewdragdrop',
 			dragText: 'Drag and drop to reorganize',
 			containerScroll: true,
+			dragZone: {
+				animRepair: false,
+				repairHighlightColor: '#fff'
+			}
 		}
 	},
 	columns: [
