@@ -71,13 +71,19 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 	},
 
 	onWaypointDoubleClick: function(view, record) {
-		Ext.widget('edit.waypoint', {
-			viewModel: {
-				data: {
-					waypoint: record
-				}
-			},
-		});
+		var config = record.entityName === 'Waypoint' ?
+				{waypoint: record} :
+				{waypoint: record.getWaypoint(), tourWaypoint: record},
+			openEditWindows = Ext.WindowManager.getBy(function(comp) {
+				return comp.isEditWaypointWindow && comp.waypoint === config.waypoint && comp.tourWaypoint === config.tourWaypoint;
+			});
+
+		if (openEditWindows.length) {
+			openEditWindows[0].toFront();
+		}
+		else {
+			Ext.widget('edit.waypoint', config);
+		}
 	},
 	
 	onAddWaypoint: function() {

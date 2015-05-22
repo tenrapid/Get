@@ -38,7 +38,7 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 					valueField: 'id',
 					displayField: 'id',
 					bind: {
-						store: '{pictures}',
+						store: '{waypoint.pictures}',
 						selection: '{tourWaypoint.taskPicture}',
 					},
 					margin: '0 0 0 6'
@@ -71,7 +71,7 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 					valueField: 'id',
 					displayField: 'id',
 					bind: {
-						store: '{pictures}',
+						store: '{waypoint.pictures}',
 						selection: '{tourWaypoint.setupPicture}',
 					},
 					margin: '0 0 0 6'

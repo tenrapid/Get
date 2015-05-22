@@ -8,6 +8,8 @@ Ext.define('Get.view.waypoints.edit.EditWaypoint', {
 	alias: 'widget.edit.waypoint',
 
 	controller: 'edit.waypoint',
+
+	isEditWaypointWindow: true,
 	
 	session: true,
 	viewModel: true,

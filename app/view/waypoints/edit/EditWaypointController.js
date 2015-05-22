@@ -26,42 +26,25 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 		}
 	},
 
-	init: function() {
-		/*
-			Eigentlich müsste es so aussehen:
-			viewModel: {
-				links: {
-					waypoint: record,
-				},
-			},
-			Das erzeugt aber im Haupt-ViewModel auch einen 'waypoint'-Eintrag, so dass nicht 
-			zwei Fenster mit unterschiedlichen Waypoints geöffnet werden können.
-		*/
+	init: function(view) {
 		var viewModel = this.getViewModel(),
 			session = this.getSession(),
 			form = this.lookupReference('form'),
-			waypointParentSession = viewModel.get('waypoint'),
-			id,
-			isTourWaypoint,
-			tourWaypoint,
+			isTourWaypoint = !!view.tourWaypoint,
 			waypoint,
+			tourWaypoint,
 			map,
 			latLon;
 
-		if (waypointParentSession) {
-			id = waypointParentSession.getId(),
-			isTourWaypoint = waypointParentSession.entityName === 'TourWaypoint',
-			tourWaypoint = isTourWaypoint ? session.getRecord('TourWaypoint', id) : null,
-			waypoint = isTourWaypoint ? tourWaypoint.getWaypoint() : session.getRecord('Waypoint', id);
+		if (view.waypoint) {
+			waypoint = session.getRecord('Waypoint', view.waypoint.getId());
+			if (isTourWaypoint) {
+				tourWaypoint = session.getRecord('TourWaypoint', view.tourWaypoint.getId());
+			}
 
 			// We have to "initialize" the association store. If we don't do this, new pictures aren't
 			// added to it during session.save().
-			if (isTourWaypoint) {
-				waypointParentSession.getWaypoint().pictures();
-			}
-			else {
-				waypointParentSession.pictures();
-			}
+			view.waypoint.pictures();
 		}
 		else {
 			// Create new waypoint.
@@ -73,7 +56,6 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 					projection: map.getProjection()
 				})
 			});
-			isTourWaypoint = false;
 			this.isNewWaypoint = true;
 		}
 
@@ -86,8 +68,8 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 
 		if (isTourWaypoint) {
 			viewModel.set('tourWaypoint', tourWaypoint);
-			viewModel.set('pictures', waypoint.pictures());
-			form.add([
+			view.setBind({title: 'Edit: {tourWaypoint.name}'});
+ 			form.add([
 				{
 					xtype: 'edit.waypoint.tour-waypoint-fields'
 				},
@@ -109,7 +91,6 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 					],
 				}
 			]);
-			this.getView().setBind({title: 'Edit: {tourWaypoint.name}'});
 		}
 		else {
 			form.add({
@@ -117,7 +98,7 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 			});
 		}
 		viewModel.notify();
-		this.getView().defaultFocus = 'textfield';
+		view.defaultFocus = 'textfield';
 	},
 
 	onSave: function() {
