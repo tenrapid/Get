@@ -1,8 +1,7 @@
 Ext.define('Get.model.TreeBase', {
 	extend: 'Get.model.Base',
 	requires: [
-		'Ext.data.NodeInterface',
-		'Ext.data.identifier.Uuid'
+		'Ext.data.NodeInterface'
 	],
 	mixins: [
 		'Ext.mixin.Queryable'
@@ -24,6 +23,17 @@ Ext.define('Get.model.TreeBase', {
 			defaultValue: -1,
 			convert: null,
 			persist: true
+		},
+		{
+			name: 'expanded',
+			type: 'bool',
+			defaultValue: false,
+			convert: null,
+			persist: true
+		},
+		{
+			name: 'roadbook',
+			type: 'string'
 		}
 	],
 
