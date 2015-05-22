@@ -1,4 +1,4 @@
-Ext.define('Get.view.waypoints.edit.WaypointController', {
+Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 	extend: 'Ext.app.ViewController',
 
 	alias: 'controller.edit.waypoint',

@@ -4,7 +4,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 	alias: 'controller.waypoints',
 
 	requires: [
-		'Get.view.waypoints.edit.Waypoint',
+		'Get.view.waypoints.edit.EditWaypoint',
 		'Get.store.WaypointTourWaypoint',
 		'Ext.data.Model'
 	],
