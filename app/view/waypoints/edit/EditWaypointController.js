@@ -97,7 +97,6 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 				xtype: 'edit.waypoint.waypoint-fields'
 			});
 		}
-		viewModel.notify();
 		view.defaultFocus = 'textfield';
 	},
 

@@ -26,6 +26,17 @@ Ext.define('Get.view.waypoints.edit.EditWaypoint', {
 	bind: {
 		title: 'Edit: {waypoint.name}',
 	},
+
+	beforeShow: function() {
+		this.getViewModel().notify();
+	},
+	afterShow: function() {
+		this.query('textarea').forEach(function(textarea) {
+			textarea.autoSize();
+		});
+		this.center();
+		this.callParent(arguments);
+	},
 	
 	items: [
 		{

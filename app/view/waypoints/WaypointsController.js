@@ -177,16 +177,6 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 		project.undoManager.endUndoGroup();
 
 		// selectionModel.select(data.records);
-	},
+	}
 
-	onClickButton: function () {
-		Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
-	},
-
-	onConfirm: function (choice) {
-		if (choice === 'yes') {
-			//
-		}
-	},
-	
 });
