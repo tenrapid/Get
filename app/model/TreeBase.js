@@ -159,6 +159,32 @@ function () {
 				}
 			}
 		},
+
+		// Override because method signature of NodeInterface.copy is different from Model.copy which
+		// leads to problems with session.getRecord().
+		// Changed: function(newId, deep) -> function(newId, session, deep)
+
+		/**
+		 * Creates a copy (clone) of this Node.
+		 * @param {String} [id] A new id, defaults to this Node's id.
+		 * @param {Boolean} [deep=false] True to recursively copy all child Nodes into the new Node.
+		 * False to copy without child Nodes.
+		 * @return {Ext.data.NodeInterface} A copy of this Node.
+		 */
+		copy: function(newId, session, deep) {
+			var me = this,
+				result = me.callSuper([newId, session]),
+				len = me.childNodes ? me.childNodes.length : 0,
+				i;
+
+			// Move child nodes across to the copy if required
+			if (deep) {
+				for (i = 0; i < len; i++) {
+					result.appendChild(me.childNodes[i].copy(undefined, session, true));
+				}
+			}
+			return result;
+		},
 	});
 
 });

@@ -137,6 +137,26 @@ Ext.define('Get.view.layers.LayersController', {
 		}
 	},
 		
+	onBeforeLayerDoubleClick: function(view, record) {
+		if (record.isRoot()) {
+			return false;
+		}
+	},
+
+	onLayerDoubleClick: function(view, record) {
+		var config = {layer: record},
+			openEditWindows = Ext.WindowManager.getBy(function(comp) {
+				return comp.isEditLayerWindow && comp.layer === config.layer;
+			});
+
+		if (openEditWindows.length) {
+			openEditWindows[0].toFront();
+		}
+		else {
+			Ext.widget('edit.layer', config);
+		}
+	},
+	
 	onBeforeLayerItemEdit: function(editor, context) {
 		if (context.record.isRoot()) {
 			return false;

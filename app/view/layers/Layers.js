@@ -69,12 +69,14 @@ Ext.define('Get.view.layers.Layers', {
 	},
 	listeners: {
 		selectionchange: 'onLayerSelectionChange',
+		beforeitemdblclick: 'onBeforeLayerDoubleClick',
+		itemdblclick: 'onLayerDoubleClick',
 		beforeedit: 'onBeforeLayerItemEdit'
 	},
 	plugins: [
 		{
 			ptype: 'cellediting',
-			clicksToEdit: 2,
+			triggerEvent: '_' // invalid event because we want to trigger edit manually
 		},
 	],
 	columns: [
