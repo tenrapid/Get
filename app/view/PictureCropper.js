@@ -24,7 +24,7 @@ Ext.define('Get.view.PictureCropper', {
 		this.callParent();
 	},
 
-	onRender: function() {
+	afterRender: function() {
 		this.callParent(arguments);
 		this.update();
 	},

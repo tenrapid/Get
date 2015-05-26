@@ -2,9 +2,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	extend: 'Ext.view.View',
 	requires: [
 		'Get.view.ToolTip',
-		'Get.view.FileDialog',
-		'Get.view.PictureCropper',
-		'Ext.window.Window'
+		'Get.view.FileDialog'
 	],
 
 	alias: 'widget.edit.waypoint.pictures',
@@ -140,7 +138,13 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	onItemClick: function(picture) {
-		this.openCropWindow(picture);
+		if (this.preview.showTimer) {
+			this.preview.clearTimer('show');
+		}
+		Ext.widget('edit.picture', {
+			picture: picture,
+			session: this.getStore().getSession().spawn()
+		});
 	},
 
 	onAddButton: function() {
@@ -181,106 +185,6 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		// if an association store is created. While getting associated records from the session
 		// ownership is not checked.
 		picture.drop(false);
-	},
-
-	openCropWindow: function(picture) {
-		// TODO: memory leak?
-		var maxWidth = Ext.Element.getViewportWidth() - 80,
-			maxHeight = Ext.Element.getViewportHeight() - 140,
-			cropWindow,
-			titleTextfield,
-			pictureCropper;
-
-		if (this.preview.showTimer) {
-			this.preview.clearTimer('show');
-		}
-
-		cropWindow = Ext.create('Ext.window.Window', {
-			layout: {
-				type: 'vbox',
-				align: 'stretch'
-			},
-			items: [
-				{
-					xtype: 'picturecropper',
-					picture: picture,
-					maxWidth: maxWidth,
-					maxHeight: maxHeight
-				},
-				{
-					xtype: 'textfield',
-					name: 'title',
-					fieldLabel: 'Titel',
-					labelWidth: 30,
-					labelAlign: 'right',
-					margin: '3 2 0 2'
-				}
-			],
-			keys: {
-				binding: [
-					{
-						key: Ext.event.Event.ENTER,
-						fn: function(key, e) { 
-							if (e.getTarget('input[type=text], .picture-cropper')) {
-								this.target.component.down('button[cls~=btn-ok]').el.dom.click();
-							}							
-						}
-					}
-				]
-			},
-			buttons: [
-				// {
-				// 	text: 'Drehen',
-				// 	handler: function() {
-				// 		// picture.set('orientation', picture.get('orientation') % 8 + 1);
-				// 		picture.set('orientation', {
-				// 			1: 6,
-				// 			6: 3,
-				// 			3: 8,
-				// 			8: 1
-				// 		}[picture.get('orientation')]);
-				// 		// console.log(picture.get('orientation'));
-				// 		pictureCropper.update();
-				// 		cropWindow.updateLayout();
-				// 		cropWindow.center();
-				// 	},
-				// },
-				{
-					text: 'OK',
-					cls: 'btn-ok',
-					handler: function() {
-						picture.setCrop(pictureCropper.getCrop());
- 						picture.set('name', titleTextfield.getValue());
-						cropWindow.close();
-						cropWindow = null;
-					},
-				},
-				{
-					text: 'Abbrechen',
-					handler: function() {
-						cropWindow.close();
-						cropWindow = null;
-					},
-				},
-			],
-			title: 'Beschneiden <span style="font-weight: normal; color: #999;">&ndash; ' + picture.get('filename') + '</span>',
-			autoShow: true,
-			modal: true,
-			resizable: false,
-			draggable: false,
-			plain: true,
-			bodyStyle: 'border-width: 0;',
-			bodyPadding: '0 12 12 12',
-			defaultFocus: 'textfield'
-		});
-
-		pictureCropper = cropWindow.child('picturecropper');
-		titleTextfield = cropWindow.child('textfield');
-		titleTextfield.setValue(picture.get('name'));
-
-		setTimeout(function() {
-			cropWindow.focus();
-		}, 0);
-	},
+	}
 
 });
