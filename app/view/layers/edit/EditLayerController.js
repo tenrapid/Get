@@ -29,7 +29,6 @@ Ext.define('Get.view.layers.edit.EditLayerController', {
 			layer = session.getRecord(view.layer.entityName, view.layer.getId());
 
 		viewModel.set('layer', layer);
-		viewModel.notify();
 	},
 
 	onSave: function() {

@@ -32,7 +32,7 @@ Ext.define('Get.view.layers.edit.EditLayer', {
 		{
 			xtype: 'form',
 			reference: 'form',
-			bodyPadding: '8 14 0',
+			bodyPadding: '8 14 6',
 			bodyStyle: 'background-color: transparent;',
 			border: false,
 			autoScroll: true,
@@ -70,6 +70,7 @@ Ext.define('Get.view.layers.edit.EditLayer', {
 					xtype: 'textarea',
 					fieldLabel: 'Roadbook',
 					grow: true,
+					minHeight: 200,
 					bind: '{layer.roadbook}'
 				}
 			],
@@ -86,6 +87,19 @@ Ext.define('Get.view.layers.edit.EditLayer', {
 				},
 			]
 		},
-	]
+	],
+
+	beforeShow: function() {
+		this.getViewModel().notify();
+	},
+	afterShow: function() {
+		Ext.suspendLayouts();
+		this.query('textarea').forEach(function(textarea) {
+			textarea.autoSize();
+		});
+		Ext.resumeLayouts(true);
+		this.center();
+		this.callParent(arguments);
+	}
 
 });

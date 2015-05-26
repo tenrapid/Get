@@ -19,34 +19,20 @@ Ext.define('Get.view.waypoints.edit.EditWaypoint', {
 	constrain: true,
 	plain: true,
 	bodyStyle: 'border-width: 0;',
-	layout: {
-		type: 'fit',
-	},
-	
+	layout: 'fit',
+
 	bind: {
 		title: 'Edit: {waypoint.name}',
 	},
 
-	beforeShow: function() {
-		this.getViewModel().notify();
-	},
-	afterShow: function() {
-		this.query('textarea').forEach(function(textarea) {
-			textarea.autoSize();
-		});
-		this.center();
-		this.callParent(arguments);
-	},
-	
 	items: [
 		{
 			xtype: 'form',
 			reference: 'form',
 			bodyPadding: '8 14 0',
 			bodyStyle: 'background-color: transparent;',
-// 			bodyStyle: 'background-color: #e4e4e4;',
 			border: false,
-			autoScroll: true,
+			scrollable: 'vertical',
 			layout: {
 				type: 'vbox',
 				align: 'stretch'
@@ -84,6 +70,19 @@ Ext.define('Get.view.waypoints.edit.EditWaypoint', {
 				},
 			]
 		},
-	]
+	],
+
+	beforeShow: function() {
+		this.getViewModel().notify();
+	},
+	afterShow: function() {
+		Ext.suspendLayouts();
+		this.query('textarea').forEach(function(textarea) {
+			textarea.autoSize();
+		});
+		Ext.resumeLayouts(true);
+		this.center();
+		this.callParent(arguments);
+	}
 
 });
