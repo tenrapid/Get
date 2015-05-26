@@ -179,7 +179,7 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onOpenFileDialog: function(file) {
-		var filename = file.path,
+		var filename = Ext.isString(file) ? file : file.path,
 			project,
 			win;
 
