@@ -213,7 +213,9 @@ Ext.define('Get.view.layers.LayersController', {
 		var view = this.getView(),
 			project = view.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel(),
-			record = data.records[0];
+			record = data.records[0],
+			tour,
+			area;
 
 		if (record.entityName === 'Tour' || record.entityName === 'Area') {
 			project.undoManager.beginUndoGroup();
@@ -226,11 +228,17 @@ Ext.define('Get.view.layers.LayersController', {
 			project.undoManager.onStoreOperation('remove', null, data.records);
 		}
 		else if (record.entityName === 'Waypoint') {
-			this.addWaypointsToTour(view.getView().getRecord(targetNode), data.records);
+			tour = view.getView().getRecord(targetNode);
+			project.undoManager.beginUndoGroup();
+			tour.addWaypoints(data.records);
+			project.undoManager.endUndoGroup();
 			return false;
 		}
 		else if (record.entityName === 'TourWaypoint') {
-			this.addTourWaypointsToArea(view.getView().getRecord(targetNode), data.records);
+			area = view.getView().getRecord(targetNode);
+			project.undoManager.beginUndoGroup();
+			area.addTourWaypoints(data.records);
+			project.undoManager.endUndoGroup();
 			return false;
 		}
 	},
@@ -250,48 +258,6 @@ Ext.define('Get.view.layers.LayersController', {
 		project.undoManager.endUndoGroup();
 
 		selectionModel.select(record);
-	},
-
-	addWaypointsToTour: function(tour, waypoints) {
-		var view = this.getView(),
-			project = view.getViewModel().get('project'),
-			waypointsToAdd = waypoints.filter(function(waypoint) {
-				return !waypoint.tourWaypoints().getRange().some(function(tourWaypoint) {
-					return tourWaypoint.getTour() === tour;
-				});
-			}),
-			tourWaypoints;
-
-		if (waypointsToAdd.length) {
-			project.undoManager.beginUndoGroup();
-			tourWaypoints = waypointsToAdd.map(function(waypoint) {
-				return waypoint.tourWaypoints().add({
-					name: waypoint.get('name')
-				})[0];
-			});
-			tour.tourWaypoints().add(tourWaypoints);
-			project.undoManager.endUndoGroup();
-		}
-	},
-
-	addTourWaypointsToArea: function(area, tourWaypoints) {
-		var view = this.getView(),
-			project = view.getViewModel().get('project'),
-			tourWaypointsToAdd = tourWaypoints.filter(function(tourWaypoint) {
-				return tourWaypoint.getArea() !== area;
-			}),
-			tourWaypointsToRemove = tourWaypointsToAdd.filter(function(tourWaypoint) {
-				return tourWaypoint.getArea();
-			});
-
-		if (tourWaypointsToAdd.length) {
-			project.undoManager.beginUndoGroup();
-			tourWaypointsToRemove.forEach(function(tourWaypoint) {
-				tourWaypoint.setArea(null);
-			});
-			area.tourWaypoints().add(tourWaypointsToAdd);
-			project.undoManager.endUndoGroup();
-		}
 	}
 		
 });
