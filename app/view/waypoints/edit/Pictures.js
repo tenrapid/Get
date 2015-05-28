@@ -162,6 +162,12 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		removeButton.un('click', this.onRemoveButton, this);
 	},
 
+	onItemMouseDown: function(picture, item, index, e) {
+		// Stop propagation of mousedown event to prevent the grid from handling this event if 
+		// this view is inside a gridd cell.
+		e.stopPropagation();
+	},
+
 	onItemClick: function(picture) {
 		if (this.preview.showTimer) {
 			this.preview.clearTimer('show');

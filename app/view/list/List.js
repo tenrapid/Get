@@ -2,8 +2,6 @@ Ext.define('Get.view.list.List', {
 	extend: 'Get.view.StatefulGrid',
 	xtype: 'get-list',
 
-	// TODO: click on picture in list scrolls to top
-
 	requires: [
 		'Ext.grid.plugin.DragDrop',
 		'Get.view.list.ListController',
