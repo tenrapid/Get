@@ -27,7 +27,7 @@ Ext.define('Get.data.field.Geometry', {
 			else {
 				// convert called from Model.set() or Model.copy()
 				config = {
-					geometry: value.geometry.clone(),
+					geometry: value.geometry && value.geometry.clone(),
 					projection: value.projection,
 				};
 				return Ext.create('Get.data.Geometry', config);
