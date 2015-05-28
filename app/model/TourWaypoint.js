@@ -4,6 +4,7 @@ Ext.define('Get.model.TourWaypoint', {
 	fields: [
 		{
 			name: 'tourId',
+			type: 'int', 
 			// Set the default value of foreign keys that can be undefined to "null" because during a drop
 			// they are set to null, which causes the record to be dirty after undoing the drop.
 			defaultValue: null,
@@ -24,6 +25,7 @@ Ext.define('Get.model.TourWaypoint', {
 		},
 		{
 			name: 'areaId', 
+			type: 'int', 
 			defaultValue: null,
 			reference: {
 				type: 'Area',

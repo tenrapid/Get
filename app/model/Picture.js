@@ -4,6 +4,7 @@ Ext.define('Get.model.Picture', {
 	fields: [
 		{
 			name: 'waypointId', 
+			type: 'int', 
 			reference: {
 				parent: 'Waypoint',
 				inverse: {
