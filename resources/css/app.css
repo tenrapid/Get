@@ -211,16 +211,46 @@ body > .x-mask {
 	color: #333;
 }
 
+/*
+ * Waypoints List
+ */
 
-.x-grid-cell .waypoint-picture-thumbnail {
+#waypoints-list .x-grid-cell.x-edit\.waypoint\.pictures-default-cell .x-grid-cell-inner {
+	padding: 6px 6px 3px;
+}
+#waypoints-list .x-grid-cell .waypoint-picture-thumbnail {
 	width: 40px;
 	height: 40px;
+	margin-right: 6px;
+	margin-bottom: 3px;
+	border-width: 0;
 }
-.x-grid-cell .waypoint-picture-add-button {
+#waypoints-list .x-grid-cell .waypoint-picture-add-button {
 	font-size: 20px; 
 	line-height: 34px;
+	color: #ccc;
+	border-width: 1px;
+	border-color: #ddd;
+}
+#waypoints-list .x-grid-cell .waypoint-picture-add-button:hover {
+	color: #fff;
+	background-color: #ccc;
 }
 
+#waypoints-list .x-grid-item {
+	font-size: 12px;
+	line-height: 16px;
+}
+#waypoints-list .x-grid-cell-inner {
+	padding: 7px 6px 10px 6px;
+}
+
+#waypoints-list .x-grid-item-selected {
+	background-color: white;
+}
+#waypoints-list .x-grid-item-selected.x-grid-item-alt {
+	background-color: #fafafa;
+}
 
 .waypoint-picture-crop-indicator {
 	float: right; 

@@ -2,11 +2,14 @@ Ext.define('Get.view.list.List', {
 	extend: 'Get.view.StatefulGrid',
 	xtype: 'get-list',
 
+	// TODO: click on picture in list scrolls to top
+
 	requires: [
 		'Ext.grid.plugin.DragDrop',
 		'Get.view.list.ListController',
 		'Get.view.list.ListModel',
 		'Get.selection.FeatureModel',
+		'Ext.grid.column.Widget'
 	],
 
 	controller: 'list',
@@ -14,6 +17,7 @@ Ext.define('Get.view.list.List', {
 
 	reference: 'waypointList',
 
+	id: 'waypoints-list',
 	title: '<i class="fa fa-lg fa-list-ul"></i> Liste',
 	border: false,
 	sortableColumns: false,
@@ -63,19 +67,26 @@ Ext.define('Get.view.list.List', {
 			flex: 3,
 			cellWrap: true
 		},
-		// {
-		// 	text: 'Bilder',
-		// 	xtype: 'widgetcolumn',
-		// 	menuDisabled: true,
-		// 	flex: 3,
-		// 	cellWrap: true,
-		// 	widget: {
-		// 		xtype: 'edit.waypoint.pictures'
-		// 	},
-		// 	onWidgetAttach: function(column, widget, record) {
-		// 		widget && record && widget.setConfig(widget.defaultBindProperty, record.pictures());
-		// 	}
-		// },
-	]
+		{
+			text: 'Bilder',
+			xtype: 'widgetcolumn',
+			menuDisabled: true,
+			flex: 2,
+			cellWrap: true,
+			widget: {
+				xtype: 'edit.waypoint.pictures'
+			},
+			onWidgetAttach: function(column, widget, record) {
+				widget.bindStore(record.entityName === 'Waypoint' ? record.pictures() : null);
+			},
+			onWidgetDetach: function(column, widget, record) {
+				widget.bindStore(null);
+			}
+		},
+	],
+	listeners: {
+		reconfigure: 'onGridReconfigure',
+		scope: 'controller',
+	}
 
 });

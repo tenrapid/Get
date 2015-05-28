@@ -11,7 +11,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	tpl: [
 		'<tpl for=".">',
-			'<div class="waypoint-picture-thumbnail waypoint-picture">',
+			'<div id="{viewId}-record-{internalId}" class="waypoint-picture-thumbnail waypoint-picture">',
 				'<div class="waypoint-picture-holder" style="background-image: {backgroundImage}; {transformStyle}"></div>',
 				'<div class="waypoint-picture-remove-button"><i class="fa fa-trash"></i></div>',
 			'</div>',
@@ -30,6 +30,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		'pictures'
 	],
 
+	loadMask: false,
+
 	// overide View
 	getNodeContainer: function() {
 		return this.pictures;
@@ -44,28 +46,45 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	// overide View
-	prepareData: function(data, index, picture) {
+	prepareData: function(_data, index, picture) {
 		var me = this,
-			newData = this.callParent(arguments);
+			data = {
+				backgroundImage: 'none',
+				transformStyle: picture.getTransformCenteredStyle(),
+				viewId: this.id,
+				internalId: picture.internalId
+			},
+			async = false;
 
-		// newData.backgroundImage = 'url(resources/images/loader.gif); background-size: initial';
-		newData.backgroundImage = 'none';
-		newData.transformStyle = picture.getTransformCenteredStyle();
+		// data.backgroundImage = 'url(resources/images/loader.gif); background-size: initial';
 
 		picture.getImageUrl('thumb', function(err, url) {
-			var node = me.getNode(picture);
+			var node;
 
-			if (node) {
-				Ext.fly(node).down('.waypoint-picture-holder', true).style.backgroundImage = 'url(' + url + ')';
+			if (async) {
+				node = me.getNode(picture);
+				if (node) {
+					Ext.fly(node).down('.waypoint-picture-holder', true).style.backgroundImage = 'url(' + url + ')';
+				}
 			}
-			newData.backgroundImage = 'url(' + url + ')';
+			else {
+				data.backgroundImage = 'url(' + url + ')';
+			}
 		});
 
-		return newData;
+		async = true;
+
+		return data;
 	},
 
-	onRender: function() {
+	// overide View
+	getNodeByRecord: function(record) {
+		return this.el.getById(this.id + '-record-' + record.internalId, true);
+	},
+
+	afterRender: function() {
 		this.callParent(arguments);
+
 		this.addButton.on({
 			click: 'onAddButton',
 			scope: this
@@ -84,6 +103,12 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				scope: this
 			}
 		});
+
+		if (this.ownerCmp && this.ownerCmp.componentLayoutCounter && !this.componentLayoutCounter) {
+			// We are within a grid cell and its grid has already layout so we must do the first refresh ourselves.
+			this.componentLayoutCounter++;
+			this.doFirstRefresh(this.store);
+		}
 	},
 
 	onDestroy: function() {
@@ -161,21 +186,31 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 	addPicture: function(files) {
 		var pictures = this.getStore(),
-			imageInfo = require('imageinfo');
+			project = this.lookupViewModel().get('project'),
+			imageInfo = require('imageinfo'),
+			async = require('async'),
+			picturesToAdd = [];
 
-		files.forEach(function(file) {
+		async.each(files, function(file, callback) {
 			imageInfo(file.path, function(err, info) {
 				if (err) {
-					throw err;
+					console.error(err);
 				}
-				pictures.add({
-					filename: file.path,
-					name: file.name,
-					width: info.width,
-					height: info.height,
-					orientation: info.orientation
-				});
+				else {
+					picturesToAdd.push({
+						filename: file.path,
+						name: file.name,
+						width: info.width,
+						height: info.height,
+						orientation: info.orientation
+					});
+				}
+				callback();
 			});
+		}, function() {
+			project.undoManager.beginUndoGroup();
+			pictures.add(picturesToAdd);
+			project.undoManager.endUndoGroup();
 		});
 	},
 	

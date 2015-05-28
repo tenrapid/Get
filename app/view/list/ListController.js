@@ -60,9 +60,9 @@ Ext.define('Get.view.list.ListController', {
 		if (store) {
 			var storeId = store.getStoreId();
 
-			grid.columns[1].setHidden(storeId !== 'waypoints');
-			grid.columns[2].setHidden(storeId === 'waypoints');
-			grid.columns[3].setHidden(storeId === 'waypoints');
+			// grid.columns[1].setHidden(storeId !== 'waypoints');
+			// grid.columns[2].setHidden(storeId === 'waypoints');
+			grid.columns[3].setHidden(storeId !== 'waypoints');
 		}
 	},
 
