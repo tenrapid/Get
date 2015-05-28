@@ -180,11 +180,11 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 	
 	removePicture: function(picture) {
-		// Due to a bug in role's Left.onDrop we have to prevent the cascade of the drop so
-		// that the tourWaypoint is not dropped too. Left.onDrop checks for ownership only 
-		// if an association store is created. While getting associated records from the session
-		// ownership is not checked.
-		picture.drop(false);
+		var project = this.lookupViewModel().get('project');
+
+		project.undoManager.beginUndoGroup();
+		picture.drop();
+		project.undoManager.endUndoGroup();
 	}
 
 });

@@ -41,10 +41,6 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 			if (isTourWaypoint) {
 				tourWaypoint = session.getRecord('TourWaypoint', view.tourWaypoint.getId());
 			}
-
-			// We have to "initialize" the association store. If we don't do this, new pictures aren't
-			// added to it during session.save().
-			view.waypoint.pictures();
 		}
 		else {
 			// Create new waypoint.
