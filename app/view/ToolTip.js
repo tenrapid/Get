@@ -65,10 +65,10 @@ Ext.define('Get.view.ToolTip', {
 			offsets = [0, -16];
 			break;
 		case 'r':
-			offsets = [-16, 0];
+			offsets = [-30, 0];
 			break;
 		default:
-			offsets = [16, 0];
+			offsets = [30, 0];
 			break;
 		}
 

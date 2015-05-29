@@ -221,9 +221,10 @@ body > .x-mask {
 #waypoints-list .x-grid-cell .waypoint-picture-thumbnail {
 	width: 40px;
 	height: 40px;
-	margin-right: 6px;
-	margin-bottom: 3px;
 	border-width: 0;
+	box-sizing: content-box;
+	padding: 0 5px 5px 0;
+	margin: 0;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button {
 	font-size: 20px; 
@@ -231,6 +232,8 @@ body > .x-mask {
 	color: #ccc;
 	border-width: 1px;
 	border-color: #ddd;
+	box-sizing: border-box;
+	padding: 0;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button:hover {
 	color: #fff;
