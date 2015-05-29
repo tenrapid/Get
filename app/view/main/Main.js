@@ -43,7 +43,19 @@ Ext.define('Get.view.main.Main', {
 		{
 			region: 'center',
 			xtype: 'tabpanel',
+			id: 'tabbed-pane',
 			plain: true,
+			border: false,
+			minTabWidth: 80,
+			tabBarHeaderPosition: 0,
+			header: {
+				layout: {
+					pack: 'middle'
+				}
+			},
+			title: {
+				hidden: true
+			},
 			items: [
 				{
 					xtype: 'get-map',

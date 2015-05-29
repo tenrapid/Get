@@ -19,7 +19,6 @@ Ext.define('Get.view.list.List', {
 	title: '<i class="fa fa-lg fa-list-ul"></i> Liste',
 	border: false,
 	sortableColumns: false,
-	reserveScrollbar: true,
 	bind: {
 		disabled: '{uiDisabled}',
 	},
@@ -44,6 +43,13 @@ Ext.define('Get.view.list.List', {
 	},
 	columns: [
 		{
+			width: 16,
+			resizable: false,
+			focusable: false,
+			menuDisabled: true,
+			tdCls: 'list-border-column'
+		},
+		{
 			text: '',
 			width: 35,
 			align: 'right',
@@ -56,6 +62,7 @@ Ext.define('Get.view.list.List', {
 			text: 'Name',
 			dataIndex: 'name',
 			menuDisabled: true,
+			tdCls: 'bold-column',
 			flex: 1
 		},
 		{
@@ -81,6 +88,19 @@ Ext.define('Get.view.list.List', {
 				widget.bindStore(null);
 			}
 		},
+		{
+			width: 16,
+			resizable: false,
+			focusable: false,
+			menuDisabled: true,
+			tdCls: 'list-border-column'
+		},
+	],
+	tbar: [
+		'->',
+		{
+			text: 'Suchen'
+		}
 	],
 	listeners: {
 		reconfigure: 'onGridReconfigure',

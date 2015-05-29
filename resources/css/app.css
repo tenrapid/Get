@@ -211,19 +211,65 @@ body > .x-mask {
 	color: #333;
 }
 
+
+/*
+ * Tabbed pane
+ */
+
+#tabbed-pane-body {
+	border-color: #bcb0b0;
+}
+#tabbed-pane .x-tab-focus.x-tab-default .x-tab-button:before {
+	outline: none;
+}
+
 /*
  * Waypoints List
  */
 
+#waypoints-list-body {
+	background: #c6c6c6;
+}
+#waypoints-list .x-grid-item-container {
+	padding: 8px 0;
+}
+#waypoints-list .list-border-column {
+	background: #c6c6c6;
+}
+#waypoints-list .bold-column {
+	font-weight: bold;
+	color: #222;
+}
+#waypoints-list .x-grid-item {
+	font-size: 12px;
+	line-height: 16px;
+	border-width: 0;
+}
+#waypoints-list .x-grid-item-alt {
+	background-color: #f8f8f8;
+}
+#waypoints-list .x-grid-item-selected {
+	background-color: white;
+}
+#waypoints-list .x-grid-item-selected.x-grid-item-alt {
+	background-color: #f8f8f8;
+}
+#waypoints-list .x-grid-cell-inner {
+	padding: 10px 6px 13px 6px;
+}
+#waypoints-list .x-wrap-cell .x-grid-cell-inner {
+	white-space: pre-line;
+}
+
 #waypoints-list .x-grid-cell.x-edit\.waypoint\.pictures-default-cell .x-grid-cell-inner {
-	padding: 6px 6px 3px;
+	padding: 13px 6px 9px;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-thumbnail {
 	width: 40px;
 	height: 40px;
 	border-width: 0;
 	box-sizing: content-box;
-	padding: 0 5px 5px 0;
+	padding: 0 4px 4px 0;
 	margin: 0;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button {
@@ -234,32 +280,22 @@ body > .x-mask {
 	border-color: #ddd;
 	box-sizing: border-box;
 	padding: 0;
+	margin-bottom: 4px;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button:hover {
 	color: #fff;
 	background-color: #ccc;
 }
-
-#waypoints-list .x-grid-item {
-	font-size: 12px;
-	line-height: 16px;
-}
-#waypoints-list .x-grid-cell-inner {
-	padding: 7px 6px 10px 6px;
+#waypoints-list .waypoint-picture-thumbnail:hover .waypoint-picture-remove-button {
+	display: none;
 }
 
-#waypoints-list .x-grid-item-selected {
-	background-color: white;
-}
-#waypoints-list .x-grid-item-selected.x-grid-item-alt {
-	background-color: #fafafa;
-}
 
 .waypoint-picture-crop-indicator {
 	float: right; 
 	color: #999; 
 	font-size: 14px; 
-	margin: -1px 0 -2px 0;
+	margin: 1px 0 -3px 0;
 }
 
 	/*
