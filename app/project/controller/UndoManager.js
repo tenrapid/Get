@@ -78,10 +78,6 @@ Ext.define('Get.project.controller.UndoManager', {
 			len = records.length,
 			operation;
 
-		if (this.listenersSuspended) {
-			return;
-		}
-
 		// console.log('onStoreOperation', arguments);
 		records.forEach(function(record, i) {
 			operation = {
@@ -111,10 +107,6 @@ Ext.define('Get.project.controller.UndoManager', {
 	},
 
 	onRecordOperation: function(type, record) {
-		if (this.listenersSuspended) {
-			return;
-		}
-
 		this.registerUndoOperation({
 			type: type,
 			record: record
@@ -124,10 +116,6 @@ Ext.define('Get.project.controller.UndoManager', {
 	onRecordUpdate: function(record, operation, modifiedFieldNames) {
 		var previousValues,
 			newValues;
-
-		if (this.listenersSuspended) {
-			return;
-		}
 
 		if (operation === Ext.data.Model.EDIT) {
 			previousValues = {};
@@ -204,9 +192,9 @@ Ext.define('Get.project.controller.UndoManager', {
 		}
 
 		Ext.suspendLayouts();
-		this.listenersSuspended = true;
+		this.deactivate();
 		this.undoOperation(operation);
-		this.listenersSuspended = false;
+		this.activate();
 		Ext.resumeLayouts(true);
 		
 		this.redoStack.push(operation);
@@ -221,9 +209,9 @@ Ext.define('Get.project.controller.UndoManager', {
 		}
 
 		Ext.suspendLayouts();
-		this.listenersSuspended = true;
+		this.deactivate();
 		this.redoOperation(operation);
-		this.listenersSuspended = false;
+		this.activate();
 		Ext.resumeLayouts(true);
 
 		this.undoStack.push(operation);
