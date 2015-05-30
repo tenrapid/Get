@@ -4,6 +4,7 @@ Ext.define('Get.view.list.List', {
 
 	requires: [
 		'Ext.grid.plugin.DragDrop',
+		'Ext.grid.plugin.CellEditing',
 		'Get.view.list.ListController',
 		'Get.view.list.ListModel',
 		'Get.selection.FeatureModel',
@@ -41,17 +42,21 @@ Ext.define('Get.view.list.List', {
 			}
 		}
 	},
+	plugins: {
+		ptype: 'cellediting',
+		clicksToEdit: 1
+	},
+
 	columns: [
 		{
-			width: 16,
+			width: 18,
 			resizable: false,
-			focusable: false,
 			menuDisabled: true,
 			tdCls: 'list-border-column'
 		},
 		{
 			text: '',
-			width: 35,
+			width: 37,
 			align: 'right',
 			menuDisabled: true,
 			renderer: function(value, meta, record, rowIndex) {
@@ -70,7 +75,20 @@ Ext.define('Get.view.list.List', {
 			dataIndex: 'description',
 			menuDisabled: true,
 			flex: 3,
-			cellWrap: true
+			cellWrap: true,
+			editor: {
+				xclass: 'Ext.grid.CellEditor',
+				field: {
+					xtype: 'textarea',
+					// grow: true,
+					fieldStyle: 'padding: 10px 5px 8px; height: calc(100% - -30px);'
+				},
+				autoSize: {
+					width: 'field',
+					height: 'boundEl'
+				},
+				alignment: 'tl-tl'
+			}
 		},
 		{
 			text: 'Bilder',
@@ -89,7 +107,7 @@ Ext.define('Get.view.list.List', {
 			}
 		},
 		{
-			width: 16,
+			width: 17,
 			resizable: false,
 			focusable: false,
 			menuDisabled: true,
@@ -97,9 +115,18 @@ Ext.define('Get.view.list.List', {
 		},
 	],
 	tbar: [
+		{
+			text: '+'
+		},
+		{
+			text: '–'
+		},
 		'->',
 		{
-			text: 'Suchen'
+			xtype: 'textfield',
+			width: 200,
+			fieldStyle: 'font-size: 11px;',
+			emptyText: 'Suchen…'
 		}
 	],
 	listeners: {

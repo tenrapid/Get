@@ -228,17 +228,25 @@ body > .x-mask {
  */
 
 #waypoints-list-body {
-	background: #c6c6c6;
+	background: #AFB1B1;
 }
 #waypoints-list .x-grid-item-container {
-	padding: 8px 0;
+	padding: 16px 0;
+	/*padding: 0;*/
 }
-#waypoints-list .list-border-column {
-	background: #c6c6c6;
+#waypoints-list .x-grid-td.list-border-column {
+	background: #AFB1B1;
+	border-color: transparent;
 }
-#waypoints-list .bold-column {
+#waypoints-list .x-grid-td.bold-column {
 	font-weight: bold;
 	color: #222;
+}
+#waypoints-list .x-grid-td {
+	border-top: 1px solid #e5e5e0;
+}
+#waypoints-list .x-grid-item:first-child .x-grid-td {
+	border-top-width: 0;
 }
 #waypoints-list .x-grid-item {
 	font-size: 12px;
@@ -246,44 +254,52 @@ body > .x-mask {
 	border-width: 0;
 }
 #waypoints-list .x-grid-item-alt {
-	background-color: #f8f8f8;
+	font-size: 12px;
+	line-height: 16px;
+	border-width: 0;
+	background-color: white;
 }
 #waypoints-list .x-grid-item-selected {
 	background-color: white;
 }
-#waypoints-list .x-grid-item-selected.x-grid-item-alt {
-	background-color: #f8f8f8;
-}
 #waypoints-list .x-grid-cell-inner {
-	padding: 10px 6px 13px 6px;
+	padding: 11px 6px 15px 6px;
+	/*padding: 18px 6px 20px 6px;*/
 }
 #waypoints-list .x-wrap-cell .x-grid-cell-inner {
 	white-space: pre-line;
 }
 
 #waypoints-list .x-grid-cell.x-edit\.waypoint\.pictures-default-cell .x-grid-cell-inner {
-	padding: 13px 6px 9px;
+	/*padding: 13px 6px 9px;*/
+	padding: 14px 6px 13px;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-thumbnail {
-	width: 40px;
-	height: 40px;
+	width: 36px;
+	height: 36px;
 	border-width: 0;
 	box-sizing: content-box;
-	padding: 0 4px 4px 0;
+	/*padding: 0 4px 4px 0;*/
+	padding: 0 1px 1px 0;
 	margin: 0;
+}
+#waypoints-list .x-grid-cell .waypoint-picture-holder {
+	/*border: 1px solid #ccc;*/
+	background-color: #ddd;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button {
 	font-size: 20px; 
-	line-height: 34px;
+	line-height: 31px;
 	color: #ccc;
 	border-width: 1px;
 	border-color: #ddd;
 	box-sizing: border-box;
 	padding: 0;
-	margin-bottom: 4px;
+	margin-bottom: 1px;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-add-button:hover {
 	color: #fff;
+	border-color: #ccc;
 	background-color: #ccc;
 }
 #waypoints-list .waypoint-picture-thumbnail:hover .waypoint-picture-remove-button {
