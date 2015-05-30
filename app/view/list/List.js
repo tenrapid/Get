@@ -8,7 +8,8 @@ Ext.define('Get.view.list.List', {
 		'Get.view.list.ListController',
 		'Get.view.list.ListModel',
 		'Get.selection.FeatureModel',
-		'Ext.grid.column.Widget'
+		'Ext.grid.column.Widget',
+		'Get.grid.CellEditor'
 	],
 
 	controller: 'list',
@@ -68,7 +69,8 @@ Ext.define('Get.view.list.List', {
 			dataIndex: 'name',
 			menuDisabled: true,
 			tdCls: 'bold-column',
-			flex: 1
+			flex: 1,
+			editor: 'celleditor'
 		},
 		{
 			text: 'Beschreibung',
@@ -76,19 +78,7 @@ Ext.define('Get.view.list.List', {
 			menuDisabled: true,
 			flex: 3,
 			cellWrap: true,
-			editor: {
-				xclass: 'Ext.grid.CellEditor',
-				field: {
-					xtype: 'textarea',
-					// grow: true,
-					fieldStyle: 'padding: 10px 5px 8px; height: calc(100% - -30px);'
-				},
-				autoSize: {
-					width: 'field',
-					height: 'boundEl'
-				},
-				alignment: 'tl-tl'
-			}
+			editor: 'celleditor'
 		},
 		{
 			text: 'Bilder',
