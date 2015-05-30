@@ -231,7 +231,7 @@ body > .x-mask {
 	background: #AFB1B1;
 }
 #waypoints-list .x-grid-item-container {
-	padding: 16px 0;
+	padding: 17px 0;
 	/*padding: 0;*/
 }
 #waypoints-list .x-grid-td.list-border-column {
@@ -285,7 +285,7 @@ body > .x-mask {
 
 #waypoints-list .x-grid-cell.x-edit\.waypoint\.pictures-default-cell .x-grid-cell-inner {
 	/*padding: 13px 6px 9px;*/
-	padding: 14px 6px 14px;
+	padding: 14px 6px 14px 12px;
 }
 #waypoints-list .x-grid-cell .waypoint-picture-thumbnail {
 	width: 36px;
