@@ -45,7 +45,7 @@ Ext.define('Ext.patch.data.schema.ManyToOne', {
 		*/
 		getAssociatedItem: function(rec) {
 			var storeName = this.getStoreName();
-			if (!rec[storeName]) {
+			if (!rec[storeName] && rec.session && !rec.session.getParent()) {
 				rec[this.getterName]();
 			}
 			return rec[storeName] || null;
