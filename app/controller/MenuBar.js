@@ -85,7 +85,8 @@ Ext.define('Get.controller.MenuBar', {
 	},
 
 	buildMenuBar: function() {
-		var gui = this.gui,
+		var me = this,
+			gui = this.gui,
 			win = this.win,
 			isMac = process.platform === 'darwin',
 			cmd = isMac ? 'cmd' : 'ctrl',
@@ -244,6 +245,20 @@ Ext.define('Get.controller.MenuBar', {
 				var devTools = win.showDevTools();
 				devTools.width = 1024;
 				devTools.height = 600;
+			}
+		}));
+		debugMenu.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Create test data',
+			key: 'y',
+			modifiers: cmd,
+			click: function() {
+				var viewModel = me.getApplication().getMainView().getViewModel(),
+					project = viewModel.get('project');
+
+				project.undoManager.beginUndoGroup();
+				project.createTestData();
+				project.undoManager.endUndoGroup();
 			}
 		}));
 		menuBar.append(debugMenu);

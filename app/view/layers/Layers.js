@@ -120,13 +120,18 @@ Ext.define('Get.view.layers.Layers', {
 		},
 		'->',
 		{
-			text: 'TestData',
-			handler: function() {
-				var project = this.lookupViewModel(true).get('project');
-				project.undoManager.beginUndoGroup();
-				project.createTestData();
-				project.undoManager.endUndoGroup();
-			}
+			text: 'Export',
+			menu: [
+				{
+					text:'Wegpunkte (GPX)'
+				},
+				{
+					text:'Dokumente'
+				},
+				{
+					text:'Karte'
+				}
+			]
 		}
 	],
 

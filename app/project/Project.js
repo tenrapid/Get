@@ -420,7 +420,10 @@ Ext.define('Get.project.Project', {
 						13.71 + 0.06 * Math.random(),
 						51.03 + 0.04 * Math.random(),
 					]
-				}
+				},
+				description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor ' +
+					'invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et ' +
+					'justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
 			};
 			waypoints.push(waypoint);
 		}
