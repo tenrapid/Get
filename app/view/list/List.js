@@ -20,11 +20,13 @@ Ext.define('Get.view.list.List', {
 	id: 'waypoints-list',
 	title: '<i class="fa fa-lg fa-list-ul"></i> Liste',
 	border: false,
+	bufferedRenderer: false,
 	sortableColumns: false,
+	enableColumnMove: false,
+	
 	bind: {
 		disabled: '{uiDisabled}',
 	},
-	bufferedRenderer: false,
 	selModel: {
 		type: 'rowmodel',
 		mode: 'MULTI',
@@ -52,14 +54,13 @@ Ext.define('Get.view.list.List', {
 		{
 			width: 18,
 			resizable: false,
-			menuDisabled: true,
-			tdCls: 'list-border-column'
+			menuDisabled: true
 		},
 		{
-			text: '',
-			width: 37,
+			width: 44,
 			align: 'right',
 			menuDisabled: true,
+			tdCls: 'index-column',
 			renderer: function(value, meta, record, rowIndex) {
 				return rowIndex + 1;
 			}
@@ -78,6 +79,7 @@ Ext.define('Get.view.list.List', {
 			menuDisabled: true,
 			flex: 3,
 			cellWrap: true,
+			tdCls: 'text-column',
 			editor: 'celleditor'
 		},
 		{
@@ -97,11 +99,9 @@ Ext.define('Get.view.list.List', {
 			}
 		},
 		{
-			width: 17,
+			width: 18,
 			resizable: false,
-			focusable: false,
-			menuDisabled: true,
-			tdCls: 'list-border-column'
+			menuDisabled: true
 		},
 	],
 	tbar: [
