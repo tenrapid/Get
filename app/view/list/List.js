@@ -35,6 +35,7 @@ Ext.define('Get.view.list.List', {
 	viewConfig: {
 		overItemCls: null,
 		markDirty: false,
+		preserveScrollOnRefresh: false,
 		plugins: {
 			ptype: 'gridviewdragdrop',
 			dragText: 'Drag and drop to reorganize',
@@ -57,7 +58,7 @@ Ext.define('Get.view.list.List', {
 			menuDisabled: true
 		},
 		{
-			width: 44,
+			width: 42,
 			align: 'right',
 			menuDisabled: true,
 			tdCls: 'index-column',

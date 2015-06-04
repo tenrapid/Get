@@ -31,6 +31,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	],
 
 	loadMask: false,
+	preserveScrollOnRefresh: false,
 
 	// overide View
 	getNodeContainer: function() {

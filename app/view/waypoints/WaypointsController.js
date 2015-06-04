@@ -50,7 +50,9 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 	},
 
 	onLayerItemSelect: function(item, waypointStore) {
+		Ext.suspendLayouts();
 		this.getView().setStore(waypointStore);
+		Ext.resumeLayouts(true);
 	},
 
 	onGridReconfigure: function(grid, store) {

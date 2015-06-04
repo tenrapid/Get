@@ -34,6 +34,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	viewConfig: {
 		overItemCls: null,
 		markDirty: false,
+		preserveScrollOnRefresh: false,
 		plugins: {
 			ptype: 'gridviewdragdrop',
 			dragText: 'Drag and drop to reorganize',

@@ -46,13 +46,17 @@ Ext.define('Get.view.list.ListController', {
 
 		this.waypointStore = waypointStore;
 		if (view.isVisible()) {
+			Ext.suspendLayouts();
 			view.setStore(waypointStore);
+			Ext.resumeLayouts(true);
 		}
 	},
 
 	onShow: function(view) {
 		if (this.waypointStore && view.getStore() !== this.waypointStore) {
+			Ext.suspendLayouts();
 			view.setStore(this.waypointStore);
+			Ext.resumeLayouts(true);
 		}
 	},
 

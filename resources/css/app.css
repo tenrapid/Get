@@ -234,7 +234,7 @@ body > .x-mask {
 	background: #AFB1B1;
 }
 #waypoints-list .x-grid-item-container {
-	padding: 0px 0;
+	padding: 16px 0;
 	/*padding: 0;*/
 }
 #waypoints-list .x-grid-item,
@@ -279,29 +279,29 @@ body > .x-mask {
 	border-top-color: #fff;
 }
 #waypoints-list .x-grid-cell.index-column {
-	padding-right: 4px;
-	color: #999;
+	padding-right: 2px;
+	color: #888;
 }
 #waypoints-list .x-grid-cell.bold-column {
 	font-weight: bold;
 	color: #333;
 }
-#waypoints-list .x-grid-cell.text-column .x-grid-cell-inner{
+#waypoints-list .x-grid-cell.text-column .x-grid-cell-inner {
 	padding-right: 10px;
 }
 #waypoints-list .x-grid-cell-inner {
-	padding: 10px 6px 11px 6px;
+	padding: 10px 6px 12px 6px;
 }
 #waypoints-list .x-wrap-cell .x-grid-cell-inner {
 	white-space: pre-line;
 }
 
 #waypoints-list .x-grid-cell.x-edit\.waypoint\.pictures-default-cell .x-grid-cell-inner {
-	padding: 7px 0 1px 6px;
+	padding: 6px 0 1px 6px;
 }
 #waypoints-list .waypoint-picture-thumbnail {
-	width: 40px;
-	height: 40px;
+	width: 37px;
+	height: 37px;
 	border-width: 0;
 	box-sizing: content-box;
 	padding: 0 6px 6px 0;
