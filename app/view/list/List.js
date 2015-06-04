@@ -61,6 +61,7 @@ Ext.define('Get.view.list.List', {
 			width: 42,
 			align: 'right',
 			menuDisabled: true,
+			resizable: false,
 			tdCls: 'index-column',
 			renderer: function(value, meta, record, rowIndex) {
 				return rowIndex + 1;
@@ -71,14 +72,14 @@ Ext.define('Get.view.list.List', {
 			dataIndex: 'name',
 			menuDisabled: true,
 			tdCls: 'bold-column',
-			flex: 1,
+			width: 170,
 			editor: 'celleditor'
 		},
 		{
 			text: 'Beschreibung',
 			dataIndex: 'description',
 			menuDisabled: true,
-			flex: 3,
+			flex: 1,
 			cellWrap: true,
 			tdCls: 'text-column',
 			editor: 'celleditor'
@@ -87,7 +88,8 @@ Ext.define('Get.view.list.List', {
 			text: 'Bilder',
 			xtype: 'widgetcolumn',
 			menuDisabled: true,
-			flex: 2,
+			resizable: false,
+			width: 230,
 			cellWrap: true,
 			widget: {
 				xtype: 'edit.waypoint.pictures'
