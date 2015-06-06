@@ -7,13 +7,18 @@ Ext.define('Get.controller.MenuBar', {
 		listen: {
 			controller: {
 				'#main': {
-					'new': 'onNew',
-					'close': 'onClose',
-					'dialogVisibleChanged': 'onFileDialogVisibleChanged'
+					new: 'onNew',
+					close: 'onClose',
+					dialogVisibleChanged: 'onFileDialogVisibleChanged'
 				},
 				'#undomanager': {
-					'canUndoChanged': 'onCanUndoChanged',
-					'canRedoChanged': 'onCanRedoChanged',
+					canUndoChanged: 'onCanUndoChanged',
+					canRedoChanged: 'onCanRedoChanged',
+				}
+			},
+			store: {
+				'waypoint': {
+					datachanged: 'onWaypointDataChanged'
 				}
 			},
 			component: {
@@ -94,6 +99,8 @@ Ext.define('Get.controller.MenuBar', {
 			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents,
 			menuBar,
 			fileMenu,
+			importMenu,
+			exportMenu,
 			editMenu,
 			debugMenu;
 
@@ -136,16 +143,29 @@ Ext.define('Get.controller.MenuBar', {
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		fileMenu.submenu.append(new gui.MenuItem({
+		importMenu = new gui.MenuItem({
 			type: 'normal',
-			label: 'Importiere Wegpunkte …',
+			label: 'Import',
+			submenu: new gui.Menu()
+		});
+		fileMenu.submenu.append(importMenu);
+		importMenu.submenu.append(new gui.MenuItem({
+			type: 'normal',
+			label: 'Wegpunkte …',
 			click: fireEvent.bind(fireEventScope, 'importWaypointsMenuItem') 
 		}));
-		fileMenu.submenu.append(new gui.MenuItem({
+		this.importPicturesMenuItem = new gui.MenuItem({
 			type: 'normal',
-			label: 'Importiere Bilder …',
+			label: 'Bilder …',
 			click: fireEvent.bind(fireEventScope, 'importPicturesMenuItem') 
-		}));
+		});
+		importMenu.submenu.append(this.importPicturesMenuItem);
+		exportMenu = new gui.MenuItem({
+			type: 'normal',
+			label: 'Export',
+			submenu: new gui.Menu()
+		});
+		fileMenu.submenu.append(exportMenu);
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
@@ -373,6 +393,10 @@ Ext.define('Get.controller.MenuBar', {
 	onCanRedoChanged: function(canRedo) {
 		this.canRedo = canRedo;
 		this.redoMenuItem.enabled = canRedo;
+	},
+
+	onWaypointDataChanged: function(waypoints) {
+		this.importPicturesMenuItem.enabled = !!waypoints.count();
 	},
 
 	onFileDialogVisibleChanged: function(visible) {
