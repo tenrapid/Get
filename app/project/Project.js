@@ -372,7 +372,7 @@ Ext.define('Get.project.Project', {
 
 	restoreState: function() {
 		var state = this.get('state'),
-			components = ['left-pane', 'layers-panel', 'waypoints-panel', 'map-panel'];
+			components = ['left-pane', 'layers-panel', 'waypoints-panel', 'waypoints-list', 'map-panel'];
 
 		if (!Ext.isObject(state)) return;
 

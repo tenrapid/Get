@@ -15,9 +15,8 @@ Ext.define('Get.view.list.List', {
 	controller: 'list',
 	viewModel: 'list',
 
-	reference: 'waypointList',
-
 	id: 'waypoints-list',
+
 	title: '<i class="fa fa-lg fa-list-ul"></i> Liste',
 	border: false,
 	bufferedRenderer: false,
@@ -55,13 +54,15 @@ Ext.define('Get.view.list.List', {
 		{
 			width: 18,
 			resizable: false,
-			menuDisabled: true
+			menuDisabled: true,
+			stateId: 'border-left'
 		},
 		{
 			width: 42,
 			align: 'right',
 			menuDisabled: true,
 			resizable: false,
+			stateId: 'waypoint-index',
 			tdCls: 'index-column',
 			renderer: function(value, meta, record, rowIndex) {
 				return rowIndex + 1;
@@ -71,6 +72,7 @@ Ext.define('Get.view.list.List', {
 			text: 'Name',
 			dataIndex: 'name',
 			menuDisabled: true,
+			stateId: 'waypoint-name',
 			tdCls: 'bold-column',
 			width: 170,
 			editor: 'celleditor'
@@ -81,6 +83,7 @@ Ext.define('Get.view.list.List', {
 			menuDisabled: true,
 			flex: 1,
 			cellWrap: true,
+			stateId: 'waypoint-description',
 			tdCls: 'text-column',
 			editor: 'celleditor'
 		},
@@ -91,6 +94,7 @@ Ext.define('Get.view.list.List', {
 			resizable: false,
 			width: 230,
 			cellWrap: true,
+			stateId: 'waypoint-pictures',
 			widget: {
 				xtype: 'edit.waypoint.pictures'
 			},
@@ -104,7 +108,8 @@ Ext.define('Get.view.list.List', {
 		{
 			width: 18,
 			resizable: false,
-			menuDisabled: true
+			menuDisabled: true,
+			stateId: 'border-right'
 		},
 	],
 	tbar: [

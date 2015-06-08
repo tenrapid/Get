@@ -12,7 +12,6 @@ Ext.define('Get.view.map.Map', {
 
 	id: 'map-panel',
 	stateful: true,
-	stateId: 'map-panel',
 	saveDelay: 1000,
 	prettyStateKeys: true,
 

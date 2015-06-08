@@ -15,7 +15,6 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	reference: 'waypointGrid',
 
 	id: 'waypoints-panel',
-	stateId: 'waypoints-panel',
 
 	title: 'Wegpunkte',
 	border: false,

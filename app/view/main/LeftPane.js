@@ -10,7 +10,6 @@ Ext.define('Get.view.main.LeftPane', {
 
 	id: 'left-pane',
 	stateful: true,
-	stateId: 'left-pane',
 
 	applyState: function(state) {
 		this.callParent(arguments);

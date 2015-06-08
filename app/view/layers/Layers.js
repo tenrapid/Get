@@ -13,7 +13,6 @@ Ext.define('Get.view.layers.Layers', {
 
 	id: 'layers-panel',
 	stateful: true,
-	stateId: 'layers-panel',
 
 	title: 'Ebenen',
 	border: false,
