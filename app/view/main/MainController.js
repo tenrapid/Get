@@ -34,7 +34,6 @@ Ext.define('Get.view.main.MainController', {
 	project: null,
 	win: null,
 	projectManager: null,
-	isDialogVisible: false,
 
 	init: function() {
 		var me = this,
@@ -42,17 +41,6 @@ Ext.define('Get.view.main.MainController', {
 
 		this.win = gui.Window.get();
 		this.projectManager = require('projectmanager');
-
-		Ext.Msg.on({
-			show: this.onDialogShow,
-			hide: this.onDialogHide,
-			scope: this
-		});
-		Get.FileDialog.on({
-			show: this.onDialogShow,
-			hide: this.onDialogHide,
-			scope: this
-		});
 	},
 	
 	load: function(project) {
@@ -123,16 +111,6 @@ Ext.define('Get.view.main.MainController', {
 		Ext.Msg.down('toolbar').setLayout({pack: 'center'});
 	},
 
-	onDialogShow: function() {
-		this.isDialogVisible = true;
-		this.fireEvent('dialogVisibleChanged', this.isDialogVisible);
-	},
-	
-	onDialogHide: function() {
-		this.isDialogVisible = false;
-		this.fireEvent('dialogVisibleChanged', this.isDialogVisible);
-	},
-	
 	onNewMenuItem: function(filename) {
 		var href = window.location.origin + window.location.pathname + (filename ? '#project/' + filename : ''),
 			gui = require('nw.gui'),
@@ -140,7 +118,7 @@ Ext.define('Get.view.main.MainController', {
 				focus: true,
 				toolbar: false
 			});
-		this.fireEvent('new', win);
+		this.fireEvent('newWindow', win);
 	},
 
 	onRecentProjectsMenuItem: function(filename) {
@@ -153,9 +131,6 @@ Ext.define('Get.view.main.MainController', {
 			this.onNewMenuItem(filename);
 		}
 		else {
-			if (this.isDialogVisible) {
-				return;
-			}
 			project = Ext.create('Get.project.Project', {
 				filename: filename
 			});
@@ -166,9 +141,6 @@ Ext.define('Get.view.main.MainController', {
 	onOpenMenuItem: function() {
 		var me = this;
 
-		if (this.isDialogVisible) {
-			return;
-		}
 		this.checkForUnsavedChanges(function() {
 			Get.FileDialog.show({
 				accept: '.get',
@@ -198,9 +170,6 @@ Ext.define('Get.view.main.MainController', {
 	onSaveMenuItem: function() {
 		var filename = this.project.get('filename');
 
-		if (this.isDialogVisible) {
-			return;
-		}
 		if (filename) {
 			this.save();
 		}
@@ -214,10 +183,6 @@ Ext.define('Get.view.main.MainController', {
 			path = require('path'),
 			filename = this.project.get('filename'),
 			name = filename ? path.basename(filename) : (this.project.get('name') + '.get');
-
-		if (this.isDialogVisible) {
-			return;
-		}
 
 		Get.FileDialog.show({
 			saveAs: true,
@@ -268,12 +233,9 @@ Ext.define('Get.view.main.MainController', {
 	},
 
 	onCloseMenuItem: function() {
-		if (this.isDialogVisible) {
-			return;
-		}
 		this.checkForUnsavedChanges(function() {
 			this.projectManager.projectClosed(this.project.get('filename'));
-			this.fireEvent('close');
+			this.fireEvent('windowClose');
 			this.project.close(function() {
 				this.win.hide();
 				this.project.destroy();

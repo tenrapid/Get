@@ -7,9 +7,8 @@ Ext.define('Get.controller.MenuBar', {
 		listen: {
 			controller: {
 				'#main': {
-					new: 'onNew',
-					close: 'onClose',
-					dialogVisibleChanged: 'onFileDialogVisibleChanged'
+					newWindow: 'onNewWindow',
+					windowClose: 'onWindowClose'
 				},
 				'#undomanager': {
 					canUndoChanged: 'onCanUndoChanged',
@@ -22,16 +21,18 @@ Ext.define('Get.controller.MenuBar', {
 				}
 			},
 			component: {
-				'edit\\.waypoint': {
-					show: {
-						fn: 'onEditWindowVisibleChanged',
-						args: [true]
-					},
-					hide: {
-						fn: 'onEditWindowVisibleChanged',
-						args: [false]
-					}
+				'filedialog': {
+					show: 'onComponentVisibilityChanged',
+					hide: 'onComponentVisibilityChanged'
 				},
+				'window': {
+					show: 'onComponentVisibilityChanged',
+					hide: 'onComponentVisibilityChanged'
+				},
+				'editor': {
+					show: 'onComponentVisibilityChanged',
+					hide: 'onComponentVisibilityChanged'
+				}
 			}
 		}
 	},
@@ -42,20 +43,20 @@ Ext.define('Get.controller.MenuBar', {
 	projectManager: null,
 	recentProjectsChangedHandler: null,
 
-	saveMenu: null,
+	saveMenuItem: null,
 	recentFilesMenu: null,
 	editMenu: null,
 	undoMenuItem: null,
 	redoMenuItem: null,
 	canUndo: false,
 	canRedo: false,
-	openEditWindowCount: 0,
+	undoRedoSuspendCount: 0,
 
 	init: function() {
 		this.gui = require('nw.gui');
 		this.win = this.gui.Window.get();
 
-		this.win.on('close', Ext.GlobalEvents.fireEvent.bind(Ext.GlobalEvents, 'closeMenuItem'));
+		this.win.on('close', this.onCloseWindowButton.bind(this));
 
 		if (process.platform === 'darwin') {
 			this.menuBarManager = require('menubarmanager');
@@ -81,11 +82,17 @@ Ext.define('Get.controller.MenuBar', {
 			win.title = val;
 		});
 		viewModel.bind('{project.isModified}', function(isModified) {
-			me.saveMenu.enabled = isModified;
+			me.saveMenuItem.enabled = isModified;
 		});
 	},
 
-	onClose: function() {
+	onNewWindow: function(win) {
+		if (process.platform === 'darwin') {
+			this.menuBarManager.register(win);
+		}
+	},
+
+	onWindowClose: function() {
 		this.projectManager.removeListener('recentProjectsChanged', this.recentProjectsChangedHandler);
 	},
 
@@ -99,9 +106,6 @@ Ext.define('Get.controller.MenuBar', {
 			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents,
 			menuBar,
 			fileMenu,
-			importMenu,
-			exportMenu,
-			editMenu,
 			debugMenu;
 
 		menuBar = new gui.Menu({ type: "menubar" });
@@ -109,7 +113,11 @@ Ext.define('Get.controller.MenuBar', {
 			menuBar.createMacBuiltin("Get");
 		}
 
-		// File menu
+		/******************************
+
+		 File menu
+		
+		*******************************/
 
 		fileMenu = new gui.MenuItem({
 			type: 'normal',
@@ -127,13 +135,14 @@ Ext.define('Get.controller.MenuBar', {
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		fileMenu.submenu.append(new gui.MenuItem({
+		this.openMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Öffnen …',
 			key: 'o',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'openMenuItem') 
-		}));
+		});
+		fileMenu.submenu.append(this.openMenuItem);
 		this.recentFilesMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Zuletzt verwendet',
@@ -143,13 +152,13 @@ Ext.define('Get.controller.MenuBar', {
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		importMenu = new gui.MenuItem({
+		this.importMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Import',
 			submenu: new gui.Menu()
 		});
-		fileMenu.submenu.append(importMenu);
-		importMenu.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(this.importMenu);
+		this.importMenu.submenu.append(new gui.MenuItem({
 			type: 'normal',
 			label: 'Wegpunkte …',
 			click: fireEvent.bind(fireEventScope, 'importWaypointsMenuItem') 
@@ -159,38 +168,40 @@ Ext.define('Get.controller.MenuBar', {
 			label: 'Bilder …',
 			click: fireEvent.bind(fireEventScope, 'importPicturesMenuItem') 
 		});
-		importMenu.submenu.append(this.importPicturesMenuItem);
-		exportMenu = new gui.MenuItem({
+		this.importMenu.submenu.append(this.importPicturesMenuItem);
+		this.exportMenu = new gui.MenuItem({
 			type: 'normal',
 			label: 'Export',
 			submenu: new gui.Menu()
 		});
-		fileMenu.submenu.append(exportMenu);
+		fileMenu.submenu.append(this.exportMenu);
 		fileMenu.submenu.append(new gui.MenuItem({
 			type: 'separator'
 		}));
-		fileMenu.submenu.append(new gui.MenuItem({
+		this.closeMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Schließen',
 			key: 'w',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'closeMenuItem') 
-		}));
-		this.saveMenu = new gui.MenuItem({
+		});
+		fileMenu.submenu.append(this.closeMenuItem);
+		this.saveMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern',
 			key: 's',
 			modifiers: cmd,
 			click: fireEvent.bind(fireEventScope, 'saveMenuItem') 
 		});
-		fileMenu.submenu.append(this.saveMenu);
-		fileMenu.submenu.append(new gui.MenuItem({
+		fileMenu.submenu.append(this.saveMenuItem);
+		this.saveAsMenuItem = new gui.MenuItem({
 			type: 'normal',
 			label: 'Speichern als …',
 			key: 's',
 			modifiers: 'shift-' + cmd,
 			click: fireEvent.bind(fireEventScope, 'saveAsMenuItem') 
-		}));
+		});
+		fileMenu.submenu.append(this.saveAsMenuItem);
 
 		if (isMac) {
 			menuBar.insert(fileMenu, 1);
@@ -199,7 +210,11 @@ Ext.define('Get.controller.MenuBar', {
 			menuBar.append(fileMenu);
 		}
 
-		// Edit menu
+		/******************************
+
+		 Edit menu
+		
+		*******************************/
 
 		if (isMac) {
 			this.editMenu = menuBar.items[2];
@@ -230,7 +245,11 @@ Ext.define('Get.controller.MenuBar', {
 		this.redoMenuItem = this.editMenu.submenu.items[1];
 		this.updateUndoRedoMenuItems();
 
-		// Debug menu
+		/******************************
+
+		 Debug menu
+		
+		*******************************/
 
 		debugMenu = new this.gui.MenuItem({
 			type: 'normal',
@@ -286,14 +305,35 @@ Ext.define('Get.controller.MenuBar', {
 		return menuBar;
 	},
 
-	updateUndoRedoMenuItems: function(dialogVisible) {
+	onCloseWindowButton: function() {
+		if (this.closeMenuItem && this.closeMenuItem.enabled) {
+			Ext.GlobalEvents.fireEvent('closeMenuItem');
+		}
+	},
+
+	onComponentVisibilityChanged: function(component) {
+		var visible = component.isVisible();
+
+		if (component.isXType('messagebox') || component.isXType('filedialog')) {
+			// disable most items in file menu if a message box or a file dialog is visible
+			this.updateFileMenuItems(visible);
+		}
+
+		this.undoRedoSuspendCount += (visible ? 1 : -1);
+		if (this.undoRedoSuspendCount === 0 || this.undoRedoSuspendCount === 1 && visible) {
+			// only if last window closed or first window opened
+			this.updateUndoRedoMenuItems(this.undoRedoSuspendCount > 0);
+		}
+	},
+
+	updateUndoRedoMenuItems: function(suspend) {
 		var gui = this.gui,
 			isMac = process.platform === 'darwin',
 			cmd = isMac ? 'cmd' : 'ctrl',
 			fireEvent = isMac ? this.menuBarManager.fireControllerEvent : Ext.GlobalEvents.fireEvent,
 			fireEventScope = isMac ? this.menuBarManager : Ext.GlobalEvents;
 
-		if (dialogVisible) {
+		if (suspend) {
 			if (isMac) {
 				this.editMenu.submenu.remove(this.undoMenuItem);
 				this.editMenu.submenu.remove(this.redoMenuItem);
@@ -343,6 +383,18 @@ Ext.define('Get.controller.MenuBar', {
 		}
 	},
 
+	updateFileMenuItems: function(disabled) {
+		var viewModel = this.getApplication().getMainView().getViewModel();
+
+		this.openMenuItem.enabled = !disabled;
+		this.recentFilesMenu.enabled = !disabled;
+		this.importMenu.enabled = !disabled;
+		this.exportMenu.enabled = !disabled;
+		this.closeMenuItem.enabled = !disabled;
+		this.saveMenuItem.enabled = disabled ? false : viewModel.get('project.isModified');
+		this.saveAsMenuItem.enabled = !disabled;
+	},
+
 	onRecentProjectsChanged: function(recentProjects) {
 		var me = this,
 			gui = this.gui,
@@ -379,12 +431,6 @@ Ext.define('Get.controller.MenuBar', {
 		}
 	},
 
-	onNew: function(win) {
-		if (process.platform === 'darwin') {
-			this.menuBarManager.register(win);
-		}
-	},
-
 	onCanUndoChanged: function(canUndo) {
 		this.canUndo = canUndo;
 		this.undoMenuItem.enabled = canUndo;
@@ -397,19 +443,6 @@ Ext.define('Get.controller.MenuBar', {
 
 	onWaypointDataChanged: function(waypoints) {
 		this.importPicturesMenuItem.enabled = !!waypoints.count();
-	},
-
-	onFileDialogVisibleChanged: function(visible) {
-		// TODO: enable/disable file menu items
-		this.updateUndoRedoMenuItems(visible);
-	},
-
-	onEditWindowVisibleChanged: function(visible) {
-		this.openEditWindowCount += (visible ? 1 : -1);
-		if (this.openEditWindowCount === 0 || this.openEditWindowCount === 1 && visible) {
-			// only if last window closed or first window opened
-			this.updateUndoRedoMenuItems(this.openEditWindowCount > 0);
-		}
-	},
+	}
 
 });

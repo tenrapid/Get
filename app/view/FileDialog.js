@@ -52,7 +52,8 @@ Ext.define('Get.view.FileDialog', {
 		this.el.dom.files.append(config.file ? new File(config.file, '') : new File('', ''));
 
 		this.el.dom.click();
-		this.fireEvent('show');
+		this.hidden = false;
+		this.fireEvent('show', this);
 	},
 
 	onChange: function() {
@@ -62,7 +63,8 @@ Ext.define('Get.view.FileDialog', {
 			this.changeHandler(this.multiple ? files : files[0]);
 			this.fireEvent('change', this.multiple ? files : files[0]);
 		}
-		this.fireEvent('hide');
+		this.hidden = true;
+		this.fireEvent('hide', this);
 	}
 
 }, function(FileDialog) {
