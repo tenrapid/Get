@@ -13,7 +13,6 @@ Ext.define('Get.view.list.List', {
 	],
 
 	controller: 'list',
-	viewModel: 'list',
 
 	id: 'waypoints-list',
 
@@ -25,10 +24,11 @@ Ext.define('Get.view.list.List', {
 	
 	bind: {
 		disabled: '{uiDisabled}',
+		selection: '{selectedWaypoint}'
 	},
 	selModel: {
 		type: 'rowmodel',
-		mode: 'MULTI',
+		mode: 'SINGLE',
 		deselectOnContainerClick: true
 	},
 	viewConfig: {

@@ -23,6 +23,7 @@ Ext.define('Get.view.waypoints.Waypoints', {
 	bind: {
 		title: '{selectedLayerItem.name}',
 		disabled: '{uiDisabled}',
+		selection: '{selectedWaypoint}'
 	},
 	bufferedRenderer: false,
 	selModel: {

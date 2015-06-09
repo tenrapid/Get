@@ -4,6 +4,7 @@ Ext.define('Get.view.main.MainModel', {
 	
 	data: {
 		project: null,
+		selectedWaypoint: null
 	}, 
 	
 	formulas: {
