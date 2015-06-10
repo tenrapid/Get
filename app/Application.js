@@ -8,7 +8,7 @@ Ext.define('Get.Application', {
 	],
 
 	controllers: [
-		'MenuBar', 'ImportWaypoints', 'ImportPictures'
+		'MenuBar', 'ImportWaypoints', 'ImportPictures', 'PictureContextMenu'
 	],
 
 	// TODO: Copy/Paste-Controller

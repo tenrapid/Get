@@ -173,10 +173,13 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 		if (this.preview.showTimer) {
 			this.preview.clearTimer('show');
 		}
-		Ext.widget('edit.picture', {
-			picture: picture,
-			session: this.getStore().getSession().spawn()
-		});
+		this.editPicture(picture);
+	},
+
+	onItemContextMenu: function() {
+		if (this.preview.showTimer) {
+			this.preview.clearTimer('show');
+		}
 	},
 
 	onAddButton: function() {
@@ -220,6 +223,14 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 			project.undoManager.endUndoGroup();
 		});
 	},
+
+	editPicture: function(picture) {
+		Ext.widget('edit.picture', {
+			picture: picture,
+			session: this.getStore().getSession().spawn()
+		});
+	},
+
 	duplicatePicture: function(picture) {
 		var me = this,
 			viewModel,
