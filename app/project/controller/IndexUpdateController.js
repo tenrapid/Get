@@ -1,13 +1,17 @@
-Ext.define('Get.project.controller.WaypointIndexUpdateController', {
+Ext.define('Get.project.controller.IndexUpdateController', {
 	extend: 'Ext.app.Controller',
 
-	id: 'projectwaypointindexupdate',
+	id: 'projectindexupdate',
 
 	config: {
 		project: null,
 		listen: {
 			store: {
 				tourWaypoint: {
+					add: 'onAssociationStoreOperation',
+					remove: 'onAssociationStoreOperation',
+				},
+				picture: {
 					add: 'onAssociationStoreOperation',
 					remove: 'onAssociationStoreOperation',
 				}
@@ -47,7 +51,7 @@ Ext.define('Get.project.controller.WaypointIndexUpdateController', {
 
 	updateIndices: function(store) {
 		var prop = {},
-			indexField = store.associatedEntity ? store.getIndexField() : 'index';
+			indexField = store.associatedEntity && store.getIndexField ? store.getIndexField() : 'index';
 
 		store.each(function(record) {
 			prop[indexField] = store.indexOf(record) + 1;
