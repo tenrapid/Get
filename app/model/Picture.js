@@ -70,6 +70,10 @@ Ext.define('Get.model.Picture', {
 		}
 	},
 
+	duplicate: function(callback) {
+		this.pictureManager.duplicate(this, callback);
+	},
+
 	getImageUrl: function(size, callback) {
 		this.pictureManager.getImageUrl(this, size, callback);
 	},

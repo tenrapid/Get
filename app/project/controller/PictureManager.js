@@ -49,6 +49,41 @@ Ext.define('Get.project.controller.PictureManager', {
 		}
 	},
 
+	duplicate: function(picture, callback) {
+		var me = this,
+			async = require('async'),
+			filename = me.getFilename(picture, 'original', true),
+			identifier = picture.session.getIdentifier(picture.self),
+			duplicate;
+
+		async.waterfall([
+			function(callback) {
+				if (!filename) {
+					me.loadFromDb(picture, callback);
+				}
+				else {
+					callback();
+				}
+			}
+		], function(err) {
+			if (!err) {
+				// Use the session's identifier to generate an id. 
+				// By not using picture.copy(null, session) we prevent the record from being adopted by the session 
+				// right now, which would lead to the firing of corresponding events. We do this so that undo operation
+				// grouping can be controlled in the callback of this method or even higher up. The picture gets adopted
+				// by the session when it is added to a store.
+				duplicate = picture.copy(identifier.generate());
+				// Set phantom to true because creating a record with a specified id results in a record that is not phantom.
+				duplicate.phantom = true;
+				['original', 'preview', 'thumb'].forEach(function(size) {
+					var dontCrop = size === 'original';
+					me.setFilename(duplicate, size, me.getFilename(picture, size, dontCrop), dontCrop);
+				});
+			}
+			callback(err, duplicate);
+		});
+	},
+
 	getImageUrl: function(picture, size, callback) {
 		var me = this,
 			getUrl = function() {
