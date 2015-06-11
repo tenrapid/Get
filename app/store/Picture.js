@@ -3,5 +3,9 @@ Ext.define('Get.store.Picture', {
 	model: 'Get.model.Picture',
 	alias: 'store.picture',
 
-	pageSize: 0,
+	mixins: [
+		'Get.data.PersistentIndexStore'
+	],
+
+	pageSize: 0
 });

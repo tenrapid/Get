@@ -3,10 +3,10 @@ Ext.define('Get.store.TourWaypoint', {
 	model: 'Get.model.TourWaypoint',
 	alias: 'store.tourWaypoint',
 
-	pageSize: 0,
-	geometryPropertyAssociation: 'waypoint',
+	mixins: [
+		'Get.data.PersistentIndexStore'
+	],
 
-	getIndexField: function() {
-		return this.associatedEntity ? Ext.String.uncapitalize(this.associatedEntity.entityName) + 'Index' : null;
-	}
+	pageSize: 0,
+	geometryPropertyAssociation: 'waypoint'
 });
