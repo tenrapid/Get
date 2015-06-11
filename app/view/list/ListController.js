@@ -72,7 +72,7 @@ Ext.define('Get.view.list.ListController', {
 
 	onBeforeDrop: function(node, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel();
 
 		project.undoManager.beginUndoGroup();
@@ -88,7 +88,7 @@ Ext.define('Get.view.list.ListController', {
 	
 	onDrop: function(node, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel();
 
 		// project.undoManager.registerUndoOperation({

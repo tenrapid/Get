@@ -97,7 +97,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 			view = this.getView(),
 			waypoints = view.getSelection(),
 			store = view.getStore(),
-			project = view.getViewModel().get('project');
+			project = this.getViewModel().get('project');
 
 		Ext.suspendLayouts();
 		project.undoManager.beginUndoGroup();
@@ -151,7 +151,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 
 	onBeforeDrop: function(node, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel();
 
 		project.undoManager.beginUndoGroup();
@@ -167,7 +167,7 @@ Ext.define('Get.view.waypoints.WaypointsController', {
 	
 	onDrop: function(node, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel();
 
 		// project.undoManager.registerUndoOperation({

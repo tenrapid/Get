@@ -85,7 +85,7 @@ Ext.define('Get.view.layers.LayersController', {
 	onAddLayer: function() {
 		var me = this,
 			layerItem = me.selectedLayerItem,
-			project = me.getView().getViewModel().get('project');
+			project = me.getViewModel().get('project');
 		
 		if (layerItem.isRoot()) {
 			project.undoManager.beginUndoGroup();
@@ -108,7 +108,7 @@ Ext.define('Get.view.layers.LayersController', {
 	onRemoveLayer: function() {
 		var me = this,
 			layerItem = me.selectedLayerItem,
-			project = me.getView().getViewModel().get('project');
+			project = me.getViewModel().get('project');
 
 		project.undoManager.beginUndoGroup();
 		project.undoManager.registerUndoOperation({
@@ -211,7 +211,7 @@ Ext.define('Get.view.layers.LayersController', {
 
 	onBeforeDrop: function(targetNode, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel(),
 			record = data.records[0],
 			tour,
@@ -245,7 +245,7 @@ Ext.define('Get.view.layers.LayersController', {
 
 	onDrop: function(node, data) {
 		var view = this.getView(),
-			project = view.getViewModel().get('project'),
+			project = this.getViewModel().get('project'),
 			selectionModel = view.getSelectionModel(),
 			record = data.records[0];
 
