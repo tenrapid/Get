@@ -18,6 +18,10 @@ Ext.define('Get.view.map.Map', {
 	title: '<i class="fa fa-lg fa-map-marker"></i> Karte',
 	layout: 'fit',
 	border: false,
+
+	bind: {
+		disabled: '{uiDisabled}',
+	},
 	
 	map: {
 		allOverlays: false,
