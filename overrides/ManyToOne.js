@@ -40,12 +40,17 @@ Ext.define('Ext.patch.data.schema.ManyToOne', {
 
 		/*
 			Overwrite the method Role.getAssociatedItem():
-			- Always create the association store if it is requested. We don't need lazy loading and it is more important
-			  that setting foreign keys result in items being added/removed to/from the association store.
+			- Almost always create the association store if it is requested. We don't need lazy loading and it is more important
+			  that setting foreign keys result in items being added/removed to/from the association store. 
+			  Don't create it if:
+			  - The record is managed by a child session.
+			  - The project's session is marked as loading while loading all records from the database into the project's stores.
+			  	This way all records that belong to an association store get added at once which is important for stores where
+			  	the record order is persisted.
 		*/
 		getAssociatedItem: function(rec) {
 			var storeName = this.getStoreName();
-			if (!rec[storeName] && rec.session && !rec.session.getParent()) {
+			if (!rec[storeName] && rec.session && !rec.session.getParent() && !rec.session.loading) {
 				rec[this.getterName]();
 			}
 			return rec[storeName] || null;

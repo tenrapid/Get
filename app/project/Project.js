@@ -147,6 +147,8 @@ Ext.define('Get.project.Project', {
 					errors.push(operation.getError());
 				}
 				if (onLoadCount === 0) {
+					me.session.loading = false;
+
 					if (!errors.length) {
 						me.updateName();
 						me.buildLayerTree();
@@ -165,6 +167,8 @@ Ext.define('Get.project.Project', {
 					Ext.callback(callback, scope, [me, errors.length ? errors : null]);
 				} 
 			};
+
+		this.session.loading = true;
 
 		if (filename) {
 			if (!fs.existsSync(filename)) {
