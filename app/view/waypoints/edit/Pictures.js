@@ -232,14 +232,12 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	duplicatePicture: function(picture) {
-		var me = this,
-			viewModel,
-			project;
+		var me = this;
 
 		picture.duplicate(function(err, duplicate) {
-			viewModel = me.lookupViewModel(),
-			project = viewModel && viewModel.get('project'),
-			store = me.getStore();
+			var viewModel = me.lookupViewModel(),
+				project = viewModel && viewModel.get('project'),
+				store = me.getStore();
 
 			if (!err && project) {
 				project.undoManager.beginUndoGroup();
