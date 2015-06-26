@@ -241,7 +241,7 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 
 			if (!err && project) {
 				project.undoManager.beginUndoGroup();
-				store.insert(store.indexOf(picture), duplicate);
+				store.insert(store.indexOf(picture) + 1, duplicate);
 				project.undoManager.endUndoGroup();
 			}
 		});
