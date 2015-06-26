@@ -11,7 +11,7 @@ Ext.define('Get.model.Picture', {
 					storeConfig: {
 						// required to be able to listen to association store events
 						type: 'picture',
-						indexField: 'index'
+						indexProperty: 'index'
 					}
 				}
 			}

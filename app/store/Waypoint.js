@@ -8,7 +8,7 @@ Ext.define('Get.store.Waypoint', {
 	],
 
 	config: {
-		indexField: 'index'
+		indexProperty: 'index'
 	},
 	
 	pageSize: 0,

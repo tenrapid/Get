@@ -154,7 +154,7 @@ Ext.define('Get.view.map.MapController', {
 			label = '${index}';
 		}
 		else {
-			label = '${' + waypointStore.getIndexField() + '}';
+			label = '${' + waypointStore.getIndexProperty() + '}';
 		}
 
 		return new OpenLayers.StyleMap({
