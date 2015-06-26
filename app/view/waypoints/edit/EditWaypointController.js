@@ -33,6 +33,7 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 			isTourWaypoint = !!view.tourWaypoint,
 			waypoint,
 			tourWaypoint,
+			pictures,
 			map,
 			latLon;
 
@@ -55,10 +56,12 @@ Ext.define('Get.view.waypoints.edit.EditWaypointController', {
 			this.isNewWaypoint = true;
 		}
 
+		pictures = waypoint.pictures();
 		// Set complete to true to prevent a load of the association store.
-		waypoint.pictures().complete = true;
-		// Set association store proxy as memory proxy to prevent an ajax load from PictureCombobox.
-		waypoint.pictures().setProxy('memory');
+		pictures.complete = true;
+		// Set remoteFilter to false because association stores have this config set to true by default. This avoids
+		// a reload of the store.
+		pictures.remoteFilter = false;
 		
 		viewModel.set('waypoint', waypoint);
 
