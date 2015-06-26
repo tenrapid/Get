@@ -298,14 +298,6 @@ Ext.define('Get.project.controller.UndoManager', {
 			record.phantom = true;
 			record.session.add(record);
 		}
-
-		Ext.iterate(record.associations, function(roleName, role) {
-			if (role.isMany) {
-				// Create the association stores with this call because they were deleted during drop and 
-				// only setting the foreign key of an associated record does not create them.
-				role.getAssociatedStore(record);
-			}
-		});
 	},
 
 	undoRemoveOperation: function(operation) {
