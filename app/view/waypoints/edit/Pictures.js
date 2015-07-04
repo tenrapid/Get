@@ -232,19 +232,14 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	duplicatePicture: function(picture) {
-		var me = this;
+		var project = this.lookupViewModel().get('project'),
+			store = this.getStore(),
+			duplicate;
 
-		picture.duplicate(function(err, duplicate) {
-			var viewModel = me.lookupViewModel(),
-				project = viewModel && viewModel.get('project'),
-				store = me.getStore();
-
-			if (!err && project) {
-				project.undoManager.beginUndoGroup();
-				store.insert(store.indexOf(picture) + 1, duplicate);
-				project.undoManager.endUndoGroup();
-			}
-		});
+		project.undoManager.beginUndoGroup();
+		duplicate = picture.duplicate();
+		store.insert(store.indexOf(picture) + 1, duplicate);
+		project.undoManager.endUndoGroup();
 	},
 	
 	removePicture: function(picture) {

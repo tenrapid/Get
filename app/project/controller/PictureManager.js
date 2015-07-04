@@ -1,600 +1,638 @@
-Ext.define('Get.project.controller.PictureManager', {
-	extend: 'Ext.app.Controller',
+Ext.define('Get.project.controller.PictureManager', function() {
 
-	config: {
-		project: null,
-	},
+	var async = require('async'),
+		fs = require('fs'),
+		Promise = require('bluebird');
 
-	tableName: 'PictureData',
-	shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, preview BLOB, thumb BLOB',
-	pictureSizes: {
-		'preview': [600, 600],
-		'thumb': [100, 100]
-	},
+	Promise.defer = function() {
+		var resolve,
+			reject,
+			promise = new Promise(function() {
+				resolve = arguments[0];
+				reject = arguments[1];
+			});
 
-	projectDbTableExists: false,
-	pictures: null,
-	tmpFileRemoveCallbacks: null,
-	resizeQueue: null,
-	resizeTasks: null,
+		return {
+			resolve: resolve,
+			reject: reject,
+			promise: promise
+		};
+	};
 
-	constructor: function(config) {
-		var me = this,
-			async = require('async');
+	return {
+		extend: 'Ext.app.Controller',
 
-		this.callParent(arguments);
-		this.pictures = {};
-		this.tmpFileRemoveCallbacks = [];
+		config: {
+			project: null,
+		},
 
-		// remove temp files when doing a ReloadDev
-		window.addEventListener('unload', this.destroy.bind(this));
-
-		// Inject a reference to me in all Picture instances.
-		Get.model.Picture.prototype.pictureManager = this;
-
-		// this.resizeQueue = async.queue(this.resizeWorker.bind(this), 2);
-		this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
-		this.resizeTasks = {};
-	},
-
-	add: function(picture) {
-		var filename;
-
-		if (!this.pictures[picture.getId()]) {
-			filename = picture.get('filename');
-			if (!filename) {
-				Ext.Error.raise("No filename for picture given.");
-			}
-			this.setFilename(picture, 'original', filename, true);
-		}
-	},
-
-	duplicate: function(picture, callback) {
-		var me = this,
-			async = require('async'),
-			filename = me.getFilename(picture, 'original', true),
-			identifier = picture.session.getIdentifier(picture.self),
-			duplicate;
-
-		async.waterfall([
-			function(callback) {
-				if (!filename) {
-					me.loadFromDb(picture, callback);
-				}
-				else {
-					callback();
-				}
-			}
-		], function(err) {
-			if (!err) {
-				// Use the session's identifier to generate an id. 
-				// By not using picture.copy(null, session) we prevent the record from being adopted by the session 
-				// right now, which would lead to the firing of corresponding events. We do this so that undo operation
-				// grouping can be controlled in the callback of this method or even higher up. The picture gets adopted
-				// by the session when it is added to a store.
-				duplicate = picture.copy(identifier.generate());
-				// Set phantom to true because creating a record with a specified id results in a record that is not phantom.
-				duplicate.phantom = true;
-				['original', 'preview', 'thumb'].forEach(function(size) {
-					var dontCrop = size === 'original';
-					me.setFilename(duplicate, size, me.getFilename(picture, size, dontCrop), dontCrop);
-				});
-			}
-			callback(err, duplicate);
-		});
-	},
-
-	getImageUrl: function(picture, size, callback) {
-		var me = this,
-			getUrl = function() {
-				var dontCrop = size === 'original',
-					filename = me.getFilename(picture, size === 'original-cropped' ? 'original' : size, dontCrop);
-				return filename ? encodeURI('file://' + filename) : null;
+		tableName: 'PictureData',
+		shemaString: 'id INTEGER PRIMARY KEY NOT NULL, original BLOB, preview BLOB, thumb BLOB',
+		pictureSizes: {
+			'original': {
+				crop: false
 			},
-			url = getUrl(),
-			async = require('async');
+			'original-cropped': {
+				crop: true
+			},
+			'preview': {
+				width: 600, 
+				height: 600,
+				crop: true
+			},
+			'thumb': {
+				width: 100, 
+				height: 100,
+				crop: true
+			}
+		},
 
-		if (url) {
-			callback(null, url);
-		}
-		else {
-			async.waterfall([
+		projectDbTableExists: false,
+		pictures: null,
+		tmpFileRemoveCallbacks: null,
+		resizeQueue: null,
+
+		constructor: function(config) {
+			this.callParent(arguments);
+			this.pictures = {};
+			this.tmpFileRemoveCallbacks = [];
+
+			// remove temp files when doing a ReloadDev
+			window.addEventListener('unload', this.destroy.bind(this));
+
+			// Inject a reference to me in all Picture instances.
+			Get.model.Picture.prototype.pictureManager = this;
+
+			// this.resizeQueue = async.queue(this.resizeWorkerCanvas.bind(this), 2);
+			this.resizeQueue = async.queue(this.resizeWorkerImageMagick.bind(this), 4);
+		},
+
+		add: function(picture) {
+			var filename;
+
+			if (!this.pictures[picture.getId()]) {
+				filename = picture.get('filename');
+				if (!filename) {
+					Ext.Error.raise("No filename for picture given.");
+				}
+				this.setFile(picture, 'original', Promise.resolve(filename));
+			}
+		},
+
+		duplicate: function(picture) {
+			var me = this,
+				identifier = picture.session.getIdentifier(picture.self),
+				duplicate;
+
+			// Use the session's identifier to generate an id. 
+			// By not using picture.copy(null, session) we prevent the record from being adopted by the session 
+			// right now, which would lead to the firing of corresponding events. We do this so that undo operation
+			// grouping can be controlled in the callback of this method or even higher up. The picture gets adopted
+			// by the session when it is added to a store.
+			duplicate = picture.copy(identifier.generate());
+			// Set phantom to true because creating a record with a specified id results in a record that is not phantom.
+			duplicate.phantom = true;
+
+			['original', 'preview', 'thumb'].forEach(function(size) {
+				me.setFile(duplicate, size, me.getFile(picture, size));
+			});
+
+			return duplicate;
+		},
+
+		getImageUrl: function(picture, size, callback) {
+			this.getImageFile(picture, size, function(err, filename) {
+				callback(err, filename ? encodeURI('file://' + filename) : null);
+			});
+		},
+
+		getImageFile: function(picture, size, callback) {
+			this.getFile(picture, size).nodeify(callback);
+		},
+
+		save: function(callback, scope) {
+			var me = this,
+				session = this.getProject().session,
+				changes = session.getChanges().Picture,
+				errors = [],
+				dropped,
+				updated,
+				created,
+				numberOfChanges,
+				done = 0;
+
+			if (!changes) {
+				Ext.callback(callback, scope);
+				return;
+			}
+
+			dropped = changes.D && changes.D.map(function(id) {
+				return session.peekRecord('Picture', id);
+			});
+
+			created = changes.C && changes.C.map(function(c) {
+				return session.peekRecord('Picture', c.id);
+			});
+
+			updated = changes.U && changes.U.filter(function(u) {
+				return Object.keys(u).some(function(prop) {
+					return prop.substr(0, 4) === 'crop'; 
+				});
+			}).map(function(u) {
+				return session.peekRecord('Picture', u.id);
+			});
+
+			numberOfChanges = (dropped || []).concat(created || []).concat(updated || []).length;
+
+			function progress() {
+				done++;
+				me.fireEvent('progress', done / numberOfChanges);
+			} 
+
+			async.parallel([
+				// dropped pictures
 				function(callback) {
-					if (!me.pictures[picture.getId()]) {
-						me.loadFromDb(picture, callback);
+					if (dropped) {
+						me.deleteFromDb(dropped, progress, function(err) {
+							if (err) {
+								errors.push(err);
+							}
+							callback();
+						});
 					}
 					else {
 						callback();
 					}
 				},
+				// updated pictures
 				function(callback) {
-					url = getUrl();
-					if (!url) {
-						me.resize(picture, callback);
-					}
-					else {
-						callback();
-					}
-				}
-			], function(err) {
-				if (!err && !url) {
-					url = getUrl();
-				}
-				callback(err, url);
-			});
-		}
-	},
-
-	save: function(callback, scope) {
-		var me = this,
-			async = require('async'),
-			session = this.getProject().session,
-			changes = session.getChanges().Picture,
-			errors = [],
-			dropped,
-			updated,
-			created,
-			numberOfChanges,
-			done = 0;
-
-		if (!changes) {
-			Ext.callback(callback, scope);
-			return;
-		}
-
-		dropped = changes.D && changes.D.map(function(id) {
-			return session.peekRecord('Picture', id);
-		});
-
-		created = changes.C && changes.C.map(function(c) {
-			return session.peekRecord('Picture', c.id);
-		});
-
-		updated = changes.U && changes.U.filter(function(u) {
-			return Object.keys(u).some(function(prop) {
-				return prop.substr(0, 4) === 'crop'; 
-			});
-		}).map(function(u) {
-			return session.peekRecord('Picture', u.id);
-		});
-
-		numberOfChanges = (dropped || []).concat(created || []).concat(updated || []).length;
-
-		function progress() {
-			done++;
-			me.fireEvent('progress', done / numberOfChanges);
-		} 
-
-		async.parallel([
-			// dropped pictures
-			function(callback) {
-				if (dropped) {
-					me.deleteFromDb(dropped, progress, function(err) {
-						if (err) {
-							errors.push(err);
-						}
-						callback();
-					});
-				}
-				else {
-					callback();
-				}
-			},
-			// updated pictures
-			function(callback) {
-				if (updated) {
-					me.saveToDb('update', updated, progress, function(err) {
-						if (err) {
-							errors.push(err);
-						}
-						callback();
-					});
-				}
-				else {
-					callback();
-				}
-			},
-			// created pictures
-			function(callback) {
-				if (created) {
-					me.saveToDb('insert', created, progress, function(err) {
-						if (err) {
-							errors.push(err);
-						}
-						callback();
-					});
-				}
-				else {
-					callback();
-				}
-			}
-		], function() {
-			Ext.callback(callback, scope, errors.length ? [errors] : null);
-		});
-	},
-
-	destroy: function() {
-		delete Get.model.Picture.prototype.pictureManager;
-
-		this.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
-			removeCallback();
-		});
-		this.callParent(arguments);
-	},
-
-	getProjectDatabase: function(callback) {
-		var me = this,
-			db = this.getProject().getProxy().getDatabaseObject();
-
-		if (this.projectDbTableExists) {
-			callback(null, db);
-		}
-		else {
-			db.run('CREATE TABLE IF NOT EXISTS ' + this.tableName + ' (' + this.shemaString + ')', function(err) {
-				if (!err) {
-					me.projectDbTableExists = true;
-				}
-				callback(err, db);
-			});
-		}
-	},
-
-	getFilename: function(picture, size, dontCrop) {
-		var id = picture.getId(),
-			key = this.getPictureHashKey(picture, size, dontCrop);
-
-		return this.pictures[id] ? this.pictures[id][key] : null;
-	},
-
-	setFilename: function(picture, size, filename, dontCrop) {
-		var id = picture.getId(),
-			key = this.getPictureHashKey(picture, size, dontCrop);
-
-		if (!this.pictures[id]) {
-			this.pictures[id] = {};
-		}
-		this.pictures[id][key] = filename;
-	},
-
-	getPictureHashKey: function(picture, size, dontCrop) {
-		return dontCrop ? size + '|0|0|1|1' : size + '|' + 
-											  picture.get('cropX') + '|' +
-											  picture.get('cropY') + '|' +
-											  picture.get('cropWidth') + '|' +
-											  picture.get('cropHeight');
-	},
-
-	getTmpFile: function() {
-		var tmp = require('tmp'),
-			file = tmp.fileSync({prefix: 'get-tmp-image', postfix: '.jpg'});
-
-		this.tmpFileRemoveCallbacks.push(file.removeCallback);
-		return file;
-	},
-
-	loadFromDb: function(picture, callback) {
-		var me = this,
-			async = require('async'),
-			fs = require('fs');
-
-		async.waterfall([
-			this.getProjectDatabase.bind(this),
-			function(db, callback) {
-				db.get('SELECT * FROM ' + me.tableName + ' WHERE id = ?', picture.getId(), callback);
-			},
-			function(row, callback) {
-				if (!row) {
-					callback(new Error('Could not load picture from database.'));
-					return;
-				}
-				async.each(['original', 'preview', 'thumb'], function(size, callback) {
-					var buffer = row[size],
-						file = me.getTmpFile();
-
-					fs.writeFile(file.name, buffer, function(err) {
-						if (!err) {
-							me.setFilename(picture, size, file.name, size === 'original');
-						}
-						callback(err);
-					});
-				}, callback);
-			}
-		], callback);
-	},
-
-	deleteFromDb: function(pictures, progress, callback) {
-		var me = this,
-			async = require('async'),
-			fs = require('fs'), 
-			ids = pictures.map(function(picture) {
-				return picture.getId();
-			}),
-			placeholders = ids.map(function() {
-				return '?';
-			});
-
-		async.waterfall([
-			function(callback) {
-				async.each(pictures, function(picture, callback) {
-					if (!me.pictures[picture.getId()]) {
-						me.loadFromDb(picture, function(err) {
-							progress();
-							callback(err);
+					if (updated) {
+						me.saveToDb('update', updated, progress, function(err) {
+							if (err) {
+								errors.push(err);
+							}
+							callback();
 						});
 					}
 					else {
-						progress();
 						callback();
 					}
-				}, callback);
-			},
-			this.getProjectDatabase.bind(this),
-			function(db, callback) {
-				db.run('DELETE FROM ' + me.tableName + ' WHERE id IN (' + placeholders.join(', ') + ')', ids, callback);
-			},
-		], callback);
-	},
-
-	saveToDb: function(mode, pictures, progress, callback) {
-		var me = this,
-			async = require('async'),
-			fs = require('fs'),
-			tasks = [],
-			insertSql = 'INSERT INTO ' + this.tableName + ' (id, original, preview, thumb) VALUES (?, ?, ?, ?)',
-			updateSql = 'UPDATE ' + this.tableName + ' SET preview = ?, thumb = ? WHERE id = ?',
-			insertStatement,
-			updateStatement;
-
-		if (!(mode === 'insert' || mode === 'update')) {
-			Ext.Error.raise('Invalid value for mode given: ' + mode);
-		}
-
-		async.waterfall([
-			this.getProjectDatabase.bind(this),
-			function(db, callback) {
-				async.parallel([
-					function(callback) {
-						insertStatement = db.prepare(insertSql, callback);
-					}, 
-					function(callback) {
-						updateStatement = db.prepare(updateSql, callback);
-					}
-				], callback);
-			},
-			function(_, callback) {
-				pictures.forEach(function(picture) {
-					var id = picture.getId(),
-						buffers = {},
-						sizes = ['preview', 'thumb'].concat(mode === 'insert' ? ['original'] : []),
-						readTask,
-						writeTask;
-
-					readTask = function(callback) {
-						async.waterfall([
-							function(callback) {
-								// Check if there are tmp files for all sizes and if not create them.
-								var needsResize = sizes.some(function(size) {
-										return !me.getFilename(picture, size, size === 'original');
-									});
-
-								if (needsResize) {
-									me.resize(picture, callback);
-								}
-								else {
-									callback();
-								}
-							},
-							function(callback) {
-								// Read tmp files into buffers.
-								async.each(sizes, function(size, callback) {
-									var filename = me.getFilename(picture, size, size === 'original');
-
-									fs.readFile(filename, function(err, buffer) {
-										if (!err) {
-											buffers[size] = buffer;
-										}
-										callback(err);
-									});
-								}, callback);
+				},
+				// created pictures
+				function(callback) {
+					if (created) {
+						me.saveToDb('insert', created, progress, function(err) {
+							if (err) {
+								errors.push(err);
 							}
-						], callback);
-					};
+							callback();
+						});
+					}
+					else {
+						callback();
+					}
+				}
+			], function() {
+				Ext.callback(callback, scope, errors.length ? [errors] : null);
+			});
+		},
 
-					switch (mode) {
-						case 'insert':
-							writeTask = function(callback) {
-								insertStatement.run([
+		destroy: function() {
+			delete Get.model.Picture.prototype.pictureManager;
+
+			this.tmpFileRemoveCallbacks.forEach(function(removeCallback) {
+				removeCallback();
+			});
+			this.callParent(arguments);
+		},
+
+		getProjectDatabase: function(callback) {
+			var me = this,
+				db = this.getProject().getProxy().getDatabaseObject();
+
+			if (this.projectDbTableExists) {
+				callback(null, db);
+			}
+			else {
+				db.run('CREATE TABLE IF NOT EXISTS ' + this.tableName + ' (' + this.shemaString + ')', function(err) {
+					if (!err) {
+						me.projectDbTableExists = true;
+					}
+					callback(err, db);
+				});
+			}
+		},
+
+		getFile: function(picture, size) {
+			var id = picture.getId(),
+				key = this.getPictureHashKey(picture, size),
+				file;
+
+			if (!this.pictures[id]) {
+				this.pictures[id] = {
+					dbCrop: this.getCropHashKey(picture),
+				};
+			}
+
+			file = this.pictures[id][key];
+
+			if (!file) {
+				if (size === 'original' || this.pictures[id].dbCrop === this.getCropHashKey(picture)) {
+					this.loadFromDb(picture, size);
+				}
+				else {
+					this.resize(picture, size);
+				}
+				file = this.pictures[id][key];
+			}
+
+			return file;
+		},
+
+		setFile: function(picture, size, file) {
+			var id = picture.getId(),
+				key = this.getPictureHashKey(picture, size);
+
+			if (!this.pictures[id]) {
+				this.pictures[id] = {};
+			}
+			this.pictures[id][key] = file;
+		},
+
+		getPictureHashKey: function(picture, size) {
+			var sizeKey = (size === 'original-cropped' ? 'original' : size),
+				cropKey = this.pictureSizes[size].crop ? this.getCropHashKey(picture) : '0|0|1|1';
+
+			return sizeKey + '|' + cropKey;
+		},
+
+		getCropHashKey: function(picture) {
+			return [picture.get('cropX'), picture.get('cropY'), picture.get('cropWidth'), picture.get('cropHeight')].join('|');
+		},
+
+		getTmpFile: function() {
+			var tmp = require('tmp'),
+				file = tmp.fileSync({prefix: 'get-tmp-image', postfix: '.jpg'});
+
+			this.tmpFileRemoveCallbacks.push(file.removeCallback);
+			return file;
+		},
+
+		loadFromDb: function(picture, sizes) {
+			var me = this,
+				deferreds = {};
+
+			if (!Array.isArray(sizes)) {
+				sizes = [sizes];
+			}
+
+			sizes.forEach(function(size) {
+				var deferred = Promise.defer();
+				deferreds[size] = deferred;
+				me.setFile(picture, size, deferred.promise);
+			});
+
+			async.waterfall([
+				this.getProjectDatabase.bind(this),
+				function(db, callback) {
+					db.get('SELECT ' + sizes.join(', ') + ' FROM ' + me.tableName + ' WHERE id = ?', picture.getId(), callback);
+				},
+				function(row, callback) {
+					if (!row) {
+						callback(new Error('Could not load picture from database.'));
+						return;
+					}
+					async.each(sizes, function(size, callback) {
+						var buffer = row[size],
+							file = me.getTmpFile();
+
+						fs.writeFile(file.name, buffer, function(err) {
+							if (!err) {
+								deferreds[size].resolve(file.name);
+							}
+							callback(err);
+						});
+					}, callback);
+				}
+			], function(err) {
+				if (err) {
+					Object.keys(deferreds).forEach(function(size) {
+						deferreds[size].reject(err);
+					});
+				}
+			});
+		},
+
+		deleteFromDb: function(pictures, progress, callback) {
+			var me = this,
+				ids = pictures.map(function(picture) {
+					return picture.getId();
+				}),
+				placeholders = ids.map(function() {
+					return '?';
+				});
+
+			async.waterfall([
+				function(callback) {
+					async.each(pictures, function(picture, callback) {
+						var files = [me.getFile(picture, 'original')];
+
+						if (me.pictures[picture.getId()].dbCrop === me.getCropHashKey(picture)) {
+							files.push(me.getFile(picture, 'preview'));
+							files.push(me.getFile(picture, 'thumb'));
+						}
+
+						Promise.all(files)
+							.finally(progress)
+							.nodeify(callback);
+					}, callback);
+				},
+				this.getProjectDatabase.bind(this),
+				function(db, callback) {
+					db.run('DELETE FROM ' + me.tableName + ' WHERE id IN (' + placeholders.join(', ') + ')', ids, callback);
+				},
+			], callback);
+		},
+
+		saveToDb: function(mode, pictures, progress, callback) {
+			var me = this,
+				tasks = [],
+				insertSql = 'INSERT INTO ' + this.tableName + ' (id, original, preview, thumb) VALUES (?, ?, ?, ?)',
+				updateSql = 'UPDATE ' + this.tableName + ' SET preview = ?, thumb = ? WHERE id = ?',
+				insertStatement,
+				updateStatement,
+				readFile = function(filename) {
+					return Promise.fromNode(function(callback) {
+						fs.readFile(filename, callback);
+					});
+				};
+
+			if (!(mode === 'insert' || mode === 'update')) {
+				Ext.Error.raise('Invalid value for mode given: ' + mode);
+			}
+
+			async.waterfall([
+				this.getProjectDatabase.bind(this),
+				function(db, callback) {
+					async.parallel([
+						function(callback) {
+							insertStatement = db.prepare(insertSql, callback);
+						}, 
+						function(callback) {
+							updateStatement = db.prepare(updateSql, callback);
+						}
+					], callback);
+				},
+				function(_, callback) {
+					pictures.forEach(function(picture) {
+						var id = picture.getId(),
+							sizes = ['preview', 'thumb'].concat(mode === 'insert' ? ['original'] : []),
+							buffers = {},
+							readTask,
+							writeTask,
+							statement,
+							args;
+
+
+						// Read tmp files into buffers.
+						readTask = function(callback) {
+							sizes.forEach(function(size) {
+								buffers[size] = me.getFile(picture, size).then(readFile);
+							});
+							Promise.props(buffers).nodeify(callback);
+						};
+
+						// Write buffers into database.
+						writeTask = function(buffers, callback) {
+							switch (mode) {
+								case 'insert':
+									statement = insertStatement;
+									args = [
 										id,
 										buffers.original,
 										buffers.preview,
 										buffers.thumb
-									], function(err) {
-										progress();
-										callback(err);
-									});
-							};
-							break;
-						case 'update':
-							 writeTask = function(callback) {
-								updateStatement.run([
+									];
+									break;
+								case 'update':
+									statement = updateStatement;
+									args = [
 										buffers.preview,
 										buffers.thumb,
-										id,
-									], function(err) {
-										progress();
-										callback(err);
-									});
-							};
-							break;
-					}
+										id
+									];
+									break;
+							}
+							statement.run(args, callback);
+						};
 
-					tasks.push(async.apply(async.waterfall, [readTask, writeTask]));
-				});
-				async.parallelLimit(tasks, 4, callback);
+						tasks.push(function(callback) {
+							async.waterfall([readTask, writeTask], function(err) {
+								if (!err) {
+									me.pictures[id].dbCrop = me.getCropHashKey(picture);
+								}
+								progress();
+								callback(err);
+							});
+						});
+					});
+					async.parallelLimit(tasks, 4, callback);
+				}
+			], callback);
+		},
+
+		resize: function(picture, size) {
+			var me = this,
+				deferreds = {},
+				sizes;
+
+			switch (size) {
+				case 'thumb':
+				case 'preview':
+					sizes = ['thumb', 'preview'];
+					break;
+				case 'original-cropped':
+					sizes = ['original-cropped'];
+					break;
 			}
-		], callback);
-	},
+			if (!sizes) {
+				return;
+			}
 
-	resize: function(picture, callback) {
-		var me = this,
-			id = picture.getId(),
-			callbacks = this.resizeTasks[id];
-
-		if (!callbacks) {
-			this.resizeTasks[id] = callbacks = [callback];
-			this.resizeQueue.push(picture, function(err) {
-				delete me.resizeTasks[id];
-				callbacks.forEach(function(callback) {
-					callback(err);
-				});
+			sizes.forEach(function(size) {
+				var deferred = Promise.defer();
+				deferreds[size] = deferred;
+				me.setFile(picture, size, deferred.promise);
 			});
-		}
-		else {
-			callbacks.push(callback);
-		}
-	},
 
-	resizeWorker: function(picture, callback) {
-		var me = this,
-			file = 'file://' + this.getFilename(picture, 'original', true),
-			async = require('async'),
-			fs = require('fs');
+			this.resizeQueue.push({
+				picture: picture,
+				sizes: sizes,
+				deferreds: deferreds
+			});
+		},
 
-		async.waterfall([
-			function(callback) {
-				loadImage(file, function(original) {
-					if (original instanceof Event && original.type === 'error') {
-						callback(new Error('Could not load image:' + file));
+		resizeWorkerCanvas: function(task, callback) {
+			var me = this,
+				picture = task.picture,
+				deferreds = task.deferreds;
+
+			async.waterfall([
+				function(callback) {
+					me.getFile(picture, 'original').nodeify(callback);
+				},
+				function(file, callback) {
+					loadImage('file://' + file, function(original) {
+						if (original instanceof Event && original.type === 'error') {
+							callback(new Error('Could not load image:' + file));
+						}
+						else {
+							if (!(picture.get('width') && picture.get('width'))) {
+								picture.set({width: original.width, height: original.height});
+							}
+							callback(null, original);
+						}
+					});
+				},
+				function(original, callback) {
+					var left = Math.round(picture.get('cropX') * original.width),
+						top = Math.round(picture.get('cropY') * original.height),
+						sourceWidth = Math.round(picture.get('cropWidth') * original.width),
+						sourceHeight = Math.round(picture.get('cropHeight') * original.height);
+
+					async.eachSeries(['thumb', 'preview'], function(size, callback) {
+						var canvas = loadImage.scale(original, {
+								maxWidth: me.pictureSizes[size].width, 
+								maxHeight: me.pictureSizes[size].height,
+								left: left,
+								top: top,
+								sourceWidth: sourceWidth,
+								sourceHeight: sourceHeight,
+								canvas: true
+							}),
+							buffer = me.canvasToBuffer(canvas),
+							file = me.getTmpFile();
+
+						fs.writeFile(file.name, buffer, function(err) {
+							if (!err) {
+								deferreds[size].resolve(file.name);
+							}
+							callback(err);
+						});
+					}, callback);
+				}
+			], function(err) {
+				if (err) {
+					Object.keys(deferreds).forEach(function(size) {
+						deferreds[size].reject(err);
+					});
+				}
+				callback(err);
+			});
+		},
+
+		resizeWorkerImageMagick: function(task, callback) {
+			var me = this,
+				picture = task.picture,
+				deferreds = task.deferreds,
+				shell = require('shelljs'),
+				sizeOf = require('image-size');
+
+			async.waterfall([
+				function(callback) {
+					me.getFile(picture, 'original').nodeify(callback);
+				},
+				function(original, callback) {
+					if (!(picture.get('width') && picture.get('height'))) {
+						sizeOf(original, function(err, dimensions) {
+							if (err) {
+								// TODO: best way to handle this error? or should the size be determined earlier?
+								throw err;
+							}
+							picture.set({width: dimensions.width, height: dimensions.height});
+							callback(null, original);
+						});
 					}
 					else {
-						if (!(picture.get('width') && picture.get('width'))) {
-							picture.set({width: original.width, height: original.height});
-						}
 						callback(null, original);
 					}
-				});
-			},
-			function(original, callback) {
-				var left = Math.round(picture.get('cropX') * original.width),
-					top = Math.round(picture.get('cropY') * original.height),
-					sourceWidth = Math.round(picture.get('cropWidth') * original.width),
-					sourceHeight = Math.round(picture.get('cropHeight') * original.height);
+				},
+				function(original, callback) {
+					var file = me.getTmpFile(),
+						left = Math.round(picture.get('cropX') * picture.get('width')),
+						top = Math.round(picture.get('cropY') * picture.get('height')),
+						sourceWidth = Math.round(picture.get('cropWidth') * picture.get('width')),
+						sourceHeight = Math.round(picture.get('cropHeight') * picture.get('height'));
 
-				async.eachSeries(['thumb', 'preview'], function(size, callback) {
-					var canvas = loadImage.scale(original, {
-							maxWidth: me.pictureSizes[size][0], 
-							maxHeight: me.pictureSizes[size][1],
-							left: left,
-							top: top,
-							sourceWidth: sourceWidth,
-							sourceHeight: sourceHeight,
-							canvas: true
-						}),
-						buffer = me.canvasToBuffer(canvas),
-						file = me.getTmpFile();
-
-					fs.writeFile(file.name, buffer, function(err) {
-						if (!err) {
-							me.setFilename(picture, size, file.name);
+					shell.exec([
+							'convert',
+							'"' + original + '"',
+							'-crop ' + sourceWidth + 'x' + sourceHeight + '+' + left + '+' + top,
+							'-resize ' + me.pictureSizes.preview.width + 'x' + me.pictureSizes.preview.height +'\\>',
+							'-strip',
+							'-quality 75',
+							file.name
+						].join(' '), 
+						function(code, output) {
+							if (!code) {
+								deferreds.preview.resolve(file.name);
+							}
+							callback(code, file);
 						}
-						callback(err);
+					);
+				},
+				function(preview, callback) {
+					var file = me.getTmpFile();
+					shell.exec([
+							'convert',
+							'"' + preview.name + '"',
+							'-resize ' + me.pictureSizes.thumb.width + 'x' + me.pictureSizes.thumb.height +'\\>',
+							'-quality 85',
+							file.name
+						].join(' '), 
+						function(code, output) {
+							if (!code) {
+								deferreds.thumb.resolve(file.name);
+							}
+							callback(code);
+						}
+					);
+				},
+			], function(err) {
+				if (err) {
+					Object.keys(deferreds).forEach(function(size) {
+						deferreds[size].reject(err);
 					});
-				}, callback);
+				}
+				callback(err);
+			});
+		},
+
+		canvasToBuffer: function(canvas) {
+			var dataURI = canvas.toDataURL('image/jpeg', 0.75),
+				bytes = atob(dataURI.split(',')[1]),
+				buffer = new Buffer(bytes.length);
+
+			for (var i = 0, l = bytes.length; i < l; i++) {
+				buffer[i] = bytes.charCodeAt(i);
 			}
-		], callback);
-	},
+			return buffer;
+		},
 
-	resizeWorkerImageMagick: function(picture, callback) {
-		var me = this,
-			filename = this.getFilename(picture, 'original', true),
-			async = require('async'),
-			shell = require('shelljs'),
-			sizeOf = require('image-size');
+		bufferToBlob: function(buffer) {
+			var bytes = new Uint8Array(buffer.length);
 
-		async.waterfall([
-			function(callback) {
-				if (!(picture.get('width') && picture.get('height'))) {
-					sizeOf(filename, function(err, dimensions) {
-						if (err) {
-							// TODO: best way to handle this error? or should the size be determined earlier?
-							throw err;
-						}
-						picture.set({width: dimensions.width, height: dimensions.height});
-						callback();
-					});
-				}
-				else {
-					callback();
-				}
-			},
-			function(callback) {
-				var file = me.getTmpFile(),
-					left = Math.round(picture.get('cropX') * picture.get('width')),
-					top = Math.round(picture.get('cropY') * picture.get('height')),
-					sourceWidth = Math.round(picture.get('cropWidth') * picture.get('width')),
-					sourceHeight = Math.round(picture.get('cropHeight') * picture.get('height'));
+			for (var i = 0, l = buffer.length; i < l; i++) {
+				bytes[i] = buffer[i];
+			}
+			return new Blob([bytes], {type: 'image/jpeg'});
+		},
 
-				shell.exec([
-						'convert',
-						'"' + filename + '"',
-						'-crop ' + sourceWidth + 'x' + sourceHeight + '+' + left + '+' + top,
-						'-resize ' + me.pictureSizes.preview[0] + 'x' + me.pictureSizes.preview[1] +'\\>',
-						'-strip',
-						'-quality 75',
-						file.name
-					].join(' '), 
-					function(code, output) {
-						if (!code) {
-							me.setFilename(picture, 'preview', file.name);
-						}
-						callback(code, file);
-					}
-				);
-			},
-			function(preview, callback) {
-				var file = me.getTmpFile();
-				shell.exec([
-						'convert',
-						'"' + preview.name + '"',
-						'-resize ' + me.pictureSizes.thumb[0] + 'x' + me.pictureSizes.thumb[1] +'\\>',
-						'-quality 85',
-						file.name
-					].join(' '), 
-					function(code, output) {
-						if (!code) {
-							me.setFilename(picture, 'thumb', file.name);
-						}
-						callback(code);
-					}
-				);
-			},
-		], callback);
-	},
-
-	canvasToBuffer: function(canvas) {
-		var dataURI = canvas.toDataURL('image/jpeg', 0.75),
-			bytes = atob(dataURI.split(',')[1]),
-			buffer = new Buffer(bytes.length);
-
-		for (var i = 0, l = bytes.length; i < l; i++) {
-			buffer[i] = bytes.charCodeAt(i);
+		statics: {
+			THUMB: 'thumb',
+			PREVIEW: 'preview',
+			ORIGINAL: 'original'
 		}
-		return buffer;
-	},
 
-	bufferToBlob: function(buffer) {
-		var bytes = new Uint8Array(buffer.length);
-
-		for (var i = 0, l = buffer.length; i < l; i++) {
-			bytes[i] = buffer[i];
-		}
-		return new Blob([bytes], {type: 'image/jpeg'});
-	},
-
-	statics: {
-		THUMB: 'thumb',
-		PREVIEW: 'preview',
-		ORIGINAL: 'original'
-	},
-
+	};
 });
