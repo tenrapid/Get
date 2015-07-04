@@ -11,6 +11,13 @@ Ext.define('Get.view.StatefulGrid', {
 		}
 	},
 
+	getState: function() {
+		var state = this.callParent(arguments);
+		// ignore the store's sort, filter and grouping state
+		delete state.storeState;
+		return state;
+	},
+
 	applyState: function(state) {
 		var columns = state.columns,
 			columnHash;
@@ -51,7 +58,7 @@ Ext.define('Get.view.StatefulGrid', {
 
 				Ext.suspendLayouts();
 
-				//// changed ///////////////////////////
+				//////  MODIFIED:  ///////////////////////////////////////////////
 				if (dragHd.flex) {
 					nextHd = dragHd.nextNode('gridcolumn:not([hidden]):not([isGroupHeader])');
 					if (nextHd && !me.headerInSameGrid(nextHd)) {
@@ -63,7 +70,7 @@ Ext.define('Get.view.StatefulGrid', {
 					}
 				}
 				else {
-				////////////////////////////////////////
+				//////////////////////////////////////////////////////////////////
 					// Set the new column width.
 					// Adjusted for the offset from the actual column border that the mousedownb too place at.
 					me.adjustColumnWidth(offset[0] - me.xDelta);
