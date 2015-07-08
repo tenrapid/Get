@@ -87,7 +87,7 @@ Ext.define('Get.project.controller.PictureManager', function() {
 			// Use the session's identifier to generate an id. 
 			// By not using picture.copy(null, session) we prevent the record from being adopted by the session 
 			// right now, which would lead to the firing of corresponding events. We do this so that undo operation
-			// grouping can be controlled in the callback of this method or even higher up. The picture gets adopted
+			// grouping can be controlled in the caller of this method or even higher up. The picture gets adopted
 			// by the session when it is added to a store.
 			duplicate = picture.copy(identifier.generate());
 			// Set phantom to true because creating a record with a specified id results in a record that is not phantom.
@@ -487,9 +487,6 @@ Ext.define('Get.project.controller.PictureManager', function() {
 							callback(new Error('Could not load image:' + file));
 						}
 						else {
-							if (!(picture.get('width') && picture.get('width'))) {
-								picture.set({width: original.width, height: original.height});
-							}
 							callback(null, original);
 						}
 					});
@@ -535,27 +532,11 @@ Ext.define('Get.project.controller.PictureManager', function() {
 			var me = this,
 				picture = task.picture,
 				deferreds = task.deferreds,
-				shell = require('shelljs'),
-				sizeOf = require('image-size');
+				shell = require('shelljs');
 
 			async.waterfall([
 				function(callback) {
 					me.getFile(picture, 'original').nodeify(callback);
-				},
-				function(original, callback) {
-					if (!(picture.get('width') && picture.get('height'))) {
-						sizeOf(original, function(err, dimensions) {
-							if (err) {
-								// TODO: best way to handle this error? or should the size be determined earlier?
-								throw err;
-							}
-							picture.set({width: dimensions.width, height: dimensions.height});
-							callback(null, original);
-						});
-					}
-					else {
-						callback(null, original);
-					}
 				},
 				function(original, callback) {
 					var file = me.getTmpFile(),
