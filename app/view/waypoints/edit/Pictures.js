@@ -195,8 +195,8 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	addPicture: function(files) {
-		var pictures = this.getStore(),
-			project = this.lookupViewModel().get('project'),
+		var me = this,
+			pictures = this.getStore(),
 			imageInfo = require('imageinfo'),
 			async = require('async'),
 			picturesToAdd = [];
@@ -218,9 +218,14 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 				callback();
 			});
 		}, function() {
-			project.undoManager.beginUndoGroup();
-			pictures.add(picturesToAdd);
-			project.undoManager.endUndoGroup();
+			var viewModel = me.lookupViewModel(),
+				project = viewModel && viewModel.get('project');
+				
+			if (project) {
+				project.undoManager.beginUndoGroup();
+				pictures.add(picturesToAdd);
+				project.undoManager.endUndoGroup();
+			}
 		});
 	},
 
