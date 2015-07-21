@@ -7,6 +7,7 @@ Ext.define('Get.view.list.List', {
 		'Ext.grid.plugin.CellEditing',
 		'Get.view.list.ListController',
 		'Get.view.list.ListModel',
+		'Get.view.list.TourWaypointForm',
 		'Get.selection.FeatureModel',
 		'Ext.grid.column.Widget',
 		'Get.grid.CellEditor'
@@ -52,49 +53,49 @@ Ext.define('Get.view.list.List', {
 
 	columns: [
 		{
+			id: 'border-left',
 			width: 18,
 			resizable: false,
-			menuDisabled: true,
-			stateId: 'border-left'
+			menuDisabled: true
 		},
 		{
+			id: 'waypoint-index',
 			width: 42,
 			align: 'right',
 			menuDisabled: true,
 			resizable: false,
-			stateId: 'waypoint-index',
 			tdCls: 'index-column',
 			renderer: function(value, meta, record, rowIndex) {
 				return rowIndex + 1;
 			}
 		},
 		{
+			id: 'waypoint-name',
 			text: 'Name',
 			dataIndex: 'name',
 			menuDisabled: true,
-			stateId: 'waypoint-name',
 			tdCls: 'bold-column',
 			width: 170,
 			editor: 'celleditor'
 		},
 		{
+			id: 'waypoint-description',
 			text: 'Beschreibung',
 			dataIndex: 'description',
 			menuDisabled: true,
 			flex: 1,
 			cellWrap: true,
-			stateId: 'waypoint-description',
 			tdCls: 'text-column',
 			editor: 'celleditor'
 		},
 		{
+			id: 'waypoint-pictures',
 			text: 'Bilder',
 			xtype: 'widgetcolumn',
 			menuDisabled: true,
 			resizable: false,
 			width: 230,
 			cellWrap: true,
-			stateId: 'waypoint-pictures',
 			widget: {
 				xtype: 'edit.waypoint.pictures'
 			},
@@ -106,10 +107,37 @@ Ext.define('Get.view.list.List', {
 			}
 		},
 		{
+			id: 'tourwaypoint-name',
+			text: 'Name',
+			dataIndex: 'name',
+			menuDisabled: true,
+			tdCls: 'bold-column',
+			width: 170,
+			editor: 'celleditor'
+		},
+		{
+			id: 'tourwaypoint-form',
+			text: 'Beschreibung',
+			xtype: 'widgetcolumn',
+			menuDisabled: true,
+			resizable: false,
+			flex: 1,
+			cellWrap: true,
+			widget: {
+				xtype: 'list.tourwaypoint-form'
+			},
+			onWidgetAttach: function(column, widget, record) {
+				widget.bindTourWaypoint(record.entityName === 'TourWaypoint' ? record : null);
+			},
+			onWidgetDetach: function(column, widget, record) {
+				widget.bindTourWaypoint(null);
+			}
+		},
+		{
+			id: 'border-right',
 			width: 18,
 			resizable: false,
-			menuDisabled: true,
-			stateId: 'border-right'
+			menuDisabled: true
 		},
 	],
 	tbar: [
@@ -127,9 +155,17 @@ Ext.define('Get.view.list.List', {
 			emptyText: 'Suchen…'
 		}
 	],
-	listeners: {
-		reconfigure: 'onGridReconfigure',
-		scope: 'controller',
-	}
+
+	// onHeaderHide: function(headerCt, header) {
+	// 	if (this.view.refreshCounter && !this.reconfiguring) {
+	// 		this.view.refreshView();
+	// 	}
+	// },
+
+	// onHeaderShow: function(headerCt, header) {
+	// 	if (this.view.refreshCounter && !this.reconfiguring) {
+	// 		this.view.refreshView();
+	// 	}
+	// }
 
 });

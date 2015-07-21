@@ -113,8 +113,10 @@ Ext.define('Get.view.waypoints.edit.Pictures', {
 	},
 
 	onDestroy: function() {
-		this.preview.destroy();
-		this.preview = null;
+		if (this.preview) {
+			this.preview.destroy();
+			this.preview = null;
+		}
 		this.callParent();
 	},
 

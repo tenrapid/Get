@@ -39,7 +39,7 @@ Ext.define('Ext.patch.grid.column.Widget', {
 				hasDetach = !!me.onWidgetDetach,
 				liveWidgets = me.liveWidgets;
 
-			if (!me.rendered && me.hidden) return;
+			if (!me.rendered || me.hidden) return;
 
 			records.forEach(function(record) {
 				var widget;

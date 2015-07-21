@@ -27,6 +27,7 @@ Ext.define('Get.view.list.ListController', {
 		var view = this.getView(),
 			gridView = view.getView();
 
+		view.on('beforereconfigure', this.onGridBeforeReconfigure, this);
 		view.on('show', this.onShow, this);
 		gridView.on('beforedrop', this.onBeforeDrop, this);
 		gridView.on('drop', this.onDrop, this);
@@ -37,8 +38,11 @@ Ext.define('Get.view.list.ListController', {
 	},
 	
 	onProjectUnload: function() {
-		var selectionModel = this.getView().getSelectionModel();
+		var view = this.getView(),
+			selectionModel = view.getSelectionModel();
+
 		selectionModel.deselectAll();
+		view.setStore(Ext.StoreManager.get('ext-empty-store'));
 	},
 
 	onLayerItemSelect: function(item, waypointStore) {
@@ -60,13 +64,15 @@ Ext.define('Get.view.list.ListController', {
 		}
 	},
 
-	onGridReconfigure: function(grid, store) {
+	onGridBeforeReconfigure: function(grid, store, columns) {
 		if (store) {
 			var storeId = store.getStoreId();
 
-			// grid.columns[1].setHidden(storeId !== 'waypoints');
-			// grid.columns[2].setHidden(storeId === 'waypoints');
-			grid.columns[4].setHidden(storeId !== 'waypoints');
+			grid.down('#waypoint-name').setVisible(storeId === 'waypoints');
+			grid.down('#waypoint-description').setVisible(storeId === 'waypoints');
+			grid.down('#waypoint-pictures').setVisible(storeId === 'waypoints');
+			grid.down('#tourwaypoint-name').setVisible(storeId !== 'waypoints');
+			grid.down('#tourwaypoint-form').setVisible(storeId !== 'waypoints');
 		}
 	},
 

@@ -16,6 +16,11 @@ Ext.define('Get.form.field.PictureComboBox', {
 	},
 	triggerCls: null,
 	
+	editable: false,
+	queryMode: 'local',
+	valueField: 'id',
+	displayField: 'id',
+
 	listConfig: {
 		tpl: [
 			'<tpl for=".">',
@@ -35,18 +40,17 @@ Ext.define('Get.form.field.PictureComboBox', {
 
 		prepareData: function(_data, index, picture) {
 			var me = this,
-				data = Object.getPrototypeOf(this).prepareData.apply(this, arguments);
+				data = Ext.Object.chain(_data);
 
 			data.backgroundImage = 'none';
 			data.transformStyle = picture.getTransformCenteredStyle();
 
 			picture.getImageUrl('thumb', function(err, url) {
-				var node = me.getNode(picture);
+				var node = me.store && me.getNode(picture);
 
 				if (node) {
 					Ext.fly(node).down('.waypoint-picture-holder', true).style.backgroundImage = 'url(' + url + ')';
 				}
-				data.backgroundImage = 'url(' + url + ')';
 			});
 
 			return data;

@@ -33,10 +33,6 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 					xtype: 'picturecombobox',
 					width: 79,
 					height: 61,
-					editable: false,
-					queryMode: 'local',
-					valueField: 'id',
-					displayField: 'id',
 					bind: {
 						store: '{waypoint.pictures}',
 						selection: '{tourWaypoint.taskPicture}',
@@ -66,10 +62,6 @@ Ext.define('Get.view.waypoints.edit.TourWaypointFields', {
 					xtype: 'picturecombobox',
 					width: 79,
 					height: 61,
-					editable: false,
-					queryMode: 'local',
-					valueField: 'id',
-					displayField: 'id',
 					bind: {
 						store: '{waypoint.pictures}',
 						selection: '{tourWaypoint.setupPicture}',
